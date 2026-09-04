@@ -68,7 +68,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .pane{flex:1;min-height:0;display:flex;flex-direction:column}
 .scroll{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;padding:0 20px calc(var(--leiste) + 10px);
+  overscroll-behavior:contain;padding:0 20px calc(var(--leiste) + 18px);
 }
 
 /* Sanfter Wechsel zwischen den Reitern */
@@ -80,7 +80,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .tap:active{transform:scale(.975)}
 
 /* ---------- Kopfzeile ---------- */
-.topbar{display:flex;align-items:center;gap:12px;padding:15px 0 2px}
+.topbar{display:flex;align-items:center;gap:12px;padding:18px 0 2px}
 .topbar .mid{flex:1;min-width:0;text-align:center}
 .topbar .mid b{display:block;font-size:16.5px;font-weight:700;letter-spacing:-.02em}
 .topbar .mid span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:1px}
@@ -111,11 +111,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .bell i{
   position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:5px;
   background:var(--accent);box-shadow:0 0 0 2.5px var(--page);
-  animation:puls 1.9s ease-in-out infinite;
-}
-@keyframes puls{
-  0%,100%{transform:scale(1);opacity:1}
-  50%{transform:scale(1.32);opacity:.72}
 }
 
 /* ---------- Grosser Titel ---------- */
@@ -124,22 +119,22 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .title h1{margin:0;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1}
 
 /* ---------- Hero: Motiv schaut oben aus der Karte heraus ---------- */
-.hero{position:relative;margin-top:24px;display:block;width:100%}
+.hero{position:relative;margin-top:28px;display:block;width:100%}
 .hero .inner{border-radius:28px;overflow:hidden;background:var(--c-wasser)}
 .hero .art{
   position:absolute;top:-36px;right:-4px;width:134px;height:134px;z-index:2;pointer-events:none;
   filter:drop-shadow(0 14px 18px rgba(20,24,28,.22));
 }
 .hero .art svg{width:100%;height:100%;display:block}
-.hero .top{padding:18px 20px 16px}
+.hero .top{padding:20px 20px 18px}
 .hero .txt{max-width:64%}
 .chip{
   display:inline-block;background:rgba(255,255,255,.78);color:var(--ink);
-  font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:9px;
+  font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:11px;
 }
 .hero h2{margin:0;font-size:25px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
 .hero .meta{margin:9px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68)}
-.band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:11px 20px}
+.band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:12px 20px}
 .band .ic{
   width:34px;height:34px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;
   background:var(--ink);color:#fff;font-size:14px;font-weight:700;
@@ -151,22 +146,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 /* Ruhiger Grund, wenn nichts ansteht oder abgesagt wurde */
 .hero.stumm .inner{background:var(--sunk)}
 
-/* ---------- Zweiter Termin derselben Woche: schmale Zeile ---------- */
-.zweit{
-  display:flex;align-items:center;gap:12px;width:100%;margin-top:9px;
-  border:1.5px solid var(--line);border-radius:18px;padding:9px 14px 9px 11px;
-  transition:transform .12s ease;
-}
-.zweit:active{transform:scale(.985)}
-.zweit .pip{width:30px;height:30px;border-radius:11px;flex:0 0 auto}
-.zweit .tx{flex:1;min-width:0}
-.zweit b{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em;
-         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zweit span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:1px}
-.zweit .pfeil{color:var(--faint);font-size:19px;flex:0 0 auto;font-weight:400}
-
 /* ---------- Wochenstreifen ---------- */
-.week{display:flex;gap:6px;margin-top:13px}
+.week{display:flex;gap:6px;margin-top:16px}
 .wd{
   flex:1;border:1.5px solid var(--line);border-radius:18px;background:var(--page);
   padding:9px 0 9px;display:flex;flex-direction:column;align-items:center;gap:4px;
@@ -194,7 +175,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 /* ---------- Knoepfe ---------- */
 .cta{
   display:block;width:100%;height:54px;border-radius:18px;background:var(--accent);color:#fff;
-  font-size:17.5px;font-weight:700;letter-spacing:-.02em;text-align:center;margin-top:12px;
+  font-size:17.5px;font-weight:700;letter-spacing:-.02em;text-align:center;margin-top:14px;
   transition:transform .12s ease,background-color .2s ease;
 }
 .cta.quiet{background:var(--sunk);color:var(--dim);font-weight:600;font-size:16.5px}
@@ -202,14 +183,14 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .cta:active{transform:scale(.985)}
 
 /* ---------- Abschnitt + Rail ---------- */
-.sec{display:flex;align-items:baseline;justify-content:space-between;margin:15px 0 9px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 12px}
 .sec h3{margin:0;font-size:22px;font-weight:800;letter-spacing:-.035em}
 .sec span{font-size:14px;font-weight:650;color:var(--accent)}
 .rail{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin:0 -20px}
 .rail::-webkit-scrollbar{display:none}
-.tile{flex:0 0 96px;display:block;text-align:left}
-.tile .ph{height:96px;border-radius:19px}
-.tile b{display:block;margin-top:7px;font-size:13px;font-weight:650;letter-spacing:-.015em}
+.tile{flex:0 0 108px;display:block;text-align:left}
+.tile .ph{height:108px;border-radius:20px}
+.tile b{display:block;margin-top:8px;font-size:13px;font-weight:650;letter-spacing:-.015em}
 .tile small{display:block;color:var(--faint);font-size:12px;font-weight:500;margin-top:1px}
 
 /* Platzhalter fuer echte Fotos */
@@ -357,8 +338,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wb[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 
 @media (prefers-reduced-motion:reduce){
-  .sheet,.scrim,.pane.zeigen,.bell i{animation:none}
-  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active,.woche:active,.zweit:active{transform:none}
+  .sheet,.scrim,.pane.zeigen{animation:none}
+  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active,.woche:active{transform:none}
 }
 </style>
 <style>
@@ -398,8 +379,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
           </div>
         </div>
       </button>
-
-      <div id="zweit-platz"></div>
 
       <div class="week" id="week"></div>
 
@@ -512,14 +491,7 @@ var INHALT = {
       abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
       danach:   { titel: "Warst du. Schön.", text: "Papa hat dich um 16:20 zurückgebracht" }
     },
-    {
-      id: "kaffee", inWochen: 0, wochentag: 4, zeit: "15:00", gewesenAb: 18,
-      titel: "Kaffee bei Mama", kategorie: "kaffee", ort: "bei Mama",
-      zusatz: "Mama backt. Bleib so lange du magst.",
-      abholung: { kuerzel: "M", titel: "Mama holt dich ab", text: "um 14:45 vor der Tür" },
-      danach:   { titel: "Warst du. Schön.", text: "Mama hat dich um 18:00 zurückgebracht" }
-    },
-    {
+        {
       id: "spiel", inWochen: 1, wochentag: 3, zeit: "15:00", gewesenAb: 18,
       titel: "Spielenachmittag", kategorie: "erzaehlen", ort: "Gemeindehaus",
       zusatz: "Karten, Rommé, Kuchen. Oma kommt mit.",
@@ -917,33 +889,9 @@ var INHALT = {
       $("band-text").textContent = band.text;
     }
 
-    zeichneZweiten(e);
     zeichneStreifen();
     zeichneAktion(e, gewesen, weg);
     zeichneRail();
-  }
-
-  /* Zweiter Termin in den nächsten sieben Tagen — eine schmale Zeile.
-     Mehr als zwei Dinge auf einmal will man einem 91-Jährigen nicht zeigen. */
-  function zeichneZweiten(erster) {
-    if (werkbank === "leer") { $("zweit-platz").innerHTML = ""; return; }
-    var heute = new Date();
-    var weitere = alleTermine().filter(function (x) {
-      if (erster && x.datum === erster.datum && x.id === erster.id) return false;
-      if (istAbgesagt(x)) return false;
-      var d = tageDazwischen(heute, ausIso(x.datum));
-      return d >= 0 && d <= 7;
-    });
-    if (!weitere.length) { $("zweit-platz").innerHTML = ""; return; }
-
-    var z = weitere[0], zd = ausIso(z.datum);
-    var farbe = "e-" + (z.kategorie === "erzaehlen" ? "erz" : z.kategorie);
-    $("zweit-platz").innerHTML =
-      '<button class="zweit"><div class="pip ' + farbe + '"></div>' +
-      '<div class="tx"><b>' + z.titel + "</b>" +
-      "<span>" + tagLang(zd) + " " + z.zeit + " · " + z.ort + "</span></div>" +
-      '<span class="pfeil">›</span></button>';
-    $("zweit-platz").firstChild.addEventListener("click", function () { ereignisSheet(z); });
   }
 
   /* Die nächsten sieben Tage, heute zuerst. Jeder Tag mit Termin bekommt

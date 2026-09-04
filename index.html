@@ -68,7 +68,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .pane{flex:1;min-height:0;display:flex;flex-direction:column}
 .scroll{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;padding:0 20px calc(var(--leiste) + 18px);
+  overscroll-behavior:contain;padding:0 20px calc(var(--leiste) + 10px);
 }
 
 /* Sanfter Wechsel zwischen den Reitern */
@@ -80,7 +80,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .tap:active{transform:scale(.975)}
 
 /* ---------- Kopfzeile ---------- */
-.topbar{display:flex;align-items:center;gap:12px;padding:18px 0 2px}
+.topbar{display:flex;align-items:center;gap:12px;padding:15px 0 2px}
 .topbar .mid{flex:1;min-width:0;text-align:center}
 .topbar .mid b{display:block;font-size:16.5px;font-weight:700;letter-spacing:-.02em}
 .topbar .mid span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:1px}
@@ -90,7 +90,9 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   width:42px;height:42px;border-radius:21px;flex:0 0 auto;display:grid;place-items:center;
   font-size:14px;font-weight:700;color:#fff;overflow:hidden;position:relative;
 }
+.face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
 .face::after{content:"";position:absolute;inset:0;background:radial-gradient(66% 58% at 30% 24%,rgba(255,255,255,.45),transparent 62%)}
+.face.foto::after{display:none}
 .f-opa{background:linear-gradient(150deg,#3E6E7E,#8FB6BF)}
 .f-a{background:linear-gradient(150deg,#8A5330,#C79A6A)}
 .f-b{background:linear-gradient(150deg,#4C5E38,#9AB07C)}
@@ -102,10 +104,19 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .bell{
   width:42px;height:42px;border-radius:21px;flex:0 0 auto;position:relative;
   border:1.5px solid var(--line);display:grid;place-items:center;
+  transition:transform .12s ease;
 }
+.bell:active{transform:scale(.92)}
 .bell svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.bell i{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:4px;
-        background:var(--accent);box-shadow:0 0 0 2.5px var(--page)}
+.bell i{
+  position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:5px;
+  background:var(--accent);box-shadow:0 0 0 2.5px var(--page);
+  animation:puls 1.9s ease-in-out infinite;
+}
+@keyframes puls{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.32);opacity:.72}
+}
 
 /* ---------- Grosser Titel ---------- */
 .title{padding:30px 0 2px}
@@ -113,22 +124,22 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .title h1{margin:0;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1}
 
 /* ---------- Hero: Motiv schaut oben aus der Karte heraus ---------- */
-.hero{position:relative;margin-top:34px;display:block;width:100%}
+.hero{position:relative;margin-top:24px;display:block;width:100%}
 .hero .inner{border-radius:28px;overflow:hidden;background:var(--c-wasser)}
 .hero .art{
   position:absolute;top:-36px;right:-4px;width:134px;height:134px;z-index:2;pointer-events:none;
   filter:drop-shadow(0 14px 18px rgba(20,24,28,.22));
 }
 .hero .art svg{width:100%;height:100%;display:block}
-.hero .top{padding:20px 20px 18px}
+.hero .top{padding:18px 20px 16px}
 .hero .txt{max-width:64%}
 .chip{
   display:inline-block;background:rgba(255,255,255,.78);color:var(--ink);
-  font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:11px;
+  font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:9px;
 }
 .hero h2{margin:0;font-size:25px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
 .hero .meta{margin:9px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68)}
-.band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:12px 20px}
+.band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:11px 20px}
 .band .ic{
   width:34px;height:34px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;
   background:var(--ink);color:#fff;font-size:14px;font-weight:700;
@@ -137,8 +148,25 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .band b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.018em}
 .band span{display:block;font-size:13.5px;color:var(--dim);font-weight:500;margin-top:1px}
 
+/* Ruhiger Grund, wenn nichts ansteht oder abgesagt wurde */
+.hero.stumm .inner{background:var(--sunk)}
+
+/* ---------- Zweiter Termin derselben Woche: schmale Zeile ---------- */
+.zweit{
+  display:flex;align-items:center;gap:12px;width:100%;margin-top:9px;
+  border:1.5px solid var(--line);border-radius:18px;padding:9px 14px 9px 11px;
+  transition:transform .12s ease;
+}
+.zweit:active{transform:scale(.985)}
+.zweit .pip{width:30px;height:30px;border-radius:11px;flex:0 0 auto}
+.zweit .tx{flex:1;min-width:0}
+.zweit b{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zweit span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:1px}
+.zweit .pfeil{color:var(--faint);font-size:19px;flex:0 0 auto;font-weight:400}
+
 /* ---------- Wochenstreifen ---------- */
-.week{display:flex;gap:6px;margin-top:18px}
+.week{display:flex;gap:6px;margin-top:13px}
 .wd{
   flex:1;border:1.5px solid var(--line);border-radius:18px;background:var(--page);
   padding:9px 0 9px;display:flex;flex-direction:column;align-items:center;gap:4px;
@@ -166,7 +194,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 /* ---------- Knoepfe ---------- */
 .cta{
   display:block;width:100%;height:54px;border-radius:18px;background:var(--accent);color:#fff;
-  font-size:17.5px;font-weight:700;letter-spacing:-.02em;text-align:center;margin-top:14px;
+  font-size:17.5px;font-weight:700;letter-spacing:-.02em;text-align:center;margin-top:12px;
   transition:transform .12s ease,background-color .2s ease;
 }
 .cta.quiet{background:var(--sunk);color:var(--dim);font-weight:600;font-size:16.5px}
@@ -174,15 +202,15 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .cta:active{transform:scale(.985)}
 
 /* ---------- Abschnitt + Rail ---------- */
-.sec{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:15px 0 9px}
 .sec h3{margin:0;font-size:22px;font-weight:800;letter-spacing:-.035em}
 .sec span{font-size:14px;font-weight:650;color:var(--accent)}
 .rail{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin:0 -20px}
 .rail::-webkit-scrollbar{display:none}
-.tile{flex:0 0 122px;display:block;text-align:left}
-.tile .ph{height:122px;border-radius:22px}
-.tile b{display:block;margin-top:9px;font-size:13.5px;font-weight:650;letter-spacing:-.015em}
-.tile small{display:block;color:var(--faint);font-size:12.5px;font-weight:500;margin-top:2px}
+.tile{flex:0 0 96px;display:block;text-align:left}
+.tile .ph{height:96px;border-radius:19px}
+.tile b{display:block;margin-top:7px;font-size:13px;font-weight:650;letter-spacing:-.015em}
+.tile small{display:block;color:var(--faint);font-size:12px;font-weight:500;margin-top:1px}
 
 /* Platzhalter fuer echte Fotos */
 .ph{position:relative;overflow:hidden}
@@ -226,25 +254,65 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .e-werk{background:var(--c-werk)}
 .hint{text-align:center;font-size:13px;color:var(--faint);font-weight:500;margin:18px 0 0}
 
-/* ---------- Familie ---------- */
+/* ---------- Familie: Plan der naechsten Wochen ---------- */
+.banner{
+  display:flex;gap:12px;align-items:flex-start;margin-top:20px;
+  background:#FBE3D6;border-radius:22px;padding:15px 17px;
+}
+.banner .ic{width:30px;height:30px;border-radius:11px;flex:0 0 auto;background:var(--accent);
+            color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700}
+.banner b{display:block;font-size:15px;font-weight:750;letter-spacing:-.02em}
+.banner span{display:block;font-size:13.5px;color:rgba(20,24,28,.66);font-weight:500;margin-top:2px}
+
+.wochen{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.woche{
+  display:flex;align-items:center;gap:13px;width:100%;
+  border:1.5px solid var(--line);border-radius:20px;padding:13px 15px;
+  transition:transform .12s ease,border-color .2s ease;
+}
+.woche:active{transform:scale(.985)}
+.woche.offen{border-color:var(--accent);border-width:2px;background:#FDF3EE}
+.woche .marke{
+  width:38px;height:38px;border-radius:14px;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--sunk);font-size:11px;font-weight:750;color:var(--dim);
+  text-align:center;line-height:1.15;
+}
+.woche.offen .marke{background:var(--accent);color:#fff}
+.woche .tx{flex:1;min-width:0}
+.woche b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.02em}
+.woche span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:2px}
+.woche .pfeil{color:var(--faint);font-size:19px;flex:0 0 auto}
+
+/* ---------- Auswahl beim Planen ---------- */
 .opt{
-  display:block;width:100%;border-radius:28px;padding:21px 23px;
+  display:block;width:100%;border-radius:24px;padding:18px 20px;margin-top:11px;
   border:2.5px solid transparent;position:relative;transition:transform .12s ease,border-color .2s ease;
 }
 .opt:active{transform:scale(.982)}
-.opt[aria-pressed="true"]{border-color:var(--ink)}
-.opt h4{margin:7px 0 0;font-size:21px;font-weight:800;letter-spacing:-.038em;line-height:1.1}
-.opt .sub{margin:8px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68)}
+.opt h4{margin:6px 0 0;font-size:19px;font-weight:800;letter-spacing:-.035em;line-height:1.1}
+.opt .sub{margin:7px 0 0;font-size:14px;font-weight:500;color:rgba(20,24,28,.68)}
 .opt .note{
-  display:inline-block;margin-top:13px;background:rgba(255,255,255,.72);border-radius:15px;
-  padding:9px 13px;font-size:13.5px;font-weight:700;
+  display:inline-block;margin-top:11px;background:rgba(255,255,255,.72);border-radius:14px;
+  padding:8px 12px;font-size:13px;font-weight:700;
 }
-.draft{margin-top:30px}
+.draft{margin-top:26px}
 .draft h5{margin:0 0 11px;font-size:12px;font-weight:700;color:var(--faint);letter-spacing:.07em;text-transform:uppercase}
 .bubble{
   margin:0;background:#DEF3E5;border-radius:22px 22px 22px 7px;padding:15px 17px;
   font-size:15.5px;line-height:1.48;font-weight:500;
 }
+
+/* ---------- Mitteilungen ---------- */
+.mits{display:flex;flex-direction:column;gap:10px;margin:14px 0 4px}
+.mit{display:flex;gap:12px;align-items:flex-start;background:var(--sunk);border-radius:20px;padding:14px 16px}
+.mit.neu{background:#FDF0E9}
+.mit .ic{width:32px;height:32px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;
+         background:var(--ink);color:#fff;font-size:14px;font-weight:700}
+.mit.neu .ic{background:var(--accent)}
+.mit b{display:block;font-size:15px;font-weight:750;letter-spacing:-.02em}
+.mit p{margin:2px 0 0!important;font-size:13.5px!important;color:var(--dim);font-weight:500}
+.mit small{display:block;font-size:12px;color:var(--faint);font-weight:600;margin-top:5px}
+.leer{text-align:center;padding:26px 10px 6px;color:var(--dim);font-size:15px;font-weight:500}
 
 /* ---------- Sheet ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,24,28,.42);z-index:40;animation:auf .25s ease}
@@ -278,15 +346,19 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .tab[aria-selected="true"] svg{stroke-width:2.1}
 .tab[aria-selected="true"] b{font-weight:750}
 
-/* Vorschau-Schalter — nur fuer uns, nicht fuer Opa */
-.vorschau{
-  display:block;width:100%;margin-top:26px;border:1.5px dashed var(--faint);border-radius:16px;
-  padding:11px 14px;font-size:12.5px;font-weight:600;color:var(--faint);
+/* Werkbank — nur fuer uns, nicht fuer Opa */
+.werkbank{margin-top:26px;border:1.5px dashed var(--faint);border-radius:18px;padding:13px}
+.werkbank h5{margin:0 0 9px;font-size:11.5px;font-weight:700;color:var(--faint);letter-spacing:.07em;text-transform:uppercase}
+.werkbank .reihe{display:flex;flex-wrap:wrap;gap:7px}
+.wb{
+  border:1.5px solid var(--line);border-radius:14px;padding:8px 12px;
+  font-size:12.5px;font-weight:650;color:var(--dim);background:var(--page);
 }
+.wb[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 
 @media (prefers-reduced-motion:reduce){
-  .sheet,.scrim,.pane.zeigen{animation:none}
-  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active{transform:none}
+  .sheet,.scrim,.pane.zeigen,.bell i{animation:none}
+  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active,.woche:active,.zweit:active{transform:none}
 }
 </style>
 <style>
@@ -302,12 +374,12 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   <div class="pane" id="p-week">
     <div class="scroll">
       <div class="topbar">
-        <div class="face f-opa" id="opa-initial">O</div>
+        <div class="face f-opa" data-opa>O</div>
         <div class="mid">
           <b id="anrede">Hallo Opa</b>
           <span id="heute-zeile"></span>
         </div>
-        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i></i></div>
+        <button class="bell" data-glocke aria-label="Mitteilungen"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i hidden></i></button>
       </div>
 
       <button class="hero tap" id="hero">
@@ -327,6 +399,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         </div>
       </button>
 
+      <div id="zweit-platz"></div>
+
       <div class="week" id="week"></div>
 
       <div id="aktion"></div>
@@ -340,9 +414,9 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   <div class="pane" id="p-book" hidden>
     <div class="scroll">
       <div class="topbar">
-        <div class="face f-opa">O</div>
+        <div class="face f-opa" data-opa>O</div>
         <div class="spread"></div>
-        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg></div>
+        <button class="bell" data-glocke aria-label="Mitteilungen"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i hidden></i></button>
       </div>
       <div class="title">
         <p class="eyebrow">Seit April · wird zu Weihnachten gedruckt</p>
@@ -360,19 +434,26 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
       <div class="topbar">
         <div class="faces" id="faces"></div>
         <div class="spread"></div>
-        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i></i></div>
+        <button class="bell" data-glocke aria-label="Mitteilungen"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i hidden></i></button>
       </div>
       <div class="title">
         <p class="eyebrow" id="fam-eyebrow">du bist dran</p>
-        <h1>Nächste Woche</h1>
+        <h1>Opas Plan</h1>
       </div>
-      <div class="stack" id="vorschlaege"></div>
+
+      <div id="fam-banner"></div>
+      <div class="wochen" id="wochen"></div>
+
       <div class="draft">
-        <h5>WhatsApp an Opa</h5>
+        <h5 id="draft-titel">WhatsApp an Opa</h5>
         <p class="bubble" id="draft"></p>
       </div>
       <button class="cta" id="kopieren">Text kopieren</button>
-      <button class="vorschau" id="vorschau">Vorschau: Woche zeigen, als wäre der Termin schon gewesen</button>
+
+      <div class="werkbank">
+        <h5>Werkbank — nur für uns, nicht für Opa</h5>
+        <div class="reihe" id="werkbank"></div>
+      </div>
     </div>
   </div>
 
@@ -400,37 +481,65 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 <script>
 /* ==========================================================================
    INHALT — hier und nur hier wird geändert, was in der App steht.
-   Kein CSS, kein Layout, keine Technik. Später kommt genau dieser Block
-   vom Server; bis dahin steht er hier.
+   Kein CSS, kein Layout, keine Technik.
+
+   Wichtig: "plan" ist eine LISTE. Beliebig viele Termine, beliebig weit
+   im Voraus, auch mehrere in derselben Woche, auch Wochen ohne alles.
+   Später kommt genau diese Liste vom Server; bis dahin steht sie hier.
    ========================================================================== */
 var INHALT = {
 
   anrede: "Hallo Opa",
 
+  // Liegt die Datei nicht daneben, zeigt die App das Kürzel. Kein Fehler.
+  opaFoto: "./opa.jpg",
+
   familie: [
-    { kuerzel: "P", farbe: "f-a" },
-    { kuerzel: "M", farbe: "f-b" },
-    { kuerzel: "I", farbe: "f-c" }
+    { kuerzel: "P", farbe: "f-a", name: "Papa" },
+    { kuerzel: "M", farbe: "f-b", name: "Mama" },
+    { kuerzel: "I", farbe: "f-c", name: "Ich" }
   ],
 
-  // Das Ereignis dieser Woche.
-  // wochentag: 1 = Montag ... 7 = Sonntag
-  // gewesenAb: ab dieser Stunde gilt es als vorbei
-  ereignis: {
-    titel:      "Warmbadetag im Hallenbad",
-    kategorie:  "wasser",
-    wochentag:  1,
-    zeit:       "14:30",
-    gewesenAb:  17,
-    ort:        "Hallenbad",
-    zusatz:     "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
-    abholung:   { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
-    danach:     { titel: "Warst du. Schön.", text: "Papa hat dich um 16:20 zurückgebracht" }
-  },
+  // Der Plan. Jeder Eintrag bekommt ein echtes Datum.
+  // "inWochen" und "wochentag" sind nur die Platzhalter-Aussaat, damit die
+  // Beispiele mitwandern statt zu verfallen. Echte Termine tragen später
+  // ihr Datum direkt.
+  plan: [
+    {
+      id: "bad", inWochen: 0, wochentag: 1, zeit: "14:30", gewesenAb: 17,
+      titel: "Warmbadetag im Hallenbad", kategorie: "wasser", ort: "Hallenbad",
+      zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
+      abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
+      danach:   { titel: "Warst du. Schön.", text: "Papa hat dich um 16:20 zurückgebracht" }
+    },
+    {
+      id: "kaffee", inWochen: 0, wochentag: 4, zeit: "15:00", gewesenAb: 18,
+      titel: "Kaffee bei Mama", kategorie: "kaffee", ort: "bei Mama",
+      zusatz: "Mama backt. Bleib so lange du magst.",
+      abholung: { kuerzel: "M", titel: "Mama holt dich ab", text: "um 14:45 vor der Tür" },
+      danach:   { titel: "Warst du. Schön.", text: "Mama hat dich um 18:00 zurückgebracht" }
+    },
+    {
+      id: "spiel", inWochen: 1, wochentag: 3, zeit: "15:00", gewesenAb: 18,
+      titel: "Spielenachmittag", kategorie: "erzaehlen", ort: "Gemeindehaus",
+      zusatz: "Karten, Rommé, Kuchen. Oma kommt mit.",
+      abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
+      danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" }
+    }
+    // Die Wochen danach stehen mit Absicht leer — so sieht man, was dann passiert.
+  ],
+
+  // Mitteilungen. "vorTagen" ist wieder nur die Aussaat.
+  mitteilungen: [
+    { id: "m1", vorTagen: 1, von: "P", titel: "Papa hat dich angemeldet",
+      text: "Warmbadetag am Montag um 14:30. Er holt dich um 14:10 ab." },
+    { id: "m2", vorTagen: 3, von: "M", titel: "Mama hat dein Foto geherzt",
+      text: "Und dein Enkel auch. Drei Herzen auf der Seite vom Männerkreis." }
+  ],
 
   buch: [
     { monat: "September", titel: "Warmbadetag",           farbe: "e-wasser", foto: "ph-1", reaktionen: "♥ 3 · 1 Sprachnachricht", art: "neu" },
-    { monat: "August",    titel: "Männerkreis im Gemeindehaus", farbe: "e-runde",  foto: "ph-4", reaktionen: "♥ 4",                 art: "neu" },
+    { monat: "August",    titel: "Männerkreis", farbe: "e-runde",  foto: "ph-4", reaktionen: "♥ 4",                 art: "neu" },
     { monat: "August",    titel: "Kuchen mit Mama",       farbe: "e-kaffee", foto: "ph-3", reaktionen: "♥ 5 · 2 Fotos",        art: "familie" },
     { monat: "August",    titel: "Bank am Feld, mit Oma", farbe: "e-erz",    foto: "ph-5", reaktionen: "♥ 4",                  art: "oma" },
     { monat: "Juli",      titel: "Große Radtour",         farbe: "e-rad",    foto: "ph-2", reaktionen: "♥ 6",                  art: "alles" },
@@ -444,23 +553,52 @@ var INHALT = {
     { schluessel: "oma",     name: "Mit Oma" }
   ],
 
+  // Was man in eine leere Woche eintragen kann.
   vorschlaege: [
     {
-      kicker: "Steht schon", titel: "Warmbadetag", farbe: "e-wasser",
-      wann: "Montag 14:30 · Hallenbad", hinweis: "Angemeldet — kein Anruf nötig",
-      text: "Opa, Montag 14:30 Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Hast du Lust? Dann meld ich dich an. Papa würde dich um 14:10 abholen."
+      id: "bad", titel: "Warmbadetag", kategorie: "wasser", farbe: "e-wasser",
+      wochentag: 1, zeit: "14:30", gewesenAb: 17, ort: "Hallenbad",
+      kicker: "Läuft jede Woche", hinweis: "Angemeldet — kein Anruf nötig",
+      zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
+      abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
+      danach:   { titel: "Warst du. Schön.", text: "Papa hat dich zurückgebracht" },
+      text: "Opa, {TAG} um {ZEIT} Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Ich meld dich an. Papa holt dich um 14:10 ab."
     },
     {
-      kicker: "Zu zweit möglich", titel: "Spielenachmittag", farbe: "e-erz",
-      wann: "Mittwoch 15:00 · Gemeindehaus", hinweis: "Einmal dort anrufen",
-      text: "Opa, Mittwoch 15 Uhr ist Spielenachmittag im Gemeindehaus. Oma könnte mitkommen. Sollen wir euch beide anmelden?"
+      id: "spiel", titel: "Spielenachmittag", kategorie: "erzaehlen", farbe: "e-erz",
+      wochentag: 3, zeit: "15:00", gewesenAb: 18, ort: "Gemeindehaus",
+      kicker: "Zu zweit möglich", hinweis: "Einmal dort anrufen",
+      zusatz: "Karten, Rommé, Kuchen. Oma kann mitkommen.",
+      abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
+      danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" },
+      text: "Opa, {TAG} um {ZEIT} ist Spielenachmittag im Gemeindehaus. Oma könnte mitkommen. Ich melde euch beide an."
     },
     {
-      kicker: "Noch nie da gewesen", titel: "Männerkreis", farbe: "e-runde",
-      wann: "Dienstag 20:00 · jeder 3. Dienstag im Monat", hinweis: "Erstes Mal — nach Mitfahrt fragen",
-      text: "Opa, nächsten Dienstag um 20 Uhr trifft sich der Männerkreis im Gemeindehaus. Ich frag, ob dich jemand mitnimmt — und beim ersten Mal komm ich mit. Was meinst du?"
+      id: "maenner", titel: "Männerkreis", kategorie: "runde", farbe: "e-runde",
+      wochentag: 2, zeit: "20:00", gewesenAb: 22, ort: "Gemeindehaus",
+      kicker: "Noch nie da gewesen", hinweis: "Erstes Mal — jemand fährt mit",
+      zusatz: "Jeder dritte Dienstag. Beim ersten Mal komm ich mit.",
+      abholung: { kuerzel: "I", titel: "Ich hole dich ab", text: "um 19:40 vor der Tür" },
+      danach:   { titel: "Warst du. Schön.", text: "Und du bist geblieben bis halb zehn" },
+      text: "Opa, {TAG} um {ZEIT} trifft sich der Männerkreis im Gemeindehaus. Beim ersten Mal komm ich mit und hol dich um 19:40 ab."
+    },
+    {
+      id: "rad", titel: "Radtour mit der Gruppe", kategorie: "rad", farbe: "e-rad",
+      wochentag: 6, zeit: "10:00", gewesenAb: 14, ort: "Treffpunkt Kirche",
+      kicker: "Kennt er schon", hinweis: "Läuft von allein",
+      zusatz: "Die Runde, die du kennst. Nichts Neues, nichts Fremdes.",
+      abholung: { kuerzel: "I", titel: "Du fährst selbst", text: "wie immer, Treffpunkt Kirche" },
+      danach:   { titel: "Warst du. Schön.", text: "Zurück gegen eins" },
+      text: "Opa, {TAG} um {ZEIT} fährt die Gruppe wieder. Treffpunkt wie immer an der Kirche."
     }
-  ]
+  ],
+
+  // Was Opa sieht, wenn nichts geplant ist.
+  leer: {
+    titel: "Diese Woche steht nichts an",
+    meta: "Wir melden uns.",
+    band: { titel: "Das ist auch mal schön", text: "Ausruhen zählt auch" }
+  }
 };
 
 /* ========================================================================== */
@@ -470,42 +608,198 @@ var INHALT = {
   var TAGE_KURZ = ["Mo","Di","Mi","Do","Fr","Sa","So"];
   var TAGE_LANG = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
   var MONATE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  var MON_KURZ = ["Jan.","Feb.","März","Apr.","Mai","Juni","Juli","Aug.","Sept.","Okt.","Nov.","Dez."];
 
   var $ = function (id) { return document.getElementById(id); };
+  var alle = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
 
   /* ---------- Datum ---------- */
   function mitternacht(d) { var x = new Date(d); x.setHours(0,0,0,0); return x; }
   function montagDieserWoche(d) {
     var x = mitternacht(d);
-    var wt = (x.getDay() + 6) % 7;          // 0 = Montag
-    x.setDate(x.getDate() - wt);
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
     return x;
   }
   function plusTage(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
-  function tageDazwischen(a, b) {
-    return Math.round((mitternacht(b) - mitternacht(a)) / 86400000);
-  }
+  function tageDazwischen(a, b) { return Math.round((mitternacht(b) - mitternacht(a)) / 86400000); }
   function langesDatum(d) {
     return TAGE_LANG[(d.getDay() + 6) % 7] + ", " + d.getDate() + ". " + MONATE[d.getMonth()];
   }
+  function iso(d) {
+    var m = d.getMonth() + 1, t = d.getDate();
+    return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (t < 10 ? "0" : "") + t;
+  }
+  function ausIso(s) { var t = s.split("-"); return new Date(+t[0], +t[1] - 1, +t[2]); }
+  function tagKurz(d) { return TAGE_KURZ[(d.getDay() + 6) % 7]; }
+  function tagLang(d) { return TAGE_LANG[(d.getDay() + 6) % 7]; }
 
-  /* ---------- Motive: dieselben Formen wie das App-Icon, je Kategorie umgefärbt ---------- */
+  /* ---------- Gedächtnis ---------------------------------------------------
+     Alles, was in der App passiert, liegt auf DIESEM Gerät. Es übersteht
+     Neuladen und Neustart, aber es geht nirgendwohin. Genau hier wird
+     später der Server ansetzen.
+     ---------------------------------------------------------------------- */
+  function lies(schluessel, ersatz) {
+    try {
+      var s = localStorage.getItem("ow." + schluessel);
+      return s ? JSON.parse(s) : ersatz;
+    } catch (e) { return ersatz; }
+  }
+  function schreib(schluessel, wert) {
+    try { localStorage.setItem("ow." + schluessel, JSON.stringify(wert)); } catch (e) {}
+  }
+
+  var gelesen  = lies("gelesen", []);     // gelesene Mitteilungen
+  var abgesagt = lies("abgesagt", []);    // abgesagte Termine
+  var erledigt = lies("erledigt", []);    // Termine mit Rückmeldung
+  var eigene   = lies("eigene", []);      // selbst eingeplante Termine
+  var extraMit = lies("extraMit", []);    // Mitteilungen, die in der App entstanden sind
+
+  /* ---------- Plan aufbauen ---------- */
+  function aussaat() {
+    var mo = montagDieserWoche(new Date());
+    var roh = INHALT.plan.map(function (e) {
+      var k = {}; for (var s in e) k[s] = e[s];
+      k.versatz = e.inWochen * 7 + e.wochentag - 1;   // Tage nach Montag
+      return k;
+    });
+    // Die Beispiele sollen mitwandern statt zu verfallen: liegt der
+    // früheste schon hinter uns, rückt der ganze Plan um volle Wochen
+    // vor — die Abstände zwischen den Terminen bleiben dabei erhalten.
+    var frueh = Math.min.apply(null, roh.map(function (r) { return r.versatz; }));
+    var heuteVersatz = tageDazwischen(mo, new Date());
+    var schub = 0;
+    while (frueh + schub * 7 < heuteVersatz && schub < 520) schub++;
+    return roh.map(function (k) {
+      k.datum = iso(plusTage(mo, k.versatz + schub * 7));
+      return k;
+    });
+  }
+
+  function alleTermine() {
+    return aussaat().concat(eigene).sort(function (a, b) {
+      return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0;
+    });
+  }
+
+  function schluessel(e) { return e.datum + "|" + e.id; }
+  function istAbgesagt(e) { return abgesagt.indexOf(schluessel(e)) >= 0; }
+  function istErledigt(e) { return erledigt.indexOf(schluessel(e)) >= 0; }
+
+  function schonVorbei(e) {
+    var jetzt = new Date();
+    var diff = tageDazwischen(jetzt, ausIso(e.datum));
+    if (diff < 0) return true;
+    if (diff === 0 && jetzt.getHours() >= (e.gewesenAb || 18)) return true;
+    return false;
+  }
+
+  /* Was steht im Vordergrund?
+     1. Etwas von heute, das schon war und noch keine Rückmeldung hat
+     2. sonst der nächste Termin, der noch kommt
+     3. sonst etwas aus den letzten drei Tagen ohne Rückmeldung
+     4. sonst nichts                                                     */
+  function aktuell() {
+    var liste = alleTermine();
+    var heute = new Date(), i, e;
+
+    for (i = 0; i < liste.length; i++) {
+      e = liste[i];
+      if (istAbgesagt(e) || istErledigt(e)) continue;
+      if (tageDazwischen(heute, ausIso(e.datum)) === 0 && schonVorbei(e)) return e;
+    }
+    for (i = 0; i < liste.length; i++) {
+      e = liste[i];
+      if (schonVorbei(e)) continue;
+      if (istAbgesagt(e)) return e;        // abgesagt, aber noch nicht vorbei: Opa soll es sehen
+      return e;
+    }
+    for (i = liste.length - 1; i >= 0; i--) {
+      e = liste[i];
+      if (istAbgesagt(e) || istErledigt(e)) continue;
+      var alter = -tageDazwischen(heute, ausIso(e.datum));
+      if (alter > 0 && alter <= 3) return e;
+    }
+    return null;
+  }
+
+  /* ---------- Mitteilungen ---------- */
+  function alleMitteilungen() {
+    var heute = mitternacht(new Date());
+    var fest = INHALT.mitteilungen.map(function (m) {
+      var k = {}; for (var s in m) k[s] = m[s];
+      k.datum = iso(plusTage(heute, -m.vorTagen));
+      return k;
+    });
+    return fest.concat(extraMit).sort(function (a, b) {
+      return a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0;
+    });
+  }
+  function ungelesen() {
+    return alleMitteilungen().filter(function (m) { return gelesen.indexOf(m.id) < 0; });
+  }
+  function neueMitteilung(m) {
+    m.datum = iso(new Date());
+    m.id = m.id || ("x" + Date.now() + Math.round(Math.random() * 999));
+    extraMit.push(m);
+    schreib("extraMit", extraMit);
+  }
+  function zeichneGlocken() {
+    var n = ungelesen().length;
+    alle(".bell i").forEach(function (i) { i.hidden = n === 0; });
+  }
+
+  function wannText(datumIso) {
+    var d = ausIso(datumIso);
+    var abstand = tageDazwischen(d, new Date());
+    if (abstand === 0) return "Heute";
+    if (abstand === 1) return "Gestern";
+    if (abstand > 1 && abstand < 7) return "Vor " + abstand + " Tagen";
+    return d.getDate() + ". " + MON_KURZ[d.getMonth()];
+  }
+
+  function mitteilungenSheet() {
+    var liste = alleMitteilungen();
+    var html = "<h3>Mitteilungen</h3>";
+
+    if (!liste.length) {
+      html += '<div class="leer">Hier ist noch nichts.<br>Wenn etwas ansteht, siehst du es hier.</div>';
+    } else {
+      html += '<div class="mits">' + liste.map(function (m) {
+        var neu = gelesen.indexOf(m.id) < 0;
+        return '<div class="mit' + (neu ? " neu" : "") + '">' +
+          '<div class="ic">' + (m.von || "!") + "</div><div>" +
+          "<b>" + m.titel + "</b><p>" + m.text + "</p>" +
+          "<small>" + wannText(m.datum) + "</small></div></div>";
+      }).join("") + "</div>";
+    }
+    html += '<button class="cta quiet" data-zu>Schließen</button>';
+    sheetAuf(html);
+
+    // Angesehen heisst gelesen. Der Punkt geht weg.
+    liste.forEach(function (m) { if (gelesen.indexOf(m.id) < 0) gelesen.push(m.id); });
+    schreib("gelesen", gelesen);
+    setTimeout(zeichneGlocken, 600);
+  }
+
+  /* ---------- Motive: dieselben Formen wie das App-Icon ---------- */
   var FARBPAARE = {
     wasser:    ["#A9E6F5","#17607C"],
     runde:     ["#DCC0E8","#5B3D74"],
     kaffee:    ["#FFD3A6","#9A5220"],
     rad:       ["#C6EDB4","#2F6A33"],
     erzaehlen: ["#FBE6A8","#8A6A15"],
-    werk:      ["#E6D6C4","#6E5540"]
+    werk:      ["#E6D6C4","#6E5540"],
+    still:     ["#DDE3E6","#8A959B"]
   };
   var motivZaehler = 0;
 
   function motiv(kategorie) {
     var f = FARBPAARE[kategorie] || FARBPAARE.wasser;
     var n = "m" + (++motivZaehler);
+    var zweit = kategorie === "still" ? ["#E4E7E9","#AEB6BA"] : ["#FFCE95","#BE5F1B"];
     return '<svg viewBox="0 0 146 146" aria-hidden="true"><defs>' +
       '<linearGradient id="a' + n + '" x1=".2" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="' + f[0] + '"/><stop offset="1" stop-color="' + f[1] + '"/></linearGradient>' +
-      '<linearGradient id="b' + n + '" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#FFCE95"/><stop offset="1" stop-color="#BE5F1B"/></linearGradient>' +
+      '<linearGradient id="b' + n + '" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="' + zweit[0] + '"/><stop offset="1" stop-color="' + zweit[1] + '"/></linearGradient>' +
       '<linearGradient id="c' + n + '" x1=".1" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#B9CBD3"/></linearGradient>' +
       '</defs>' +
       '<circle cx="99" cy="47" r="24" fill="none" stroke="url(#b' + n + ')" stroke-width="15"/>' +
@@ -531,95 +825,148 @@ var INHALT = {
       '</svg>';
   }
 
-  /* ---------- Zustand ---------- */
-  var vorschauGewesen = false;   // nur der Schalter im Familie-Reiter
-
-  // Der Termin dieser Woche. Ist er schon vorbei, gilt der der naechsten Woche —
-  // die App zeigt immer das, was als Naechstes kommt, nie etwas Abgelaufenes.
-  // Am Abend des Termintags bleibt er stehen, damit "Wie war's?" noch geht.
-  function terminDatum() {
-    var termin = plusTage(montagDieserWoche(new Date()), INHALT.ereignis.wochentag - 1);
-    if (tageDazwischen(new Date(), termin) < 0) termin = plusTage(termin, 7);
-    return termin;
-  }
-
-  function istGewesen() {
-    if (vorschauGewesen) return true;
-    var jetzt = new Date();
-    var diff = tageDazwischen(jetzt, terminDatum());
-    if (diff < 0) return true;
-    if (diff === 0 && jetzt.getHours() >= INHALT.ereignis.gewesenAb) return true;
-    return false;
-  }
-
-  function abstandText() {
-    var diff = tageDazwischen(new Date(), terminDatum());
-    if (istGewesen()) return diff === 0 ? "Heute gewesen" : "War am " + TAGE_LANG[(terminDatum().getDay() + 6) % 7];
-    if (diff === 0) return "Heute";
-    if (diff === 1) return "Morgen";
-    return "In " + diff + " Tagen";
-  }
+  /* ---------- Werkbank: Zustände durchspielen (nur fuer uns) ---------- */
+  var werkbank = "";   // "", "gewesen", "abgesagt", "leer"
 
   /* ---------- Sheet ---------- */
   var sheet = $("sheet"), scrim = $("scrim");
-
   function sheetZu() { sheet.hidden = true; scrim.hidden = true; }
-
   function sheetAuf(inhaltHtml) {
     sheet.innerHTML = '<div class="grip"></div>' + inhaltHtml;
     sheet.hidden = false;
     scrim.hidden = false;
+    sheet.scrollTop = 0;
     var zu = sheet.querySelector("[data-zu]");
     if (zu) zu.addEventListener("click", sheetZu);
   }
-
   scrim.addEventListener("click", sheetZu);
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") sheetZu(); });
 
-  /* ---------- Woche zeichnen ---------- */
-  function zeichneWoche() {
-    var e = INHALT.ereignis;
-    var termin = terminDatum();
-    var gewesen = istGewesen();
-    var heute = new Date();
+  /* ---------- Gesichter ---------- */
+  function gesichter() {
+    alle("[data-opa]").forEach(function (el) {
+      if (!INHALT.opaFoto) { el.textContent = "O"; return; }
+      el.classList.add("foto");
+      var img = new Image();
+      img.alt = "Opa";
+      img.onerror = function () { el.classList.remove("foto"); el.textContent = "O"; };
+      img.src = INHALT.opaFoto;
+      el.textContent = "O";
+      el.appendChild(img);
+    });
+    $("faces").innerHTML = INHALT.familie.map(function (p) {
+      return '<div class="face ' + p.farbe + '">' + p.kuerzel + "</div>";
+    }).join("");
+  }
 
+  /* ---------- Woche ---------- */
+  function abstandText(e, gewesen) {
+    var d = ausIso(e.datum);
+    var diff = tageDazwischen(new Date(), d);
+    if (gewesen) return diff === 0 ? "Heute gewesen" : "War am " + tagLang(d);
+    if (diff === 0) return "Heute";
+    if (diff === 1) return "Morgen";
+    if (diff < 7)  return "In " + diff + " Tagen";
+    if (diff < 14) return "Nächste Woche";
+    return "In " + Math.round(diff / 7) + " Wochen";
+  }
+
+  function zeichneWoche() {
+    var heute = new Date();
     $("anrede").textContent = INHALT.anrede;
     $("heute-zeile").textContent = langesDatum(heute);
 
-    $("art").innerHTML = gewesen ? motivKamera() : motiv(e.kategorie);
-    document.querySelector("#hero .inner").style.background =
-      gewesen ? "var(--c-rad)" : "var(--c-" + e.kategorie + ")";
+    var e = werkbank === "leer" ? null : aktuell();
+    var gewesen = !!e && (werkbank === "gewesen" || schonVorbei(e));
+    var weg     = !!e && (werkbank === "abgesagt" || istAbgesagt(e));
+    var innen   = document.querySelector("#hero .inner");
 
-    $("chip").textContent = abstandText();
-    $("hero-titel").textContent = e.titel;
-    $("hero-meta").textContent = gewesen
-      ? TAGE_LANG[(termin.getDay() + 6) % 7] + " · war um " + e.zeit
-      : TAGE_LANG[(termin.getDay() + 6) % 7] + " " + e.zeit + " · " + e.ort;
+    $("hero").classList.toggle("stumm", !e || weg);
+    innen.style.background = "";
 
-    var band = gewesen ? e.danach : e.abholung;
-    $("band").className = "band" + (gewesen ? " fertig" : "");
-    $("band-ic").textContent = gewesen ? "✓" : e.abholung.kuerzel;
-    $("band-titel").textContent = band.titel;
-    $("band-text").textContent = band.text;
+    if (!e) {
+      $("art").innerHTML = motiv("still");
+      $("chip").textContent = "Nichts vorgesehen";
+      $("hero-titel").textContent = INHALT.leer.titel;
+      $("hero-meta").textContent = INHALT.leer.meta;
+      $("band").className = "band";
+      $("band-ic").textContent = "·";
+      $("band-titel").textContent = INHALT.leer.band.titel;
+      $("band-text").textContent = INHALT.leer.band.text;
+    } else if (weg) {
+      $("art").innerHTML = motiv("still");
+      $("chip").textContent = "Abgesagt";
+      $("hero-titel").textContent = e.titel;
+      $("hero-meta").textContent = tagLang(ausIso(e.datum)) + " " + e.zeit + " · abgesagt";
+      $("band").className = "band";
+      $("band-ic").textContent = "·";
+      $("band-titel").textContent = "Die Familie weiß Bescheid";
+      $("band-text").textContent = "Wir suchen etwas anderes";
+    } else {
+      $("art").innerHTML = gewesen ? motivKamera() : motiv(e.kategorie);
+      innen.style.background = gewesen ? "var(--c-rad)" : "var(--c-" + e.kategorie + ")";
+      $("chip").textContent = abstandText(e, gewesen);
+      $("hero-titel").textContent = e.titel;
+      $("hero-meta").textContent = gewesen
+        ? tagLang(ausIso(e.datum)) + " · war um " + e.zeit
+        : tagLang(ausIso(e.datum)) + " " + e.zeit + " · " + e.ort;
+      var band = gewesen ? e.danach : e.abholung;
+      $("band").className = "band" + (gewesen ? " fertig" : "");
+      $("band-ic").textContent = gewesen ? "✓" : e.abholung.kuerzel;
+      $("band-titel").textContent = band.titel;
+      $("band-text").textContent = band.text;
+    }
 
-    // Wochenstreifen: die naechsten sieben Tage, heute zuerst.
-    // So steht der Termin immer drin — eine Kalenderwoche haette ihn
-    // am Wochenende nach hinten aus dem Bild geschoben.
-    var streifen = "";
+    zeichneZweiten(e);
+    zeichneStreifen();
+    zeichneAktion(e, gewesen, weg);
+    zeichneRail();
+  }
+
+  /* Zweiter Termin in den nächsten sieben Tagen — eine schmale Zeile.
+     Mehr als zwei Dinge auf einmal will man einem 91-Jährigen nicht zeigen. */
+  function zeichneZweiten(erster) {
+    if (werkbank === "leer") { $("zweit-platz").innerHTML = ""; return; }
+    var heute = new Date();
+    var weitere = alleTermine().filter(function (x) {
+      if (erster && x.datum === erster.datum && x.id === erster.id) return false;
+      if (istAbgesagt(x)) return false;
+      var d = tageDazwischen(heute, ausIso(x.datum));
+      return d >= 0 && d <= 7;
+    });
+    if (!weitere.length) { $("zweit-platz").innerHTML = ""; return; }
+
+    var z = weitere[0], zd = ausIso(z.datum);
+    var farbe = "e-" + (z.kategorie === "erzaehlen" ? "erz" : z.kategorie);
+    $("zweit-platz").innerHTML =
+      '<button class="zweit"><div class="pip ' + farbe + '"></div>' +
+      '<div class="tx"><b>' + z.titel + "</b>" +
+      "<span>" + tagLang(zd) + " " + z.zeit + " · " + z.ort + "</span></div>" +
+      '<span class="pfeil">›</span></button>';
+    $("zweit-platz").firstChild.addEventListener("click", function () { ereignisSheet(z); });
+  }
+
+  /* Die nächsten sieben Tage, heute zuerst. Jeder Tag mit Termin bekommt
+     einen Rahmen — auch wenn mehrere an einem Tag liegen. */
+  function zeichneStreifen() {
+    var heute = new Date();
+    var termine = alleTermine().filter(function (x) { return !istAbgesagt(x); });
+    var html = "";
     for (var i = 0; i < 7; i++) {
       var tag = plusTage(heute, i);
-      var klassen = "wd";
-      if (i === 0) klassen += " today";
-      if (tageDazwischen(tag, termin) === 0) klassen += " event";
-      streifen += '<button class="' + klassen + '" data-tag="' + i + '">' +
-        '<span class="dot"><i></i></span><b>' + TAGE_KURZ[(tag.getDay() + 6) % 7] + '</b>' +
+      var hat = termine.filter(function (x) { return x.datum === iso(tag); });
+      var k = "wd" + (i === 0 ? " today" : "") + (hat.length ? " event" : "");
+      html += '<button class="' + k + '" data-tag="' + i + '">' +
+        '<span class="dot"><i></i></span><b>' + tagKurz(tag) + "</b>" +
         '<span class="num">' + tag.getDate() + "</span></button>";
     }
-    $("week").innerHTML = streifen;
+    $("week").innerHTML = html;
     Array.prototype.forEach.call($("week").children, function (el) {
       el.addEventListener("click", function () {
         var tag = plusTage(new Date(), +el.dataset.tag);
-        if (tageDazwischen(tag, termin) === 0) { ereignisSheet(); return; }
+        var hat = termine.filter(function (x) { return x.datum === iso(tag); });
+        if (hat.length === 1) { ereignisSheet(hat[0]); return; }
+        if (hat.length > 1) { tagSheet(tag, hat); return; }
         sheetAuf(
           '<div class="kicker">' + langesDatum(tag) + "</div>" +
           "<h3>Nichts vorgesehen</h3>" +
@@ -628,26 +975,35 @@ var INHALT = {
         );
       });
     });
+  }
 
-    // Aktion — vor dem Termin kein farbiger Knopf
-    $("aktion").innerHTML = gewesen
-      ? '<button class="cta" id="wie-wars">Wie war\'s?</button>'
-      : '<button class="cta quiet" id="passt-nicht">Passt mir doch nicht</button>';
+  function zeichneAktion(e, gewesen, weg) {
+    var ziel = $("aktion");
+    if (!e) { ziel.innerHTML = ""; return; }
 
-    if (gewesen) {
-      $("wie-wars").addEventListener("click", rueckmeldungSheet);
-    } else {
-      $("passt-nicht").addEventListener("click", function () {
-        sheetAuf(
-          "<h3>Passt dir nicht?</h3>" +
-          "<p>Kein Problem. Wir sagen ab und suchen was anderes.</p>" +
-          '<button class="cta">Ja, bitte absagen</button>' +
-          '<button class="cta quiet" data-zu>Doch, passt schon</button>'
-        );
+    if (weg) {
+      ziel.innerHTML = '<button class="cta quiet" id="doch">Doch, ich gehe hin</button>';
+      $("doch").addEventListener("click", function () {
+        var s = schluessel(e);
+        abgesagt = abgesagt.filter(function (x) { return x !== s; });
+        schreib("abgesagt", abgesagt);
+        neueMitteilung({ von: "!", titel: "Doch zugesagt",
+          text: e.titel + " steht wieder. Die Familie weiß Bescheid." });
+        werkbank = "";
+        zeichneAlles();
       });
+      return;
     }
+    if (gewesen) {
+      ziel.innerHTML = '<button class="cta" id="wie-wars">Wie war\'s?</button>';
+      $("wie-wars").addEventListener("click", function () { rueckmeldungSheet(e); });
+      return;
+    }
+    ziel.innerHTML = '<button class="cta quiet" id="passt-nicht">Passt mir doch nicht</button>';
+    $("passt-nicht").addEventListener("click", function () { absageSheet(e); });
+  }
 
-    // Buch-Streifen
+  function zeichneRail() {
     $("buch-zahl").textContent = INHALT.buch.length + " Seiten";
     $("rail").innerHTML = INHALT.buch.slice(0, 5).map(function (b, i) {
       return '<button class="tile tap" data-b="' + i + '">' +
@@ -659,30 +1015,85 @@ var INHALT = {
     });
   }
 
-  function ereignisSheet() {
-    var e = INHALT.ereignis, termin = terminDatum(), gewesen = istGewesen();
+  /* ---------- Sheets ---------- */
+  function tagSheet(tag, liste) {
     sheetAuf(
-      '<div class="kicker">' + abstandText() + "</div>" +
-      "<h3>" + e.titel + "</h3>" +
-      "<p>" + langesDatum(termin) + " um " + e.zeit + " Uhr · " + e.ort + "</p>" +
-      "<p>" + e.zusatz + "</p>" +
-      "<p>" + (gewesen ? e.danach.titel : e.abholung.titel + " " + e.abholung.text) + "</p>" +
-      (gewesen ? '<button class="cta" id="sheet-wie">Wie war\'s?</button>' : "") +
+      '<div class="kicker">' + langesDatum(tag) + "</div>" +
+      "<h3>Zwei Sachen an dem Tag</h3>" +
+      liste.map(function (x, i) {
+        return '<button class="cta' + (i ? " quiet" : "") + '" data-x="' + i + '">' + x.titel + " · " + x.zeit + "</button>";
+      }).join("") +
       '<button class="cta quiet" data-zu>Zurück</button>'
     );
-    var b = $("sheet-wie");
-    if (b) b.addEventListener("click", rueckmeldungSheet);
+    alle("#sheet [data-x]").forEach(function (b) {
+      b.addEventListener("click", function () { ereignisSheet(liste[+b.dataset.x]); });
+    });
   }
 
-  function rueckmeldungSheet() {
+  function ereignisSheet(e) {
+    if (!e) return;
+    var d = ausIso(e.datum), gewesen = schonVorbei(e), weg = istAbgesagt(e);
+    sheetAuf(
+      '<div class="kicker">' + (weg ? "Abgesagt" : abstandText(e, gewesen)) + "</div>" +
+      "<h3>" + e.titel + "</h3>" +
+      "<p>" + langesDatum(d) + " um " + e.zeit + " Uhr · " + e.ort + "</p>" +
+      "<p>" + e.zusatz + "</p>" +
+      (weg ? "" : "<p>" + (gewesen ? e.danach.titel : e.abholung.titel + " " + e.abholung.text) + "</p>") +
+      (gewesen && !weg ? '<button class="cta" id="sheet-wie">Wie war\'s?</button>' : "") +
+      (!gewesen && !weg ? '<button class="cta quiet" id="sheet-nein">Passt mir doch nicht</button>' : "") +
+      '<button class="cta quiet" data-zu>Zurück</button>'
+    );
+    var a = $("sheet-wie");  if (a) a.addEventListener("click", function () { rueckmeldungSheet(e); });
+    var b = $("sheet-nein"); if (b) b.addEventListener("click", function () { absageSheet(e); });
+  }
+
+  /* Absagen. Das Wichtigste dabei: Opa muss sehen, dass sein Tippen
+     etwas bewirkt hat — und es zurücknehmen können. */
+  function absageSheet(e) {
+    sheetAuf(
+      "<h3>Passt dir nicht?</h3>" +
+      "<p>Kein Problem. Wir sagen ab und suchen etwas anderes.</p>" +
+      '<button class="cta" id="ja-absagen">Ja, bitte absagen</button>' +
+      '<button class="cta quiet" data-zu>Doch, passt schon</button>'
+    );
+    $("ja-absagen").addEventListener("click", function () {
+      abgesagt.push(schluessel(e));
+      schreib("abgesagt", abgesagt);
+      neueMitteilung({ von: "!", titel: "Abgesagt: " + e.titel,
+        text: "Du hast für " + tagLang(ausIso(e.datum)) + " abgesagt. Die Familie kümmert sich." });
+      werkbank = "";
+      sheetAuf(
+        "<h3>Ist abgesagt</h3>" +
+        "<p>Wir melden uns mit etwas anderem. Du musst nichts weiter tun.</p>" +
+        '<button class="cta quiet" data-zu>Gut</button>'
+      );
+      zeichneAlles();
+    });
+  }
+
+  function rueckmeldungSheet(e) {
     sheetAuf(
       "<h3>Wie war's?</h3>" +
       "<p>Papa, Mama und dein Enkel warten schon.</p>" +
-      '<button class="cta">Foto machen</button>' +
-      '<button class="cta quiet">Etwas erzählen</button>' +
-      '<button class="cta quiet">War schön — ohne Foto</button>' +
+      '<button class="cta" data-r="foto">Foto machen</button>' +
+      '<button class="cta quiet" data-r="wort">Etwas erzählen</button>' +
+      '<button class="cta quiet" data-r="kurz">War schön — ohne Foto</button>' +
       '<button class="cta quiet" data-zu>Später</button>'
     );
+    alle("#sheet [data-r]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        erledigt.push(schluessel(e));
+        schreib("erledigt", erledigt);
+        neueMitteilung({ von: "!", titel: "Ist bei der Familie angekommen",
+          text: "Deine Rückmeldung zu " + e.titel + "." });
+        sheetAuf(
+          "<h3>Ist angekommen</h3>" +
+          "<p>Die drei bekommen es gleich zu sehen.</p>" +
+          '<button class="cta quiet" data-zu>Gut</button>'
+        );
+        zeichneAlles();
+      });
+    });
   }
 
   function buchSheet(b) {
@@ -695,7 +1106,7 @@ var INHALT = {
     );
   }
 
-  /* ---------- Buch zeichnen ---------- */
+  /* ---------- Buch ---------- */
   function zeichneBuch() {
     $("filters").innerHTML = INHALT.filter.map(function (f, i) {
       return '<button class="fil" aria-pressed="' + (i === 0) + '" data-f="' + f.schluessel + '">' + f.name + "</button>";
@@ -724,30 +1135,157 @@ var INHALT = {
     });
   }
 
-  /* ---------- Familie zeichnen ---------- */
+  /* ---------- Familie: der Plan der nächsten Wochen ---------- */
+  var WOCHEN_VORAUS = 5;
+  var entwurf = null;
+
+  function whatsappText(e) {
+    var d = ausIso(e.datum);
+    var tag = tagLang(d);
+    if (tageDazwischen(new Date(), d) > 7) tag += ", " + d.getDate() + ". " + MON_KURZ[d.getMonth()];
+    if (e.textVorlage) return e.textVorlage.replace("{TAG}", tag).replace("{ZEIT}", e.zeit);
+    return "Opa, " + tag + " um " + e.zeit + " " + e.titel + " · " + e.ort + ". Ich melde dich an. " +
+           e.abholung.titel + " " + e.abholung.text + ".";
+  }
+
   function zeichneFamilie() {
-    $("faces").innerHTML = INHALT.familie.map(function (p) {
-      return '<div class="face ' + p.farbe + '">' + p.kuerzel + "</div>";
-    }).join("");
+    var mo = montagDieserWoche(new Date());
+    var termine = alleTermine();
 
-    $("fam-eyebrow").textContent = langesDatum(new Date()) + " · du bist dran";
+    var offeneAbsage = termine.filter(function (e) {
+      return istAbgesagt(e) && tageDazwischen(new Date(), ausIso(e.datum)) >= 0;
+    })[0];
 
-    $("vorschlaege").innerHTML = INHALT.vorschlaege.map(function (v, i) {
-      return '<button class="opt ' + v.farbe + '" aria-pressed="' + (i === 0) + '" data-v="' + i + '">' +
+    $("fam-banner").innerHTML = offeneAbsage
+      ? '<div class="banner"><div class="ic">!</div><div><b>Opa hat abgesagt</b><span>' +
+        offeneAbsage.titel + " · " + tagLang(ausIso(offeneAbsage.datum)) +
+        ". Such ihm etwas anderes.</span></div></div>"
+      : "";
+
+    var leereWochen = 0, html = "";
+    for (var w = 0; w < WOCHEN_VORAUS; w++) {
+      var start = plusTage(mo, w * 7), ende = plusTage(start, 6);
+      var drin = termine.filter(function (e) {
+        var d = ausIso(e.datum);
+        return d >= start && d <= ende && !istAbgesagt(e);
+      });
+      var offen = drin.length === 0;
+      if (offen) leereWochen++;
+
+      var was = offen ? "Noch nichts geplant"
+        : drin.map(function (e) { return e.titel + " (" + tagKurz(ausIso(e.datum)) + ")"; }).join(" · ");
+      var name = w === 0 ? "Diese Woche" : w === 1 ? "Nächste Woche" : "In " + w + " Wochen";
+
+      html += '<button class="woche' + (offen ? " offen" : "") + '" data-w="' + w + '">' +
+        '<div class="marke">' + start.getDate() + ".<br>" + MON_KURZ[start.getMonth()] + "</div>" +
+        '<div class="tx"><b>' + name + "</b><span>" + was + "</span></div>" +
+        '<span class="pfeil">' + (offen ? "+" : "›") + "</span></button>";
+    }
+    $("wochen").innerHTML = html;
+    Array.prototype.forEach.call($("wochen").children, function (el) {
+      el.addEventListener("click", function () { wochenSheet(+el.dataset.w); });
+    });
+
+    $("fam-eyebrow").textContent = leereWochen
+      ? leereWochen + (leereWochen === 1 ? " Woche" : " Wochen") + " noch leer"
+      : "Die nächsten Wochen stehen";
+
+    if (offeneAbsage) {
+      entwurf = { titel: "Antwort auf die Absage",
+        text: "Opa, alles gut — " + offeneAbsage.titel + " ist abgesagt. Ich such was anderes für die Woche und sag dir Bescheid." };
+    } else if (!entwurf) {
+      var naechster = termine.filter(function (e) { return !schonVorbei(e) && !istAbgesagt(e); })[0];
+      entwurf = naechster
+        ? { titel: "WhatsApp an Opa", text: whatsappText(naechster) }
+        : { titel: "WhatsApp an Opa", text: "Opa, ich schau, was nächste Woche geht, und meld mich." };
+    }
+    $("draft-titel").textContent = entwurf.titel;
+    $("draft").textContent = entwurf.text;
+    zuruecksetzenKopieren();
+
+    zeichneWerkbank();
+  }
+
+  /* Eine Woche füllen. Das ist die Antwort auf "drei Wochen im Voraus". */
+  function wochenSheet(w) {
+    var mo = plusTage(montagDieserWoche(new Date()), w * 7);
+    var ende = plusTage(mo, 6);
+    var drin = alleTermine().filter(function (e) {
+      var d = ausIso(e.datum);
+      return d >= mo && d <= ende && !istAbgesagt(e);
+    });
+
+    var kopf = mo.getDate() + ". " + MON_KURZ[mo.getMonth()] + " – " + ende.getDate() + ". " + MON_KURZ[ende.getMonth()];
+    var name = w === 0 ? "Diese Woche" : w === 1 ? "Nächste Woche" : "In " + w + " Wochen";
+    var html = '<div class="kicker">' + kopf + "</div><h3>" + name + "</h3>";
+
+    html += drin.length
+      ? "<p>Steht schon: " + drin.map(function (e) { return e.titel + " (" + tagKurz(ausIso(e.datum)) + ")"; }).join(", ") + ". Du kannst noch etwas dazunehmen.</p>"
+      : "<p>Noch nichts. Such etwas aus — es steht dann sofort in Opas Woche.</p>";
+
+    html += INHALT.vorschlaege.map(function (v, i) {
+      var tag = plusTage(mo, v.wochentag - 1);
+      var vorbei = tageDazwischen(new Date(), tag) < 0;
+      var schon = drin.filter(function (e) { return e.id === v.id; }).length > 0;
+      var aus = vorbei || schon;
+      return '<button class="opt ' + v.farbe + '" data-v="' + i + '"' + (aus ? ' disabled style="opacity:.42"' : "") + ">" +
         '<div class="kicker">' + v.kicker + "</div><h4>" + v.titel + "</h4>" +
-        '<p class="sub">' + v.wann + "</p>" +
-        '<span class="note">' + v.hinweis + "</span></button>";
+        '<p class="sub">' + TAGE_LANG[v.wochentag - 1] + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] +
+        " · " + v.zeit + " · " + v.ort + "</p>" +
+        '<span class="note">' + (schon ? "Steht schon" : vorbei ? "Tag ist vorbei" : v.hinweis) + "</span></button>";
     }).join("");
 
-    $("draft").textContent = INHALT.vorschlaege[0].text;
+    html += '<button class="cta quiet" data-zu>Zurück</button>';
+    sheetAuf(html);
 
-    var opts = $("vorschlaege").children;
-    Array.prototype.forEach.call(opts, function (o) {
-      o.addEventListener("click", function () {
-        Array.prototype.forEach.call(opts, function (x) { x.setAttribute("aria-pressed", "false"); });
-        o.setAttribute("aria-pressed", "true");
-        $("draft").textContent = INHALT.vorschlaege[+o.dataset.v].text;
-        zuruecksetzenKopieren();
+    alle("#sheet [data-v]").forEach(function (b) {
+      if (b.disabled) return;
+      b.addEventListener("click", function () {
+        var v = INHALT.vorschlaege[+b.dataset.v];
+        var tag = plusTage(mo, v.wochentag - 1);
+        var neu = {
+          id: v.id, datum: iso(tag), zeit: v.zeit, gewesenAb: v.gewesenAb,
+          titel: v.titel, kategorie: v.kategorie, ort: v.ort, zusatz: v.zusatz,
+          abholung: v.abholung, danach: v.danach, textVorlage: v.text
+        };
+        eigene.push(neu);
+        schreib("eigene", eigene);
+        entwurf = { titel: "WhatsApp an Opa", text: whatsappText(neu) };
+        neueMitteilung({ von: "P", titel: "Neu geplant: " + v.titel,
+          text: TAGE_LANG[v.wochentag - 1] + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " um " + v.zeit + "." });
+        sheetZu();
+        zeichneAlles();
+      });
+    });
+  }
+
+  /* ---------- Werkbank ---------- */
+  function zeichneWerkbank() {
+    var zustaende = [
+      { k: "",         n: "Echter Stand" },
+      { k: "gewesen",  n: "Als wär's gewesen" },
+      { k: "abgesagt", n: "Als hätt er abgesagt" },
+      { k: "leer",     n: "Als wär nichts geplant" }
+    ];
+    $("werkbank").innerHTML = zustaende.map(function (z) {
+      return '<button class="wb" data-z="' + z.k + '" aria-pressed="' + (werkbank === z.k) + '">' + z.n + "</button>";
+    }).join("") + '<button class="wb" data-reset="1">Alles zurücksetzen</button>';
+
+    Array.prototype.forEach.call($("werkbank").children, function (b) {
+      b.addEventListener("click", function () {
+        if (b.dataset.reset) {
+          try {
+            ["gelesen","abgesagt","erledigt","eigene","extraMit"].forEach(function (k) {
+              localStorage.removeItem("ow." + k);
+            });
+          } catch (e) {}
+          gelesen = []; abgesagt = []; erledigt = []; eigene = []; extraMit = [];
+          werkbank = ""; entwurf = null;
+          zeichneAlles();
+          return;
+        }
+        werkbank = b.dataset.z;
+        zeichneAlles();
       });
     });
   }
@@ -814,24 +1352,29 @@ var INHALT = {
     });
   });
 
-  $("hero").addEventListener("click", ereignisSheet);
+  $("hero").addEventListener("click", function () {
+    var e = werkbank === "leer" ? null : aktuell();
+    if (e) ereignisSheet(e);
+  });
 
-  $("vorschau").addEventListener("click", function () {
-    vorschauGewesen = !vorschauGewesen;
-    this.textContent = vorschauGewesen
-      ? "Vorschau an — zurück zum echten Datum"
-      : "Vorschau: Woche zeigen, als wäre der Termin schon gewesen";
-    zeichneWoche();
+  alle("[data-glocke]").forEach(function (b) {
+    b.addEventListener("click", mitteilungenSheet);
   });
 
   /* ---------- Los ---------- */
-  zeichneWoche();
+  function zeichneAlles() {
+    zeichneWoche();
+    zeichneFamilie();
+    zeichneGlocken();
+  }
+
+  gesichter();
   zeichneBuch();
-  zeichneFamilie();
+  zeichneAlles();
 
   // Wenn die App im Hintergrund lag und wieder geöffnet wird: Datum nachziehen.
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) zeichneWoche();
+    if (!document.hidden) zeichneAlles();
   });
 })();
 </script>

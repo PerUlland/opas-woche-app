@@ -331,7 +331,9 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .rz.vorbei{opacity:.42}
 .rz.heute{background:var(--ink)}
 .rz.heute .n{color:#fff;font-weight:800}
-.rz.heute i{background:rgba(255,255,255,.5)}
+/* Punkt nur, wenn an dem Tag wirklich etwas ist — auch heute. */
+.rz.heute.hat i{background:#fff}
+.rz.heute.ab i{background:rgba(255,255,255,.45)}
 
 .wochen{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .woche{

@@ -1556,10 +1556,18 @@ var INHALT = {
 
     var banner = "";
     if (offeneAbsage) {
+      // Steht in der Woche sonst noch etwas? Davon haengt ab, was zu tun ist.
+      var moA = montagDieserWoche(ausIso(offeneAbsage.datum)), soA = plusTage(moA, 6);
+      var restWoche = termine.filter(function (x) {
+        var d = ausIso(x.datum);
+        return d >= moA && d <= soA && !istAbgesagt(x);
+      }).length;
       banner += '<div class="banner"><div class="ic">!</div><div><b>Opa hat abgesagt: ' +
         roh(offeneAbsage.titel) + " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")</b><span>„" +
-        roh(gruende[schluessel(offeneAbsage)] || "Ohne Angabe") +
-        "“ · Die Woche steht wieder offen.</span></div></div>";
+        roh(gruende[schluessel(offeneAbsage)] || "Ohne Angabe") + "“ · " +
+        (restWoche ? "In der Woche steht noch etwas anderes."
+                   : "Die Woche steht wieder offen.") +
+        "</span></div></div>";
     }
 
     // Termin war, aber es kam nichts zurück. Genau dann ruft man an —

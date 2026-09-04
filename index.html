@@ -138,7 +138,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.today{background:var(--ink);border-color:var(--ink)}
 .wd.today b{color:rgba(255,255,255,.6)}
 .wd.today .num{color:#fff;font-weight:800}
-.wd.today .dot i{background:#fff}
+/* Punkt nur, wenn an dem Tag wirklich etwas ist — sonst verspricht er etwas. */
+.wd.today.event .dot i{background:#fff}
 /* Termin = Rahmen und Punkt. Rahmen heisst "kommt noch". */
 .wd.event{border-color:var(--accent);border-width:2px}
 .wd.event b,.wd.event .num{color:var(--accent);font-weight:800}

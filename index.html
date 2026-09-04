@@ -171,32 +171,25 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.today.event .num{color:#fff}
 /* Punkt nur, wenn an dem Tag wirklich etwas ist */
 .wd.today.event .dot i{background:#fff}
-/* Abgesagt = grauer Punkt. Heisst: da war mal was, und man kommt wieder ran. */
+/* Abgesagt = grauer Rahmen, grauer Punkt. Sonst sieht der Tag aus wie
+   jeder andere: die Zahl bleibt normal. Ein halb ausgegrauter Tag sieht
+   kaputt aus, nicht abgesagt. */
+.wd.weg{border-color:var(--faint);border-width:2px}
 .wd.weg .dot i{background:var(--faint)}
-.wd.weg b,.wd.weg .num{color:var(--faint)}
-.wd.today.weg .dot i{background:rgba(255,255,255,.45)}
-.wd.today.weg b{color:rgba(255,255,255,.6)}
-.wd.today.weg .num{color:#fff}
-/* Der Tag, den die grosse Karte gerade zeigt: gefuellt.
-   Die Reihe kennt damit genau zwei gefuellte Kaesten — schwarz ist heute,
-   orange ist das, was oben steht. Ist beides derselbe Tag, gewinnt schwarz
-   und die Zeile ueber der Karte bleibt weg: dann ist er am Ausgangspunkt. */
-.wd.blick.event{background:var(--accent);border-color:var(--accent)}
-.wd.blick.event b{color:rgba(255,255,255,.72)}
-.wd.blick.event .num{color:#fff}
-.wd.blick.event .dot i{background:#fff}
-.wd.blick.weg{background:var(--sunk)}
-.wd.today.blick{background:var(--ink);border-color:var(--ink)}
+.wd.today.weg{border-color:var(--ink)}
+.wd.today.weg .dot i{background:rgba(255,255,255,.5)}
 
-/* Steht nur da, wenn er gerade NICHT auf heute schaut. Eine Zeile, kein
-   Kasten, keine Umrandung: Er soll wissen, wo er ist, ohne dass die
-   Seite voller wird. Ist er auf heute, ist die Zeile gar nicht da. */
-.zurueck{display:flex;align-items:center;gap:9px;width:100%;height:22px;margin-top:16px}
-.zurueck .pf{font-size:20px;font-weight:700;color:var(--accent);line-height:1;margin-top:-3px}
-.zurueck b{flex:1;min-width:0;font-size:14.5px;font-weight:650;letter-spacing:-.02em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zurueck em{flex:0 0 auto;font-style:normal;font-size:13.5px;font-weight:700;color:var(--accent)}
-#blick-zeile:not(:empty) + .hero{margin-top:12px}
+/* Der Tag, den die grosse Karte gerade zeigt.
+   Keine eigene Farbe — in einer Reihe aus sieben Kaesten waeren drei
+   Farbbedeutungen zu viel. Stattdessen waechst die Zahl. Die Zeile
+   darunter ist auf feste Hoehe gestellt, damit dabei nichts springt. */
+.wd .num{line-height:23px;height:23px;transition:font-size .16s ease}
+.wd.blick{transform:scale(1.06)}
+.wd.blick:active{transform:scale(1.01)}
+.wd.blick .num{font-size:23px;font-weight:800}
+.wd.blick b{color:var(--ink)}
+.wd.today.blick b{color:rgba(255,255,255,.75)}
+.wd.event.blick b{color:var(--accent)}
 
 /* ---------- Knoepfe ---------- */
 .cta{
@@ -497,7 +490,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <button class="bell" data-glocke aria-label="Mitteilungen"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i hidden></i></button>
       </div>
 
-      <div id="blick-zeile"></div><button class="hero tap" id="hero">
+      <button class="hero tap" id="hero">
         <div class="art" id="art"></div>
         <div class="inner">
           <div class="top">
@@ -1046,21 +1039,34 @@ var INHALT = {
   }
 
   /* Welchen Tag schaut er gerade an?
-     null heisst: den Standard, also das nächste, was ansteht. Sobald er im
-     Streifen auf einen anderen Tag tippt, steht hier dessen Termin — und
-     eine Zeile über der Karte sagt ihm, dass er nicht mehr auf heute schaut.
-     Beim Reiterwechsel und beim Wiederöffnen der App fällt es auf null
-     zurück: Herumschauen ist ein Ausflug, kein Zustand. */
-  var blick = null;      // schluessel(e) des angeschauten Termins
+     null heisst: den Standard, also das nächste, was ansteht. Tippt er im
+     Streifen auf einen anderen Tag, steht hier entweder dessen Termin
+     ({key}) oder, wenn dort nichts ist, der Tag selbst ({tag}).
+     Beim Tipp auf heute, beim Reiterwechsel und beim Wiederöffnen der App
+     fällt es auf null zurück: Herumschauen ist ein Ausflug, kein Zustand. */
+  var blick = null;      // {key: …} oder {tag: …} oder null
   var imFokus = null;    // der Termin, den die grosse Karte gerade zeigt
 
+  // Nur die sieben Tage im Streifen sind erreichbar. Was herausrutscht
+  // (weil die App über Nacht offen lag), gilt nicht mehr.
+  function imStreifen(d) {
+    var ab = tageDazwischen(new Date(), d);
+    return ab >= 0 && ab < 7;
+  }
   function terminZu(s) {
     var t = alleTermine().filter(function (x) { return schluessel(x) === s; })[0];
-    if (!t) return null;
-    // Nur die sieben Tage im Streifen sind erreichbar. Was herausrutscht
-    // (weil die App über Nacht offen lag), gilt nicht mehr.
-    var d = tageDazwischen(new Date(), ausIso(t.datum));
-    return (d >= 0 && d < 7) ? t : null;
+    return (t && imStreifen(ausIso(t.datum))) ? t : null;
+  }
+  function tagImStreifen(s) {
+    var d = ausIso(s);
+    return imStreifen(d) ? d : null;
+  }
+
+  /* "Heute", "Morgen", "In 4 Tagen" — mehr braucht es im Streifen nicht,
+     weil dort ohnehin nur sieben Tage liegen. */
+  function wannKurz(d) {
+    var diff = tageDazwischen(new Date(), d);
+    return diff === 0 ? "Heute" : diff === 1 ? "Morgen" : "In " + diff + " Tagen";
   }
 
   function zeichneWoche() {
@@ -1068,13 +1074,16 @@ var INHALT = {
     $("anrede").textContent = INHALT.anrede;
     $("heute-zeile").textContent = langesDatum(heute);
 
-    var e = null, geblickt = false;
+    var e = null, leerTag = null;
     if (werkbank !== "leer") {
-      if (blick) {
-        e = terminZu(blick);
-        if (e) geblickt = true; else blick = null;
+      if (blick && blick.key) {
+        e = terminZu(blick.key);
+        if (!e) blick = null;
+      } else if (blick && blick.tag) {
+        leerTag = tagImStreifen(blick.tag);
+        if (!leerTag) blick = null;
       }
-      if (!e) e = aktuell();
+      if (!e && !leerTag) e = aktuell();
     }
     imFokus = e;
 
@@ -1085,7 +1094,18 @@ var INHALT = {
     $("hero").classList.toggle("stumm", !e || weg);
     innen.style.background = "";
 
-    if (!e) {
+    if (leerTag) {
+      // Ein Tag, an dem nichts ansteht. Dasselbe Bild wie sonst, nur auf
+      // diesen Tag bezogen — damit jeder Tipp im Streifen dasselbe tut.
+      $("art").innerHTML = motiv("still");
+      $("chip").textContent = wannKurz(leerTag);
+      $("hero-titel").textContent = "Nichts vorgesehen";
+      $("hero-meta").textContent = langesDatum(leerTag);
+      $("band").className = "band";
+      $("band-ic").textContent = "·";
+      $("band-titel").textContent = INHALT.leer.band.titel;
+      $("band-text").textContent = INHALT.leer.band.text;
+    } else if (!e) {
       $("art").innerHTML = motiv("still");
       $("chip").textContent = "Nichts vorgesehen";
       $("hero-titel").textContent = INHALT.leer.titel;
@@ -1118,40 +1138,23 @@ var INHALT = {
       $("band-text").textContent = band.text;
     }
 
-    zeichneBlickZeile(e, geblickt);
-    zeichneStreifen(e);
+    zeichneStreifen(leerTag ? iso(leerTag) : (e ? e.datum : null));
     zeichneAktion(e, gewesen, weg);
     zeichneRail();
   }
 
-  /* Die Zeile über der Karte. Sie erscheint nur, wenn er woanders ist als
-     heute — und sie führt mit einem Tipp zurück. Ohne sie wäre das
-     Herumschauen der einzige Weg, sich in der App zu verlieren. */
-  function zeichneBlickZeile(e, geblickt) {
-    var z = $("blick-zeile");
-    if (!e || !geblickt || tageDazwischen(new Date(), ausIso(e.datum)) === 0) {
-      z.innerHTML = "";
-      return;
-    }
-    z.innerHTML = '<button class="zurueck" id="zu-heute">' +
-      '<span class="pf">‹</span><b>' + langesDatum(ausIso(e.datum)) + "</b>" +
-      "<em>Heute</em></button>";
-    $("zu-heute").addEventListener("click", function () {
-      blick = null;
-      zeichneWoche();
-    });
-  }
-
   /* Die nächsten sieben Tage, heute zuerst.
-       Rahmen und farbiger Punkt = da steht etwas an.
-       Grauer Punkt            = da war etwas, es ist abgesagt.
-       Heller Grund            = das ist der Tag, den die Karte oben zeigt.
-     Ein Tipp auf einen Tag mit Termin wechselt die Karte oben, statt ein
-     Blatt aufzuklappen. Nur leere Tage antworten mit einem Blatt. */
-  function zeichneStreifen(fokus) {
+       Oranger Rahmen, oranger Punkt = da steht etwas an.
+       Grauer Rahmen, grauer Punkt   = da war etwas, es ist abgesagt.
+       Grosse Zahl                   = das ist der Tag, den die Karte zeigt.
+     Der angeschaute Tag bekommt mit Absicht keine eigene Farbe: in einer
+     Reihe aus sieben Kaesten waeren drei Farbbedeutungen zu viel. Die Zahl
+     waechst stattdessen — das sieht man auch aus dem Augenwinkel.
+     Jeder Tipp tut dasselbe: er wechselt die Karte oben. Auch an Tagen,
+     an denen nichts ansteht. Heute fuehrt immer zurueck zum Standard. */
+  function zeichneStreifen(fokusDatum) {
     var heute = new Date();
     var termine = alleTermine();
-    var fk = fokus ? schluessel(fokus) : null;
     var html = "";
 
     function amTag(tag) {
@@ -1165,7 +1168,7 @@ var INHALT = {
       var k = "wd" + (i === 0 ? " today" : "");
       if (offen.length) k += " event";
       else if (hat.length) k += " weg";
-      if (fk && hat.some(function (x) { return schluessel(x) === fk; })) k += " blick";
+      if (fokusDatum && iso(tag) === fokusDatum) k += " blick";
       html += '<button class="' + k + '" data-tag="' + i + '">' +
         '<span class="dot"><i></i></span><b>' + tagKurz(tag) + "</b>" +
         '<span class="num">' + tag.getDate() + "</span></button>";
@@ -1174,16 +1177,15 @@ var INHALT = {
 
     Array.prototype.forEach.call($("week").children, function (el) {
       el.addEventListener("click", function () {
-        var tag = plusTage(new Date(), +el.dataset.tag);
+        var n = +el.dataset.tag;
+        // Heute ist der Weg zurueck. Der Kasten steht immer vorne und ist
+        // immer da — deshalb braucht es keine zusaetzliche Zurueck-Taste.
+        if (n === 0) { blick = null; zeichneWoche(); return; }
+        var tag = plusTage(new Date(), n);
         var hat = amTag(tag);
-        if (hat.length === 1) { blick = schluessel(hat[0]); zeichneWoche(); return; }
         if (hat.length > 1) { tagSheet(tag, hat); return; }
-        sheetAuf(
-          '<div class="kicker">' + langesDatum(tag) + "</div>" +
-          "<h3>Nichts vorgesehen</h3>" +
-          "<p>An dem Tag steht nichts an. Das ist auch mal schön.</p>" +
-          '<button class="cta quiet" data-zu>Zurück</button>'
-        );
+        blick = hat.length ? { key: schluessel(hat[0]) } : { tag: iso(tag) };
+        zeichneWoche();
       });
     });
   }
@@ -1272,7 +1274,7 @@ var INHALT = {
     );
     alle("#sheet [data-x]").forEach(function (b) {
       b.addEventListener("click", function () {
-        blick = schluessel(liste[+b.dataset.x]);
+        blick = { key: schluessel(liste[+b.dataset.x]) };
         sheetZu();
         zeichneWoche();
       });
@@ -1327,7 +1329,7 @@ var INHALT = {
     // Die Karte bleibt auf dem abgesagten Termin stehen, damit er sieht,
     // dass sein Tippen angekommen ist. Beim nächsten Öffnen steht dort
     // wieder das Nächste, was ansteht — der graue Punkt bleibt.
-    blick = schluessel(e);
+    blick = { key: schluessel(e) };
     sheetAuf(
       "<h3>Ist abgesagt</h3>" +
       "<p>Wir melden uns mit etwas anderem. Du musst nichts weiter tun.</p>" +

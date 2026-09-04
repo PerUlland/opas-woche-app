@@ -311,6 +311,28 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .banner b{display:block;font-size:15px;font-weight:750;letter-spacing:-.02em}
 .banner span{display:block;font-size:13.5px;color:rgba(20,24,28,.66);font-weight:500;margin-top:2px}
 
+/* Monatsraster — der Blick von oben. Nur Punkte, keine Titel: es soll
+   auf einen Blick zeigen, wo die Löcher sind, und sonst nichts. */
+.raster{margin-top:20px}
+.raster .monat{margin:0 0 10px;font-size:12px;font-weight:700;color:var(--faint);
+  letter-spacing:.07em;text-transform:uppercase}
+.raster .kopf{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px}
+.raster .kopf span{text-align:center;font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.03em}
+.raster .netz{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.rz{height:40px;border-radius:13px;background:var(--sunk);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;transition:transform .12s ease}
+.rz:active{transform:scale(.9)}
+.rz .n{font-size:12.5px;font-weight:650;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1}
+.rz i{width:5px;height:5px;border-radius:3px;background:transparent;display:block}
+.rz.hat{background:#FBE3D6}
+.rz.hat .n{color:var(--ink);font-weight:800}
+.rz.hat i{background:var(--accent)}
+.rz.ab i{background:var(--faint)}
+.rz.vorbei{opacity:.42}
+.rz.heute{background:var(--ink)}
+.rz.heute .n{color:#fff;font-weight:800}
+.rz.heute i{background:rgba(255,255,255,.5)}
+
 .wochen{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .woche{
   display:flex;align-items:center;gap:13px;width:100%;
@@ -325,10 +347,49 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   text-align:center;line-height:1.15;
 }
 .woche.offen .marke{background:var(--accent);color:#fff}
-.woche .tx{flex:1;min-width:0}
+.woche .tx{flex:1;min-width:0;padding:0}
 .woche b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.02em}
 .woche span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:2px}
 .woche .pfeil{color:var(--faint);font-size:19px;flex:0 0 auto}
+/* Die Zeile "unter uns" — steht nur hier, nie in Opas Woche. */
+.woche em{display:block;font-style:normal;font-size:12px;color:var(--faint);
+  font-weight:650;margin-top:4px}
+
+/* ---------- Formular: Termin anlegen und ändern ---------- */
+.feld{margin-top:14px}
+.feld label{display:block;margin-bottom:6px;font-size:11.5px;font-weight:700;
+  color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+.feld input,.feld textarea{
+  width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;
+  font-family:inherit;font-size:16px;font-weight:600;color:var(--ink);
+  background:var(--page);line-height:1.35;-webkit-appearance:none;
+}
+.feld textarea{font-weight:500;resize:none}
+.feld input:focus,.feld textarea:focus{outline:none;border-color:var(--accent)}
+.wahl{display:flex;gap:6px}
+.wahl button{
+  flex:1;min-width:0;border:1.5px solid var(--line);border-radius:13px;padding:9px 2px;
+  text-align:center;font-size:13px;font-weight:700;color:var(--dim);background:var(--page);
+  line-height:1.32;font-variant-numeric:tabular-nums;
+}
+.wahl button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.wahl button[disabled]{opacity:.3}
+.farben{display:flex;gap:8px}
+.farben button{flex:1;height:38px;border-radius:13px;border:3px solid transparent}
+.farben button[aria-pressed="true"]{border-color:var(--ink)}
+.abschnitt{margin-top:24px;padding-top:18px;border-top:1.5px solid var(--line)}
+.abschnitt.erst{margin-top:18px;padding-top:0;border-top:0}
+.abschnitt h5{margin:0;font-size:11.5px;font-weight:700;color:var(--faint);
+  letter-spacing:.07em;text-transform:uppercase}
+.abschnitt p{margin:4px 0 0!important;font-size:13px!important;color:var(--faint);font-weight:500}
+.loeschen{display:block;width:100%;text-align:center;margin-top:16px;
+  font-size:14.5px;font-weight:700;color:var(--accent)}
+/* Vorlagen: ein Tipp füllt das Formular vor */
+.vorlagen{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.vorlagen button{
+  border:1.5px solid var(--line);border-radius:16px;padding:9px 14px;
+  font-size:14px;font-weight:650;color:var(--ink);background:var(--page);
+}
 
 /* ---------- Auswahl beim Planen ---------- */
 .opt{
@@ -487,6 +548,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
       </div>
 
       <div id="fam-banner"></div>
+      <div class="raster" id="raster"></div>
       <div class="wochen" id="wochen"></div>
 
       <div class="draft">
@@ -631,6 +693,21 @@ var INHALT = {
     }
   ],
 
+  // Kleine Sachen, für die man nirgends anrufen muss. Ein Tipp füllt das
+  // Formular vor — Tag und Uhrzeit sucht man sich dann selbst aus.
+  // Genau diese Sorte funktioniert in Opas Woche am besten: es braucht
+  // nur einen Menschen, keine Anmeldung.
+  eigenesVorlagen: [
+    { titel: "Eis essen", kategorie: "kaffee", ort: "Eisdiele", zeit: "15:00",
+      zusatz: "Nur wir. Dauert eine Stunde." },
+    { titel: "Kaffee bei uns", kategorie: "kaffee", ort: "Bei uns zu Hause", zeit: "15:30",
+      zusatz: "Kuchen ist da." },
+    { titel: "Spaziergang am Deich", kategorie: "werk", ort: "Treffpunkt Deich", zeit: "14:00",
+      zusatz: "Die Runde, die du kennst. Bank auf halber Strecke." },
+    { titel: "Oma besuchen", kategorie: "erzaehlen", ort: "Tagespflege", zeit: "15:00",
+      zusatz: "Wir fahren zusammen hin." }
+  ],
+
   // Was Opa sieht, wenn nichts geplant ist.
   leer: {
     titel: "Diese Woche steht nichts an",
@@ -650,6 +727,20 @@ var INHALT = {
 
   var $ = function (id) { return document.getElementById(id); };
   var alle = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+
+  /* Selbst getippter Text landet in Überschriften und Feldern. Spitze
+     Klammern und Anführungszeichen wuerden die Seite zerlegen — hier
+     werden sie harmlos gemacht. */
+  function roh(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  /* Ein festes Kennzeichen fuer einen Termin. Bleibt, auch wenn der
+     Termin auf einen anderen Tag umzieht. */
+  function kennung() {
+    return "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
 
   /* ---------- Datum ---------- */
   function mitternacht(d) { var x = new Date(d); x.setHours(0,0,0,0); return x; }
@@ -746,7 +837,13 @@ var INHALT = {
       });
   }
 
-  function schluessel(e) { return e.datum + "|" + e.id; }
+  /* Der Schlüssel eines Termins.
+     Selbst angelegte Termine tragen ein eigenes, festes Kennzeichen. Das
+     ist wichtig, weil man sie verschieben können soll: zieht ein Termin
+     auf einen anderen Tag um, folgen ihm Absage, Grund und Rückmeldung.
+     Die Beispieltermine aus INHALT haben keins — die hängen an Datum und
+     Art, und beim ersten Ändern werden sie zu echten Terminen. */
+  function schluessel(e) { return e.uid || (e.datum + "|" + e.id); }
   function istAbgesagt(e) { return abgesagt.indexOf(schluessel(e)) >= 0; }
   function istErledigt(e) { return erledigt.indexOf(schluessel(e)) >= 0; }
 
@@ -846,7 +943,7 @@ var INHALT = {
         var neu = gelesen.indexOf(m.id) < 0;
         return '<div class="mit' + (neu ? " neu" : "") + '">' +
           '<div class="ic">' + (m.von || "!") + "</div><div>" +
-          "<b>" + m.titel + "</b><p>" + m.text + "</p>" +
+          "<b>" + roh(m.titel) + "</b><p>" + roh(m.text) + "</p>" +
           "<small>" + wannText(m.datum) + "</small></div></div>";
       }).join("") + "</div>";
     }
@@ -1155,7 +1252,7 @@ var INHALT = {
     $("buch-zahl").textContent = seiten.length + " Seiten";
     $("rail").innerHTML = seiten.slice(0, 5).map(function (b, i) {
       return '<button class="tile tap" data-b="' + i + '">' +
-        '<div class="' + phKlasse(b) + '"' + phStil(b) + "></div><b>" + b.titel + "</b>" +
+        '<div class="' + phKlasse(b) + '"' + phStil(b) + "></div><b>" + roh(b.titel) + "</b>" +
         "<small>" + b.monat + "</small></button>";
     }).join("");
     Array.prototype.forEach.call($("rail").children, function (el) {
@@ -1170,7 +1267,7 @@ var INHALT = {
       "<h3>Was an dem Tag ansteht</h3>" +
       liste.map(function (x, i) {
         return '<button class="cta' + (i ? " quiet" : "") + '" data-x="' + i + '">' +
-          x.titel + " · " + x.zeit + (istAbgesagt(x) ? " · abgesagt" : "") + "</button>";
+          roh(x.titel) + " · " + roh(x.zeit) + (istAbgesagt(x) ? " · abgesagt" : "") + "</button>";
       }).join("") +
       '<button class="cta quiet" data-zu>Zurück</button>'
     );
@@ -1188,9 +1285,9 @@ var INHALT = {
     var d = ausIso(e.datum), gewesen = schonVorbei(e), weg = istAbgesagt(e);
     sheetAuf(
       '<div class="kicker">' + (weg ? "Abgesagt" : abstandText(e, gewesen)) + "</div>" +
-      "<h3>" + e.titel + "</h3>" +
-      "<p>" + langesDatum(d) + " um " + e.zeit + " Uhr · " + e.ort + "</p>" +
-      "<p>" + e.zusatz + "</p>" +
+      "<h3>" + roh(e.titel) + "</h3>" +
+      "<p>" + langesDatum(d) + " um " + roh(e.zeit) + " Uhr · " + roh(e.ort) + "</p>" +
+      "<p>" + roh(e.zusatz) + "</p>" +
       (weg ? "" : "<p>" + (gewesen ? e.danach.titel : e.abholung.titel + " " + e.abholung.text) + "</p>") +
       (gewesen && !weg ? '<button class="cta" id="sheet-wie">Wie war\'s?</button>' : "") +
       (!gewesen && !weg ? '<button class="cta quiet" id="sheet-nein">Passt mir doch nicht</button>' : "") +
@@ -1363,8 +1460,8 @@ var INHALT = {
     sheetAuf(
       '<div class="bild ' + phKlasse(b) + '"' + phStil(b) + "></div>" +
       '<div class="kicker">' + b.monat + "</div>" +
-      "<h3>" + b.titel + "</h3>" +
-      "<p>" + b.reaktionen + "</p>" +
+      "<h3>" + roh(b.titel) + "</h3>" +
+      "<p>" + roh(b.reaktionen) + "</p>" +
       '<button class="cta quiet" data-zu>Zurück</button>'
     );
   }
@@ -1379,8 +1476,8 @@ var INHALT = {
     $("stack").innerHTML = seiten.map(function (b, i) {
       return '<button class="entry tap ' + b.farbe + '" data-b="' + i + '" data-art="' + b.art + '">' +
         '<div class="' + phKlasse(b) + '"' + phStil(b) + "></div>" +
-        '<div class="cap"><div class="kicker">' + b.monat + "</div><h4>" + b.titel + "</h4></div>" +
-        '<div class="foot">' + b.reaktionen + "</div></button>";
+        '<div class="cap"><div class="kicker">' + b.monat + "</div><h4>" + roh(b.titel) + "</h4></div>" +
+        '<div class="foot">' + roh(b.reaktionen) + "</div></button>";
     }).join("");
 
     Array.prototype.forEach.call($("stack").children, function (el) {
@@ -1408,8 +1505,44 @@ var INHALT = {
     var tag = tagLang(d);
     if (tageDazwischen(new Date(), d) > 7) tag += ", " + d.getDate() + ". " + MON_KURZ[d.getMonth()];
     if (e.textVorlage) return e.textVorlage.replace("{TAG}", tag).replace("{ZEIT}", e.zeit);
-    return "Opa, " + tag + " um " + e.zeit + " " + e.titel + " · " + e.ort + ". Ich melde dich an. " +
-           e.abholung.titel + " " + e.abholung.text + ".";
+    // Bei etwas Selbstgemachtem gibt es nichts anzumelden — da kommt nur jemand.
+    return "Opa, " + tag + " um " + e.zeit + " " + e.titel +
+      (e.ort ? " · " + e.ort : "") + ". " +
+      (e.id === "eig" ? "" : "Ich melde dich an. ") +
+      e.abholung.titel + " " + e.abholung.text + ".";
+  }
+
+  /* Der Blick von oben. Nur Punkte, keine Titel — die Frage, die dieses
+     Raster beantwortet, ist "wo sind die Löcher", und dafür braucht man
+     keine Namen. Ein Tipp auf einen Tag öffnet die Woche, in der er liegt. */
+  function zeichneRaster(mo, termine) {
+    var heute = mitternacht(new Date());
+    var zellen = "";
+    for (var i = 0; i < WOCHEN_VORAUS * 7; i++) {
+      var tag = plusTage(mo, i);
+      var drauf = termine.filter(function (x) { return x.datum === iso(tag); });
+      var steht = drauf.filter(function (x) { return !istAbgesagt(x); });
+      var k = "rz";
+      if (+tag === +heute) k += " heute";
+      else if (tag < heute) k += " vorbei";
+      if (steht.length) k += " hat";
+      else if (drauf.length) k += " ab";
+      zellen += '<button class="' + k + '" data-w="' + Math.floor(i / 7) + '" ' +
+        'aria-label="' + langesDatum(tag) + '">' +
+        '<span class="n">' + tag.getDate() + "</span><i></i></button>";
+    }
+    var bis = plusTage(mo, WOCHEN_VORAUS * 7 - 1);
+    var spanne = MONATE[mo.getMonth()] +
+      (bis.getMonth() !== mo.getMonth() ? " – " + MONATE[bis.getMonth()] : "");
+
+    $("raster").innerHTML =
+      '<p class="monat">' + spanne + "</p>" +
+      '<div class="kopf">' + TAGE_KURZ.map(function (t) { return "<span>" + t + "</span>"; }).join("") + "</div>" +
+      '<div class="netz">' + zellen + "</div>";
+
+    Array.prototype.forEach.call($("raster").querySelectorAll(".rz"), function (el) {
+      el.addEventListener("click", function () { wochenSheet(+el.dataset.w); });
+    });
   }
 
   function zeichneFamilie() {
@@ -1428,8 +1561,8 @@ var INHALT = {
     var banner = "";
     if (offeneAbsage) {
       banner += '<div class="banner"><div class="ic">!</div><div><b>Opa hat abgesagt: ' +
-        offeneAbsage.titel + " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")</b><span>„" +
-        (gruende[schluessel(offeneAbsage)] || "Ohne Angabe") +
+        roh(offeneAbsage.titel) + " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")</b><span>„" +
+        roh(gruende[schluessel(offeneAbsage)] || "Ohne Angabe") +
         "“ · Die Woche steht wieder offen.</span></div></div>";
     }
 
@@ -1442,11 +1575,13 @@ var INHALT = {
     if (ohneRueck) {
       banner += '<div class="banner" style="background:var(--sunk)">' +
         '<div class="ic" style="background:var(--ink)">?</div><div>' +
-        "<b>Keine Rückmeldung: " + ohneRueck.titel + "</b>" +
+        "<b>Keine Rückmeldung: " + roh(ohneRueck.titel) + "</b>" +
         "<span>War am " + tagLang(ausIso(ohneRueck.datum)) +
         ". Ob er da war, weiß bisher niemand.</span></div></div>";
     }
     $("fam-banner").innerHTML = banner;
+
+    zeichneRaster(mo, termine);
 
     var leereWochen = 0, html = "";
     for (var w = 0; w < WOCHEN_VORAUS; w++) {
@@ -1459,12 +1594,17 @@ var INHALT = {
       if (offen) leereWochen++;
 
       var was = offen ? "Noch nichts geplant"
-        : drin.map(function (e) { return e.titel + " (" + tagKurz(ausIso(e.datum)) + ")"; }).join(" · ");
+        : drin.map(function (e) { return roh(e.titel) + " (" + tagKurz(ausIso(e.datum)) + ")"; }).join(" · ");
       var name = w === 0 ? "Diese Woche" : w === 1 ? "Nächste Woche" : "In " + w + " Wochen";
+
+      // Offene Fragen aus der Woche. Die stehen hier und nirgends sonst.
+      var unterUns = drin.filter(function (e) { return e.intern; })
+                         .map(function (e) { return roh(e.intern); }).join(" · ");
 
       html += '<button class="woche' + (offen ? " offen" : "") + '" data-w="' + w + '">' +
         '<div class="marke">' + start.getDate() + ".<br>" + MON_KURZ[start.getMonth()] + "</div>" +
-        '<div class="tx"><b>' + name + "</b><span>" + was + "</span></div>" +
+        '<div class="tx"><b>' + name + "</b><span>" + was + "</span>" +
+        (unterUns ? "<em>Unter uns: " + unterUns + "</em>" : "") + "</div>" +
         '<span class="pfeil">' + (offen ? "+" : "›") + "</span></button>";
     }
     $("wochen").innerHTML = html;
@@ -1492,7 +1632,9 @@ var INHALT = {
     zeichneWerkbank();
   }
 
-  /* Eine Woche füllen. Das ist die Antwort auf "drei Wochen im Voraus". */
+  /* Eine Woche füllen. Das ist die Antwort auf "drei Wochen im Voraus".
+     Hier drin passiert alles, was die Familie mit einer Woche machen kann:
+     eintragen, ändern, herausnehmen. Opa sieht dieses Blatt nie. */
   function wochenSheet(w) {
     var mo = plusTage(montagDieserWoche(new Date()), w * 7);
     var ende = plusTage(mo, 6);
@@ -1508,10 +1650,25 @@ var INHALT = {
     html += drin.length
       ? '<div class="wochen">' + drin.map(function (e, i) {
           return '<div class="woche"><div class="marke">' + tagKurz(ausIso(e.datum)) + "</div>" +
-            '<div class="tx"><b>' + e.titel + "</b><span>" + e.zeit + " · " + e.ort + "</span></div>" +
+            '<button class="tx" data-bearb="' + i + '"><b>' + roh(e.titel) + "</b><span>" +
+            roh(e.zeit) + " · " + roh(e.ort) + "</span>" +
+            (e.intern ? "<em>Unter uns: " + roh(e.intern) + "</em>" : "") + "</button>" +
             '<button class="weg" data-weg="' + i + '" aria-label="Wieder herausnehmen">×</button></div>';
-        }).join("") + "</div>"
-      : "<p>Noch nichts. Such etwas aus — es steht dann sofort in Opas Woche.</p>";
+        }).join("") + "</div>" +
+        '<p style="margin-top:11px">Antippen, um etwas zu ändern.</p>'
+      : "<p>Noch nichts. Trag etwas ein — es steht dann sofort in Opas Woche.</p>";
+
+    // Zuerst das Selbstgemachte. Das ist die Sorte, die in seiner Woche
+    // wirklich funktioniert: es braucht keine Anmeldung, nur einen Menschen.
+    html += '<div class="abschnitt"><h5>Selbst eintragen</h5>' +
+      "<p>Kein Anruf nötig. Nur ihr.</p></div>" +
+      '<div class="vorlagen">' + INHALT.eigenesVorlagen.map(function (v, i) {
+        return '<button data-vor="' + i + '">' + v.titel + "</button>";
+      }).join("") + "</div>" +
+      '<button class="cta leise" id="w-frei">Etwas anderes eintragen</button>';
+
+    html += '<div class="abschnitt"><h5>Aus dem Katalog</h5>' +
+      "<p>Feste Angebote vor Ort.</p></div>";
 
     html += INHALT.vorschlaege.map(function (v, i) {
       var tag = plusTage(mo, v.wochentag - 1);
@@ -1527,6 +1684,15 @@ var INHALT = {
 
     html += '<button class="cta quiet" data-zu>Zurück</button>';
     sheetAuf(html);
+
+    alle("#sheet [data-bearb]").forEach(function (b) {
+      b.addEventListener("click", function () { terminSheet(drin[+b.dataset.bearb], mo, null); });
+    });
+
+    alle("#sheet [data-vor]").forEach(function (b) {
+      b.addEventListener("click", function () { terminSheet(null, mo, INHALT.eigenesVorlagen[+b.dataset.vor]); });
+    });
+    $("w-frei").addEventListener("click", function () { terminSheet(null, mo, null); });
 
     // Wieder herausnehmen. Wichtig: solange Opa es noch nicht gesehen hat,
     // ist das ein stilles Loeschen. Hat er es schon gesehen, muss er es
@@ -1551,9 +1717,10 @@ var INHALT = {
         var v = INHALT.vorschlaege[+b.dataset.v];
         var tag = plusTage(mo, v.wochentag - 1);
         var neu = {
-          id: v.id, datum: iso(tag), zeit: v.zeit, gewesenAb: v.gewesenAb,
+          uid: kennung(), id: v.id,
+          datum: iso(tag), zeit: v.zeit, gewesenAb: v.gewesenAb,
           titel: v.titel, kategorie: v.kategorie, ort: v.ort, zusatz: v.zusatz,
-          abholung: v.abholung, danach: v.danach, textVorlage: v.text
+          abholung: v.abholung, danach: v.danach, textVorlage: v.text, intern: ""
         };
         eigene.push(neu);
         schreib("eigene", eigene);
@@ -1563,6 +1730,159 @@ var INHALT = {
         sheetZu();
         zeichneAlles();
       });
+    });
+  }
+
+  /* ---------- Termin anlegen und ändern -------------------------------
+     Das Formular hat zwei Teile, und die Trennung ist der ganze Punkt:
+     oben steht, was in Opas Woche landet — unten, was unter uns bleibt.
+     Wer beides in ein Feld schreibt, schreibt früher oder später etwas
+     in Opas Woche, was da nicht hingehört.
+     ------------------------------------------------------------------ */
+  var KATEGORIEN = [
+    { k: "wasser", n: "Wasser" }, { k: "kaffee", n: "Kaffee" },
+    { k: "runde",  n: "Runde"  }, { k: "rad",    n: "Rad"    },
+    { k: "erzaehlen", n: "Erzählen" }, { k: "werk", n: "Draußen" }
+  ];
+
+  function terminSheet(vorhanden, mo, vorlage) {
+    var neu = !vorhanden;
+    var v = vorlage || {};
+    var s = neu
+      ? { uid: kennung(), titel: v.titel || "", kategorie: v.kategorie || "kaffee",
+          versatz: null, zeit: v.zeit || "15:00", ort: v.ort || "",
+          zusatz: v.zusatz || "", wer: "P", werText: "", intern: "" }
+      : { uid: vorhanden.uid || kennung(), titel: vorhanden.titel,
+          kategorie: vorhanden.kategorie,
+          versatz: tageDazwischen(mo, ausIso(vorhanden.datum)),
+          zeit: vorhanden.zeit, ort: vorhanden.ort || "",
+          zusatz: vorhanden.zusatz || "",
+          wer: vorhanden.abholung ? vorhanden.abholung.kuerzel : "P",
+          werText: vorhanden.abholung ? vorhanden.abholung.text : "",
+          intern: vorhanden.intern || "" };
+
+    // Beim Anlegen auf den ersten Tag, der noch nicht vorbei ist.
+    if (s.versatz === null) {
+      s.versatz = 0;
+      for (var i = 0; i < 7; i++) {
+        if (tageDazwischen(new Date(), plusTage(mo, i)) >= 0) { s.versatz = i; break; }
+      }
+    }
+
+    var tage = "";
+    for (var t = 0; t < 7; t++) {
+      var tag = plusTage(mo, t);
+      tage += '<button data-tag="' + t + '" aria-pressed="' + (t === s.versatz) + '"' +
+        (tageDazwischen(new Date(), tag) < 0 ? " disabled" : "") + ">" +
+        TAGE_KURZ[t] + "<br>" + tag.getDate() + "</button>";
+    }
+    var wer = INHALT.familie.map(function (p) {
+      return '<button data-wer="' + p.kuerzel + '" aria-pressed="' + (s.wer === p.kuerzel) + '">' + p.name + "</button>";
+    }).join("") + '<button data-wer="-" aria-pressed="' + (s.wer === "-") + '">Selbst</button>';
+    var farben = KATEGORIEN.map(function (c) {
+      return '<button data-farbe="' + c.k + '" aria-pressed="' + (s.kategorie === c.k) +
+        '" style="background:var(--c-' + c.k + ')" aria-label="' + c.n + '"></button>';
+    }).join("");
+
+    sheetAuf(
+      '<div class="kicker">' + mo.getDate() + ". " + MON_KURZ[mo.getMonth()] + " – " +
+        plusTage(mo, 6).getDate() + ". " + MON_KURZ[plusTage(mo, 6).getMonth()] + "</div>" +
+      "<h3>" + (neu ? "Etwas eintragen" : "Ändern") + "</h3>" +
+
+      '<div class="abschnitt erst"><h5>Was Opa sieht</h5></div>' +
+      '<div class="feld"><label>Was</label><input id="t-titel" value="' + roh(s.titel) +
+        '" placeholder="Zum Beispiel: Eis essen mit Oma"></div>' +
+      '<div class="feld"><label>Tag</label><div class="wahl" id="t-tag">' + tage + "</div></div>" +
+      '<div class="feld"><label>Uhrzeit</label><input type="time" id="t-zeit" value="' + roh(s.zeit) + '"></div>' +
+      '<div class="feld"><label>Wo</label><input id="t-ort" value="' + roh(s.ort) +
+        '" placeholder="Zum Beispiel: Eisdiele am Markt"></div>' +
+      '<div class="feld"><label>Ein Satz dazu</label><textarea id="t-zusatz" rows="2" ' +
+        'placeholder="Was ihn erwartet. Ruhig kurz.">' + roh(s.zusatz) + "</textarea></div>" +
+      '<div class="feld"><label>Wer holt ihn ab</label><div class="wahl" id="t-wer">' + wer + "</div></div>" +
+      '<div class="feld"><label>Und wann</label><input id="t-wertext" value="' + roh(s.werText) +
+        '" placeholder="um 14:10 vor der Tür"></div>' +
+      '<div class="feld"><label>Farbe im Buch</label><div class="farben" id="t-farbe">' + farben + "</div></div>" +
+
+      '<div class="abschnitt"><h5>Unter uns</h5>' +
+        "<p>Sieht nur die Familie. Steht nie in Opas Woche.</p></div>" +
+      '<div class="feld"><textarea id="t-intern" rows="2" ' +
+        'placeholder="Noch offen? Wer fährt zurück? Wer ruft dort an?">' + roh(s.intern) + "</textarea></div>" +
+
+      '<button class="cta" id="t-ok"' + (s.titel.trim().length < 2 ? " disabled" : "") + ">Speichern</button>" +
+      '<button class="cta quiet" data-zu>Abbrechen</button>' +
+      (neu ? "" : '<button class="loeschen" id="t-weg">Diesen Termin löschen</button>')
+    );
+
+    // Tippen wird direkt gemerkt, ohne das Blatt neu zu zeichnen — sonst
+    // springt die Tastatur zu und der Blattanfang wieder nach oben.
+    function tippt(id, feld, dann) {
+      var el = $(id);
+      el.addEventListener("input", function () { s[feld] = el.value; if (dann) dann(); });
+    }
+    tippt("t-titel", "titel", function () { $("t-ok").disabled = s.titel.trim().length < 2; });
+    tippt("t-zeit", "zeit");
+    tippt("t-ort", "ort");
+    tippt("t-zusatz", "zusatz");
+    tippt("t-wertext", "werText");
+    tippt("t-intern", "intern");
+
+    function gruppe(id, feld, wert) {
+      alle("#" + id + " button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          if (b.disabled) return;
+          s[feld] = wert(b);
+          alle("#" + id + " button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+          b.setAttribute("aria-pressed", "true");
+        });
+      });
+    }
+    gruppe("t-tag", "versatz", function (b) { return +b.dataset.tag; });
+    gruppe("t-wer", "wer", function (b) { return b.dataset.wer; });
+    gruppe("t-farbe", "kategorie", function (b) { return b.dataset.farbe; });
+
+    $("t-ok").addEventListener("click", function () {
+      var tag = plusTage(mo, s.versatz);
+      var person = INHALT.familie.filter(function (p) { return p.kuerzel === s.wer; })[0];
+      var stunde = Math.min(23, (+String(s.zeit).split(":")[0] || 15) + 3);
+      var obj = {
+        uid: s.uid, id: "eig",
+        datum: iso(tag), zeit: s.zeit, gewesenAb: stunde,
+        titel: s.titel.trim(), kategorie: s.kategorie,
+        ort: s.ort.trim() || "bei euch", zusatz: s.zusatz.trim(),
+        intern: s.intern.trim(),
+        abholung: person
+          ? { kuerzel: person.kuerzel, titel: person.name + " holt dich ab",
+              text: s.werText.trim() || "Zeit sagen wir noch" }
+          : { kuerzel: "·", titel: "Du gehst selbst hin",
+              text: s.werText.trim() || "wie besprochen" },
+        danach: { titel: "Warst du. Schön.", text: "" }
+      };
+      // Ein geänderter Beispieltermin wird dabei zu einem echten Termin.
+      if (vorhanden && !vorhanden.uid) {
+        geloescht.push(schluessel(vorhanden));
+        schreib("geloescht", geloescht);
+      }
+      eigene = eigene.filter(function (x) { return x.uid !== obj.uid; });
+      eigene.push(obj);
+      schreib("eigene", eigene);
+      entwurf = { titel: "WhatsApp an Opa", text: whatsappText(obj) };
+      neueMitteilung({ von: person ? person.kuerzel : "P",
+        titel: (neu ? "Neu geplant: " : "Geändert: ") + obj.titel,
+        text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " um " + obj.zeit + "." });
+      sheetZu();
+      zeichneAlles();
+    });
+
+    var weg = $("t-weg");
+    if (weg) weg.addEventListener("click", function () {
+      geloescht.push(schluessel(vorhanden));
+      schreib("geloescht", geloescht);
+      eigene = eigene.filter(function (x) { return schluessel(x) !== schluessel(vorhanden); });
+      schreib("eigene", eigene);
+      neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + vorhanden.titel,
+        text: tagLang(ausIso(vorhanden.datum)) + " ist wieder frei." });
+      sheetZu();
+      zeichneAlles();
     });
   }
 

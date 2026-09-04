@@ -179,8 +179,29 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   transition:transform .12s ease,background-color .2s ease;
 }
 .cta.quiet{background:var(--sunk);color:var(--dim);font-weight:600;font-size:16.5px}
+/* Leise, aber sichtbar antippbar: heller Grund, schwarze Schrift.
+   Ein unsichtbarer Absageknopf fuehrt nur dazu, dass er still nicht hingeht. */
+.cta.leise{background:var(--sunk);color:var(--ink);font-weight:700;font-size:17px}
 .cta.fertig{background:var(--good)}
+.cta[disabled]{opacity:.38}
 .cta:active{transform:scale(.985)}
+
+/* Begruendung beim Absagen */
+.grund{
+  width:100%;margin-top:13px;border:1.5px solid var(--line);border-radius:16px;
+  padding:13px 15px;font-family:inherit;font-size:16.5px;font-weight:500;
+  color:var(--ink);background:var(--page);resize:none;line-height:1.4;
+}
+.grund:focus{outline:none;border-color:var(--accent)}
+.klein{
+  display:block;width:100%;text-align:center;margin-top:14px;
+  font-size:14px;font-weight:600;color:var(--dim);text-decoration:underline;
+}
+.weg{
+  width:34px;height:34px;border-radius:12px;flex:0 0 auto;background:var(--page);
+  border:1.5px solid var(--line);color:var(--dim);font-size:20px;
+  display:grid;place-items:center;line-height:1;
+}
 
 /* ---------- Abschnitt + Rail ---------- */
 .sec{display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 12px}
@@ -620,11 +641,25 @@ var INHALT = {
     try { localStorage.setItem("ow." + schluessel, JSON.stringify(wert)); } catch (e) {}
   }
 
-  var gelesen  = lies("gelesen", []);     // gelesene Mitteilungen
-  var abgesagt = lies("abgesagt", []);    // abgesagte Termine
-  var erledigt = lies("erledigt", []);    // Termine mit Rückmeldung
-  var eigene   = lies("eigene", []);      // selbst eingeplante Termine
-  var extraMit = lies("extraMit", []);    // Mitteilungen, die in der App entstanden sind
+  var gelesen   = lies("gelesen", []);    // gelesene Mitteilungen
+  var abgesagt  = lies("abgesagt", []);   // abgesagte Termine
+  var gruende   = lies("gruende", {});    // warum abgesagt wurde
+  var erledigt  = lies("erledigt", []);   // Termine mit Rückmeldung
+  var eigene    = lies("eigene", []);     // selbst eingeplante Termine
+  var geloescht = lies("geloescht", []);  // von der Familie wieder herausgenommen
+  var extraMit  = lies("extraMit", []);   // Mitteilungen, die in der App entstanden sind
+
+  /* Wer sitzt vor dem Gerät?
+     Opa sieht nur Woche und Buch. Familie sieht alles drei.
+     Einmal beim Einrichten über die Adresse gesetzt (?rolle=opa),
+     danach merkt das Gerät es sich. Zurück mit ?rolle=familie. */
+  var ROLLE = (function () {
+    try {
+      var t = (location.search.match(/[?&]rolle=(opa|familie)/) || [])[1];
+      if (t) { localStorage.setItem("ow.rolle", t); return t; }
+      return localStorage.getItem("ow.rolle") || "familie";
+    } catch (e) { return "familie"; }
+  })();
 
   /* ---------- Plan aufbauen ---------- */
   function aussaat() {
@@ -648,14 +683,26 @@ var INHALT = {
   }
 
   function alleTermine() {
-    return aussaat().concat(eigene).sort(function (a, b) {
-      return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0;
-    });
+    return aussaat().concat(eigene)
+      .filter(function (e) { return geloescht.indexOf(schluessel(e)) < 0; })
+      .sort(function (a, b) {
+        return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0;
+      });
   }
 
   function schluessel(e) { return e.datum + "|" + e.id; }
   function istAbgesagt(e) { return abgesagt.indexOf(schluessel(e)) >= 0; }
   function istErledigt(e) { return erledigt.indexOf(schluessel(e)) >= 0; }
+
+  /* Steht in derselben Kalenderwoche noch etwas, das nicht abgesagt ist?
+     Damit entscheidet sich, ob eine Absage noch offen ist oder erledigt. */
+  function wocheHatAnderes(e) {
+    var mo = montagDieserWoche(ausIso(e.datum)), so = plusTage(mo, 6);
+    return alleTermine().some(function (x) {
+      var d = ausIso(x.datum);
+      return d >= mo && d <= so && !istAbgesagt(x);
+    });
+  }
 
   function schonVorbei(e) {
     var jetzt = new Date();
@@ -679,10 +726,14 @@ var INHALT = {
       if (istAbgesagt(e) || istErledigt(e)) continue;
       if (tageDazwischen(heute, ausIso(e.datum)) === 0 && schonVorbei(e)) return e;
     }
+    // Das Nächste, was ansteht. Eine Absage bleibt dabei stehen — Opa soll
+    // sehen, dass sie angekommen ist, und sie zurücknehmen können. Erst wenn
+    // für dieselbe Woche Ersatz geplant ist, gilt sie als erledigt und der
+    // Ersatz rückt an ihre Stelle.
     for (i = 0; i < liste.length; i++) {
       e = liste[i];
       if (schonVorbei(e)) continue;
-      if (istAbgesagt(e)) return e;        // abgesagt, aber noch nicht vorbei: Opa soll es sehen
+      if (istAbgesagt(e) && wocheHatAnderes(e)) continue;
       return e;
     }
     for (i = liste.length - 1; i >= 0; i--) {
@@ -947,7 +998,7 @@ var INHALT = {
       $("wie-wars").addEventListener("click", function () { rueckmeldungSheet(e); });
       return;
     }
-    ziel.innerHTML = '<button class="cta quiet" id="passt-nicht">Passt mir doch nicht</button>';
+    ziel.innerHTML = '<button class="cta leise" id="passt-nicht">Passt mir doch nicht</button>';
     $("passt-nicht").addEventListener("click", function () { absageSheet(e); });
   }
 
@@ -1000,23 +1051,35 @@ var INHALT = {
   function absageSheet(e) {
     sheetAuf(
       "<h3>Passt dir nicht?</h3>" +
-      "<p>Kein Problem. Wir sagen ab und suchen etwas anderes.</p>" +
-      '<button class="cta" id="ja-absagen">Ja, bitte absagen</button>' +
-      '<button class="cta quiet" data-zu>Doch, passt schon</button>'
+      "<p>Schreib kurz, warum. Dann wissen wir, was wir stattdessen suchen sollen.</p>" +
+      '<textarea class="grund" id="grund" rows="3" placeholder="Zum Beispiel: Mir geht es heute nicht so gut."></textarea>' +
+      '<button class="cta" id="ja-absagen" disabled>Absagen</button>' +
+      '<button class="cta quiet" data-zu>Doch, passt schon</button>' +
+      // Ausweg fuer den Tag, an dem das Tippen nicht geht. Ohne den
+      // wuerde er im Zweifel gar nicht absagen und einfach nicht hingehen.
+      '<button class="klein" id="statt-schreiben">Ich kann gerade nicht schreiben — ruft mich an</button>'
     );
-    $("ja-absagen").addEventListener("click", function () {
-      abgesagt.push(schluessel(e));
-      schreib("abgesagt", abgesagt);
-      neueMitteilung({ von: "!", titel: "Abgesagt: " + e.titel,
-        text: "Du hast für " + tagLang(ausIso(e.datum)) + " abgesagt. Die Familie kümmert sich." });
-      werkbank = "";
-      sheetAuf(
-        "<h3>Ist abgesagt</h3>" +
-        "<p>Wir melden uns mit etwas anderem. Du musst nichts weiter tun.</p>" +
-        '<button class="cta quiet" data-zu>Gut</button>'
-      );
-      zeichneAlles();
+    var feld = $("grund"), knopf = $("ja-absagen");
+    feld.addEventListener("input", function () {
+      knopf.disabled = feld.value.trim().length < 3;
     });
+    knopf.addEventListener("click", function () { absagen(e, feld.value.trim()); });
+    $("statt-schreiben").addEventListener("click", function () { absagen(e, "Bitte ruft mich an."); });
+  }
+
+  function absagen(e, grund) {
+    abgesagt.push(schluessel(e));
+    schreib("abgesagt", abgesagt);
+    gruende[schluessel(e)] = grund;
+    schreib("gruende", gruende);
+    neueMitteilung({ von: "!", titel: "Abgesagt: " + e.titel, text: grund });
+    werkbank = "";
+    sheetAuf(
+      "<h3>Ist abgesagt</h3>" +
+      "<p>Wir melden uns mit etwas anderem. Du musst nichts weiter tun.</p>" +
+      '<button class="cta quiet" data-zu>Gut</button>'
+    );
+    zeichneAlles();
   }
 
   function rueckmeldungSheet(e) {
@@ -1100,14 +1163,20 @@ var INHALT = {
     var mo = montagDieserWoche(new Date());
     var termine = alleTermine();
 
+    // Eine Absage ist offen, solange sie noch bevorsteht UND für die Woche
+    // noch kein Ersatz geplant wurde. Sonst bliebe die Warnung stehen,
+    // obwohl sich längst jemand gekümmert hat.
     var offeneAbsage = termine.filter(function (e) {
-      return istAbgesagt(e) && tageDazwischen(new Date(), ausIso(e.datum)) >= 0;
+      return istAbgesagt(e)
+        && tageDazwischen(new Date(), ausIso(e.datum)) >= 0
+        && !wocheHatAnderes(e);
     })[0];
 
     $("fam-banner").innerHTML = offeneAbsage
-      ? '<div class="banner"><div class="ic">!</div><div><b>Opa hat abgesagt</b><span>' +
-        offeneAbsage.titel + " · " + tagLang(ausIso(offeneAbsage.datum)) +
-        ". Such ihm etwas anderes.</span></div></div>"
+      ? '<div class="banner"><div class="ic">!</div><div><b>Opa hat abgesagt: ' +
+        offeneAbsage.titel + " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")</b><span>„" +
+        (gruende[schluessel(offeneAbsage)] || "Ohne Angabe") +
+        "“ · Die Woche steht wieder offen.</span></div></div>"
       : "";
 
     var leereWochen = 0, html = "";
@@ -1168,7 +1237,11 @@ var INHALT = {
     var html = '<div class="kicker">' + kopf + "</div><h3>" + name + "</h3>";
 
     html += drin.length
-      ? "<p>Steht schon: " + drin.map(function (e) { return e.titel + " (" + tagKurz(ausIso(e.datum)) + ")"; }).join(", ") + ". Du kannst noch etwas dazunehmen.</p>"
+      ? '<div class="wochen">' + drin.map(function (e, i) {
+          return '<div class="woche"><div class="marke">' + tagKurz(ausIso(e.datum)) + "</div>" +
+            '<div class="tx"><b>' + e.titel + "</b><span>" + e.zeit + " · " + e.ort + "</span></div>" +
+            '<button class="weg" data-weg="' + i + '" aria-label="Wieder herausnehmen">×</button></div>';
+        }).join("") + "</div>"
       : "<p>Noch nichts. Such etwas aus — es steht dann sofort in Opas Woche.</p>";
 
     html += INHALT.vorschlaege.map(function (v, i) {
@@ -1185,6 +1258,23 @@ var INHALT = {
 
     html += '<button class="cta quiet" data-zu>Zurück</button>';
     sheetAuf(html);
+
+    // Wieder herausnehmen. Wichtig: solange Opa es noch nicht gesehen hat,
+    // ist das ein stilles Loeschen. Hat er es schon gesehen, muss er es
+    // erfahren — dafuer fehlt uns noch der Server.
+    alle("#sheet [data-weg]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var raus = drin[+b.dataset.weg];
+        geloescht.push(schluessel(raus));
+        schreib("geloescht", geloescht);
+        eigene = eigene.filter(function (x) { return schluessel(x) !== schluessel(raus); });
+        schreib("eigene", eigene);
+        neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + raus.titel,
+          text: tagLang(ausIso(raus.datum)) + " ist wieder frei." });
+        sheetZu();
+        zeichneAlles();
+      });
+    });
 
     alle("#sheet [data-v]").forEach(function (b) {
       if (b.disabled) return;
@@ -1217,17 +1307,28 @@ var INHALT = {
     ];
     $("werkbank").innerHTML = zustaende.map(function (z) {
       return '<button class="wb" data-z="' + z.k + '" aria-pressed="' + (werkbank === z.k) + '">' + z.n + "</button>";
-    }).join("") + '<button class="wb" data-reset="1">Alles zurücksetzen</button>';
+    }).join("") +
+      '<button class="wb" data-rolle="1">Als Opas Gerät ansehen</button>' +
+      '<button class="wb" data-reset="1">Alles zurücksetzen</button>' +
+      '<p style="margin:9px 0 0;font-size:11.5px;color:var(--faint);font-weight:500;line-height:1.4">' +
+      "Dieses Gerät ist gerade: <b>" + (ROLLE === "opa" ? "Opas Gerät" : "Familie") + "</b>. " +
+      "Zurück kommst du, indem du <b>?rolle=familie</b> hinten an die Adresse hängst.</p>";
 
-    Array.prototype.forEach.call($("werkbank").children, function (b) {
+    Array.prototype.forEach.call($("werkbank").querySelectorAll("button"), function (b) {
       b.addEventListener("click", function () {
+        if (b.dataset.rolle) {
+          try { localStorage.setItem("ow.rolle", "opa"); } catch (e) {}
+          location.search = "?rolle=opa";
+          return;
+        }
         if (b.dataset.reset) {
           try {
-            ["gelesen","abgesagt","erledigt","eigene","extraMit"].forEach(function (k) {
+            ["gelesen","abgesagt","gruende","erledigt","eigene","geloescht","extraMit"].forEach(function (k) {
               localStorage.removeItem("ow." + k);
             });
           } catch (e) {}
-          gelesen = []; abgesagt = []; erledigt = []; eigene = []; extraMit = [];
+          gelesen = []; abgesagt = []; gruende = {}; erledigt = [];
+          eigene = []; geloescht = []; extraMit = [];
           werkbank = ""; entwurf = null;
           zeichneAlles();
           return;
@@ -1314,6 +1415,18 @@ var INHALT = {
     zeichneWoche();
     zeichneFamilie();
     zeichneGlocken();
+  }
+
+  // Opas Gerät kennt Familie nicht. Zwei Reiter statt drei — für ihn
+  // ist das nicht weniger, sondern weniger im Weg.
+  if (ROLLE === "opa") {
+    var famTab = document.querySelector('.tab[data-p="p-fam"]');
+    if (famTab) famTab.hidden = true;
+    $("p-fam").hidden = true;
+    document.querySelector('.tab[data-p="p-week"]').setAttribute("aria-selected", "true");
+    $("p-week").hidden = false;
+    $("p-book").hidden = true;
+    document.querySelector('.tab[data-p="p-book"]').setAttribute("aria-selected", "false");
   }
 
   gesichter();

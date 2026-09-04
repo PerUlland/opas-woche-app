@@ -351,6 +351,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .woche b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.02em}
 .woche span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:2px}
 .woche .pfeil{color:var(--faint);font-size:19px;flex:0 0 auto}
+/* Abgesagt: bleibt sichtbar, aber tritt zurueck. Anfassbar muss es sein —
+   sonst kaeme niemand mehr an den grauen Punkt in Opas Streifen heran. */
+.woche.ab{border-style:dashed}
+.woche.ab .marke{background:var(--sunk);color:var(--faint)}
+.woche.ab b{color:var(--dim)}
 /* Die Zeile "unter uns" — steht nur hier, nie in Opas Woche. */
 .woche em{display:block;font-style:normal;font-size:12px;color:var(--faint);
   font-weight:650;margin-top:4px}
@@ -601,10 +606,12 @@ var INHALT = {
   // Liegt die Datei nicht daneben, zeigt die App das Kürzel. Kein Fehler.
   opaFoto: "./opa.jpg",
 
+  // "satz" steht so in Opas Woche. Er muss dastehen, weil "Ich holt dich ab"
+  // kein Deutsch ist — der Name allein reicht dafür nicht.
   familie: [
-    { kuerzel: "P", farbe: "f-a", name: "Papa" },
-    { kuerzel: "M", farbe: "f-b", name: "Mama" },
-    { kuerzel: "I", farbe: "f-c", name: "Ich" }
+    { kuerzel: "P", farbe: "f-a", name: "Papa", satz: "Papa holt dich ab" },
+    { kuerzel: "M", farbe: "f-b", name: "Mama", satz: "Mama holt dich ab" },
+    { kuerzel: "I", farbe: "f-c", name: "Ich",  satz: "Ich hole dich ab" }
   ],
 
   // Der Plan. Jeder Eintrag bekommt ein echtes Datum.
@@ -846,16 +853,6 @@ var INHALT = {
   function schluessel(e) { return e.uid || (e.datum + "|" + e.id); }
   function istAbgesagt(e) { return abgesagt.indexOf(schluessel(e)) >= 0; }
   function istErledigt(e) { return erledigt.indexOf(schluessel(e)) >= 0; }
-
-  /* Steht in derselben Kalenderwoche noch etwas, das nicht abgesagt ist?
-     Damit entscheidet sich, ob eine Absage noch offen ist oder erledigt. */
-  function wocheHatAnderes(e) {
-    var mo = montagDieserWoche(ausIso(e.datum)), so = plusTage(mo, 6);
-    return alleTermine().some(function (x) {
-      var d = ausIso(x.datum);
-      return d >= mo && d <= so && !istAbgesagt(x);
-    });
-  }
 
   function schonVorbei(e) {
     var jetzt = new Date();
@@ -1549,13 +1546,12 @@ var INHALT = {
     var mo = montagDieserWoche(new Date());
     var termine = alleTermine();
 
-    // Eine Absage ist offen, solange sie noch bevorsteht UND für die Woche
-    // noch kein Ersatz geplant wurde. Sonst bliebe die Warnung stehen,
-    // obwohl sich längst jemand gekümmert hat.
+    // Jede Absage, die noch bevorsteht. Frueher verschwand die Warnung,
+    // sobald in derselben Woche etwas anderes stand — damit ging aber die
+    // Nachricht "er hat abgesagt" verloren. Sie bleibt jetzt stehen, bis
+    // jemand den Termin neu legt oder herausnimmt. Beides ist ein Tipp.
     var offeneAbsage = termine.filter(function (e) {
-      return istAbgesagt(e)
-        && tageDazwischen(new Date(), ausIso(e.datum)) >= 0
-        && !wocheHatAnderes(e);
+      return istAbgesagt(e) && tageDazwischen(new Date(), ausIso(e.datum)) >= 0;
     })[0];
 
     var banner = "";
@@ -1638,10 +1634,14 @@ var INHALT = {
   function wochenSheet(w) {
     var mo = plusTage(montagDieserWoche(new Date()), w * 7);
     var ende = plusTage(mo, 6);
+    // Alles, was in der Woche liegt — auch das Abgesagte. Sonst könnte die
+    // Familie eine Absage weder umlegen noch herausnehmen, und sie bliebe
+    // als grauer Punkt in Opas Streifen stehen, ohne dass jemand rankommt.
     var drin = alleTermine().filter(function (e) {
       var d = ausIso(e.datum);
-      return d >= mo && d <= ende && !istAbgesagt(e);
+      return d >= mo && d <= ende;
     });
+    var steht = drin.filter(function (e) { return !istAbgesagt(e); });
 
     var kopf = mo.getDate() + ". " + MON_KURZ[mo.getMonth()] + " – " + ende.getDate() + ". " + MON_KURZ[ende.getMonth()];
     var name = w === 0 ? "Diese Woche" : w === 1 ? "Nächste Woche" : "In " + w + " Wochen";
@@ -1649,13 +1649,18 @@ var INHALT = {
 
     html += drin.length
       ? '<div class="wochen">' + drin.map(function (e, i) {
-          return '<div class="woche"><div class="marke">' + tagKurz(ausIso(e.datum)) + "</div>" +
+          var ab = istAbgesagt(e);
+          return '<div class="woche' + (ab ? " ab" : "") + '"><div class="marke">' +
+            tagKurz(ausIso(e.datum)) + "</div>" +
             '<button class="tx" data-bearb="' + i + '"><b>' + roh(e.titel) + "</b><span>" +
-            roh(e.zeit) + " · " + roh(e.ort) + "</span>" +
+            (ab ? "Abgesagt · " + roh(gruende[schluessel(e)] || "ohne Angabe")
+                : roh(e.zeit) + " · " + roh(e.ort)) + "</span>" +
             (e.intern ? "<em>Unter uns: " + roh(e.intern) + "</em>" : "") + "</button>" +
             '<button class="weg" data-weg="' + i + '" aria-label="Wieder herausnehmen">×</button></div>';
         }).join("") + "</div>" +
-        '<p style="margin-top:11px">Antippen, um etwas zu ändern.</p>'
+        '<p style="margin-top:11px">Antippen, um etwas zu ändern.' +
+        (steht.length < drin.length ? " Ein abgesagter Termin steht wieder, sobald ihr ihn neu legt." : "") +
+        "</p>"
       : "<p>Noch nichts. Trag etwas ein — es steht dann sofort in Opas Woche.</p>";
 
     // Zuerst das Selbstgemachte. Das ist die Sorte, die in seiner Woche
@@ -1673,7 +1678,7 @@ var INHALT = {
     html += INHALT.vorschlaege.map(function (v, i) {
       var tag = plusTage(mo, v.wochentag - 1);
       var vorbei = tageDazwischen(new Date(), tag) < 0;
-      var schon = drin.filter(function (e) { return e.id === v.id; }).length > 0;
+      var schon = steht.filter(function (e) { return e.id === v.id; }).length > 0;
       var aus = vorbei || schon;
       return '<button class="opt ' + v.farbe + '" data-v="' + i + '"' + (aus ? ' disabled style="opacity:.42"' : "") + ">" +
         '<div class="kicker">' + v.kicker + "</div><h4>" + v.titel + "</h4>" +
@@ -1704,6 +1709,10 @@ var INHALT = {
         schreib("geloescht", geloescht);
         eigene = eigene.filter(function (x) { return schluessel(x) !== schluessel(raus); });
         schreib("eigene", eigene);
+        // Mit dem Termin geht auch seine Absage. Sonst bliebe ein Grund
+        // zu einem Termin stehen, den es nicht mehr gibt.
+        abgesagt = abgesagt.filter(function (x) { return x !== schluessel(raus); });
+        schreib("abgesagt", abgesagt);
         neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + raus.titel,
           text: tagLang(ausIso(raus.datum)) + " ist wieder frei." });
         sheetZu();
@@ -1845,13 +1854,16 @@ var INHALT = {
       var person = INHALT.familie.filter(function (p) { return p.kuerzel === s.wer; })[0];
       var stunde = Math.min(23, (+String(s.zeit).split(":")[0] || 15) + 3);
       var obj = {
-        uid: s.uid, id: "eig",
+        // Ein Angebot aus dem Katalog bleibt ein Angebot, auch wenn man die
+        // Uhrzeit ändert — sonst stünde im WhatsApp-Text nicht mehr, dass
+        // wir ihn anmelden.
+        uid: s.uid, id: (vorhanden && vorhanden.id) || "eig",
         datum: iso(tag), zeit: s.zeit, gewesenAb: stunde,
         titel: s.titel.trim(), kategorie: s.kategorie,
         ort: s.ort.trim() || "bei euch", zusatz: s.zusatz.trim(),
         intern: s.intern.trim(),
         abholung: person
-          ? { kuerzel: person.kuerzel, titel: person.name + " holt dich ab",
+          ? { kuerzel: person.kuerzel, titel: person.satz || (person.name + " holt dich ab"),
               text: s.werText.trim() || "Zeit sagen wir noch" }
           : { kuerzel: "·", titel: "Du gehst selbst hin",
               text: s.werText.trim() || "wie besprochen" },
@@ -1865,9 +1877,18 @@ var INHALT = {
       eigene = eigene.filter(function (x) { return x.uid !== obj.uid; });
       eigene.push(obj);
       schreib("eigene", eigene);
+
+      // Wer einen abgesagten Termin neu setzt, holt ihn damit zurück. Alles
+      // andere wäre unehrlich: der Termin steht dann ja wieder.
+      var warAbgesagt = abgesagt.indexOf(obj.uid) >= 0;
+      if (warAbgesagt) {
+        abgesagt = abgesagt.filter(function (x) { return x !== obj.uid; });
+        schreib("abgesagt", abgesagt);
+      }
+
       entwurf = { titel: "WhatsApp an Opa", text: whatsappText(obj) };
       neueMitteilung({ von: person ? person.kuerzel : "P",
-        titel: (neu ? "Neu geplant: " : "Geändert: ") + obj.titel,
+        titel: (warAbgesagt ? "Neu gelegt: " : neu ? "Neu geplant: " : "Geändert: ") + obj.titel,
         text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " um " + obj.zeit + "." });
       sheetZu();
       zeichneAlles();

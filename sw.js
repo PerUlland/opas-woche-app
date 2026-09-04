@@ -5,7 +5,7 @@
 // lokal auf dem Geraet; das Netz wird nur benutzt, um nachzusehen,
 // ob es etwas Neueres gibt.
 
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = "opas-woche-" + VERSION;
 
 const SHELL = [

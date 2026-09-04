@@ -41,10 +41,12 @@
   --c-werk:#DFD3C7;
 
   --font:Figtree,ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --leiste:78px;
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{
   margin:0;background:var(--page);color:var(--ink);font-family:var(--font);
   line-height:1.35;-webkit-font-smoothing:antialiased;display:flex;justify-content:center;
@@ -52,19 +54,33 @@ body{
 button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;text-align:left}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:12px}
 
+/* Nur der Inhalt scrollt. Die Leiste unten steht fest. */
 .app{
-  width:100%;max-width:430px;min-height:100vh;min-height:100dvh;
-  background:var(--page);position:relative;display:flex;flex-direction:column;overflow:hidden;
+  width:100%;max-width:430px;height:100%;background:var(--page);
+  position:relative;display:flex;flex-direction:column;overflow:hidden;
 }
 @media (min-width:540px){
-  body{background:#E9E5DE;align-items:center;padding:24px 0}
-  .app{min-height:0;height:900px;max-height:calc(100vh - 48px);border-radius:44px;
+  html,body{overflow:auto}
+  body{background:#E9E5DE;align-items:center;padding:24px 0;height:auto;min-height:100%}
+  .app{height:880px;max-height:calc(100vh - 48px);border-radius:44px;
        box-shadow:0 30px 70px -28px rgba(20,24,28,.42)}
 }
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 130px}
+.pane{flex:1;min-height:0;display:flex;flex-direction:column}
+.scroll{
+  flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;padding:0 20px calc(var(--leiste) + 18px);
+}
 
-/* ---------- Kopfzeile: Bild links, Titel Mitte, Glocke rechts ---------- */
-.topbar{display:flex;align-items:center;gap:12px;padding:20px 0 4px}
+/* Sanfter Wechsel zwischen den Reitern */
+@keyframes rein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pane.zeigen{animation:rein .3s cubic-bezier(.32,.72,0,1)}
+
+/* Alles Antippbare gibt nach */
+.tap{transition:transform .12s ease}
+.tap:active{transform:scale(.975)}
+
+/* ---------- Kopfzeile ---------- */
+.topbar{display:flex;align-items:center;gap:12px;padding:18px 0 2px}
 .topbar .mid{flex:1;min-width:0;text-align:center}
 .topbar .mid b{display:block;font-size:16.5px;font-weight:700;letter-spacing:-.02em}
 .topbar .mid span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:1px}
@@ -79,7 +95,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .f-a{background:linear-gradient(150deg,#8A5330,#C79A6A)}
 .f-b{background:linear-gradient(150deg,#4C5E38,#9AB07C)}
 .f-c{background:linear-gradient(150deg,#4A4468,#9B92BC)}
-
 .faces{display:flex;flex:0 0 auto}
 .faces .face{width:38px;height:38px;border-radius:19px;box-shadow:0 0 0 3px var(--page);margin-right:-12px}
 .faces .face:last-child{margin-right:0}
@@ -92,44 +107,44 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .bell i{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:4px;
         background:var(--accent);box-shadow:0 0 0 2.5px var(--page)}
 
-/* ---------- Grosser Titel, mit Luft darueber ---------- */
-.title{padding:40px 0 2px}
+/* ---------- Grosser Titel ---------- */
+.title{padding:30px 0 2px}
 .title .eyebrow{margin:0 0 5px;font-size:14px;font-weight:600;color:var(--dim)}
-.title h1{margin:0;font-size:38px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.title h1{margin:0;font-size:36px;font-weight:800;letter-spacing:-.04em;line-height:1}
 
 /* ---------- Hero: Motiv schaut oben aus der Karte heraus ---------- */
-.hero{position:relative;margin-top:44px}
-.hero .inner{border-radius:30px;overflow:hidden;background:var(--c-wasser)}
-.hero.done .inner{background:var(--c-rad)}
+.hero{position:relative;margin-top:34px;display:block;width:100%}
+.hero .inner{border-radius:28px;overflow:hidden;background:var(--c-wasser)}
 .hero .art{
-  position:absolute;top:-40px;right:-4px;width:146px;height:146px;z-index:2;pointer-events:none;
+  position:absolute;top:-36px;right:-4px;width:134px;height:134px;z-index:2;pointer-events:none;
   filter:drop-shadow(0 14px 18px rgba(20,24,28,.22));
 }
 .hero .art svg{width:100%;height:100%;display:block}
-.hero .top{padding:22px 20px 20px}
-.hero .txt{max-width:63%}
+.hero .top{padding:20px 20px 18px}
+.hero .txt{max-width:64%}
 .chip{
   display:inline-block;background:rgba(255,255,255,.78);color:var(--ink);
-  font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:12px;
+  font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:11px;
 }
-.hero h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
-.hero .meta{margin:9px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68);max-width:78%}
-
-.band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:13px 20px}
+.hero h2{margin:0;font-size:25px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
+.hero .meta{margin:9px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68)}
+.band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:12px 20px}
 .band .ic{
   width:34px;height:34px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;
   background:var(--ink);color:#fff;font-size:14px;font-weight:700;
 }
+.band.fertig .ic{background:var(--good)}
 .band b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.018em}
 .band span{display:block;font-size:13.5px;color:var(--dim);font-weight:500;margin-top:1px}
-.band.state .ic{background:var(--good)}
 
-/* ---------- Wochenstreifen: ohne Legende, ohne Nebenzeichen ---------- */
-.week{display:flex;gap:6px;margin-top:22px}
+/* ---------- Wochenstreifen ---------- */
+.week{display:flex;gap:6px;margin-top:18px}
 .wd{
-  flex:1;border:1.5px solid var(--line);border-radius:19px;background:var(--page);
-  padding:11px 0 10px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  flex:1;border:1.5px solid var(--line);border-radius:18px;background:var(--page);
+  padding:9px 0 9px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:transform .12s ease;
 }
+.wd:active{transform:scale(.94)}
 .wd .dot{height:5px;display:block}
 .wd .dot i{width:5px;height:5px;border-radius:3px;background:transparent;display:block}
 .wd b{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:.02em}
@@ -138,8 +153,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.today{background:var(--ink);border-color:var(--ink)}
 .wd.today b{color:rgba(255,255,255,.6)}
 .wd.today .num{color:#fff;font-weight:800}
-/* Punkt nur, wenn an dem Tag wirklich etwas ist — sonst verspricht er etwas. */
-.wd.today.event .dot i{background:#fff}
 /* Termin = Rahmen und Punkt. Rahmen heisst "kommt noch". */
 .wd.event{border-color:var(--accent);border-width:2px}
 .wd.event b,.wd.event .num{color:var(--accent);font-weight:800}
@@ -147,24 +160,28 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.today.event{background:var(--ink);border-color:var(--ink)}
 .wd.today.event b{color:rgba(255,255,255,.6)}
 .wd.today.event .num{color:#fff}
+/* Punkt nur, wenn an dem Tag wirklich etwas ist */
+.wd.today.event .dot i{background:#fff}
 
 /* ---------- Knoepfe ---------- */
 .cta{
-  display:block;width:100%;height:56px;border-radius:19px;background:var(--accent);color:#fff;
-  font-size:17.5px;font-weight:700;letter-spacing:-.02em;text-align:center;margin-top:16px;
+  display:block;width:100%;height:54px;border-radius:18px;background:var(--accent);color:#fff;
+  font-size:17.5px;font-weight:700;letter-spacing:-.02em;text-align:center;margin-top:14px;
+  transition:transform .12s ease,background-color .2s ease;
 }
 .cta.quiet{background:var(--sunk);color:var(--dim);font-weight:600;font-size:16.5px}
+.cta.fertig{background:var(--good)}
 .cta:active{transform:scale(.985)}
 
 /* ---------- Abschnitt + Rail ---------- */
-.sec{display:flex;align-items:baseline;justify-content:space-between;margin:34px 0 14px}
-.sec h3{margin:0;font-size:23px;font-weight:800;letter-spacing:-.035em}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px}
+.sec h3{margin:0;font-size:22px;font-weight:800;letter-spacing:-.035em}
 .sec span{font-size:14px;font-weight:650;color:var(--accent)}
-.rail{display:flex;gap:13px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin:0 -20px}
+.rail{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin:0 -20px}
 .rail::-webkit-scrollbar{display:none}
-.tile{flex:0 0 132px}
-.tile .ph{height:132px;border-radius:22px}
-.tile b{display:block;margin-top:10px;font-size:14px;font-weight:650;letter-spacing:-.015em}
+.tile{flex:0 0 122px;display:block;text-align:left}
+.tile .ph{height:122px;border-radius:22px}
+.tile b{display:block;margin-top:9px;font-size:13.5px;font-weight:650;letter-spacing:-.015em}
 .tile small{display:block;color:var(--faint);font-size:12.5px;font-weight:500;margin-top:2px}
 
 /* Platzhalter fuer echte Fotos */
@@ -179,25 +196,27 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .ph-6{background:linear-gradient(155deg,#26555F,#7FACB6)}
 
 /* ---------- Filterreihe ---------- */
-.filters{display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding:24px 20px 4px;margin:0 -20px}
+.filters{display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding:22px 20px 4px;margin:0 -20px}
 .filters::-webkit-scrollbar{display:none}
 .fil{
   flex:0 0 auto;border:1.5px solid var(--line);border-radius:22px;padding:10px 18px;
   font-size:14.5px;font-weight:650;color:var(--dim);background:var(--page);white-space:nowrap;
+  transition:transform .12s ease;
 }
+.fil:active{transform:scale(.95)}
 .fil[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
 
 /* ---------- Buch: grosse Karten, Foto schaut rechts heraus ---------- */
-.stack{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+.stack{display:flex;flex-direction:column;gap:16px;margin-top:20px}
 .entry{
-  position:relative;border-radius:30px;overflow:hidden;background:var(--sunk);
-  min-height:146px;padding:22px 24px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;border-radius:28px;overflow:hidden;background:var(--sunk);width:100%;
+  min-height:140px;padding:21px 23px;display:flex;flex-direction:column;justify-content:space-between;
 }
 .entry .ph{position:absolute;right:-26px;top:50%;transform:translateY(-50%);
-  width:132px;height:132px;border-radius:30px;box-shadow:0 12px 22px -12px rgba(20,24,28,.45)}
+  width:126px;height:126px;border-radius:30px;box-shadow:0 12px 22px -12px rgba(20,24,28,.45)}
 .entry .cap{position:relative;z-index:1;max-width:60%}
 .kicker{font-size:12px;font-weight:700;color:rgba(20,24,28,.5);letter-spacing:.06em;text-transform:uppercase}
-.entry h4{margin:7px 0 0;font-size:22px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
+.entry h4{margin:7px 0 0;font-size:21px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
 .entry .foot{position:relative;z-index:1;margin-top:14px;font-size:13.5px;font-weight:650;color:rgba(20,24,28,.58)}
 .e-wasser{background:var(--c-wasser)}
 .e-kaffee{background:var(--c-kaffee)}
@@ -205,21 +224,22 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .e-rad{background:var(--c-rad)}
 .e-erz{background:var(--c-erzaehlen)}
 .e-werk{background:var(--c-werk)}
-.hint{text-align:center;font-size:13px;color:var(--faint);font-weight:500;margin:20px 0 0}
+.hint{text-align:center;font-size:13px;color:var(--faint);font-weight:500;margin:18px 0 0}
 
 /* ---------- Familie ---------- */
 .opt{
-  display:block;width:100%;border-radius:30px;padding:22px 24px;
-  border:2.5px solid transparent;position:relative;
+  display:block;width:100%;border-radius:28px;padding:21px 23px;
+  border:2.5px solid transparent;position:relative;transition:transform .12s ease,border-color .2s ease;
 }
+.opt:active{transform:scale(.982)}
 .opt[aria-pressed="true"]{border-color:var(--ink)}
-.opt h4{margin:7px 0 0;font-size:22px;font-weight:800;letter-spacing:-.038em;line-height:1.1}
+.opt h4{margin:7px 0 0;font-size:21px;font-weight:800;letter-spacing:-.038em;line-height:1.1}
 .opt .sub{margin:8px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68)}
 .opt .note{
-  display:inline-block;margin-top:14px;background:rgba(255,255,255,.72);border-radius:15px;
+  display:inline-block;margin-top:13px;background:rgba(255,255,255,.72);border-radius:15px;
   padding:9px 13px;font-size:13.5px;font-weight:700;
 }
-.draft{margin-top:34px}
+.draft{margin-top:30px}
 .draft h5{margin:0 0 11px;font-size:12px;font-weight:700;color:var(--faint);letter-spacing:.07em;text-transform:uppercase}
 .bubble{
   margin:0;background:#DEF3E5;border-radius:22px 22px 22px 7px;padding:15px 17px;
@@ -227,19 +247,22 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 
 /* ---------- Sheet ---------- */
-.scrim{position:absolute;inset:0;background:rgba(20,24,28,.4);z-index:40}
+.scrim{position:absolute;inset:0;background:rgba(20,24,28,.42);z-index:40;animation:auf .25s ease}
+@keyframes auf{from{opacity:0}to{opacity:1}}
 .sheet{
   position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--page);
   border-radius:32px 32px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom));
   display:flex;flex-direction:column;box-shadow:0 -14px 44px -16px rgba(20,24,28,.45);
-  animation:up .3s cubic-bezier(.32,.72,0,1);
+  animation:hoch .32s cubic-bezier(.32,.72,0,1);max-height:88%;overflow-y:auto;
 }
-@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.grip{width:40px;height:5px;border-radius:3px;background:var(--sunk);margin:0 auto 14px}
-.sheet h3{margin:0;font-size:25px;font-weight:800;letter-spacing:-.035em}
-.sheet p{margin:7px 0 2px;font-size:15px;color:var(--dim);font-weight:500}
+@keyframes hoch{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.grip{width:40px;height:5px;border-radius:3px;background:var(--sunk);margin:0 auto 14px;flex:0 0 auto}
+.sheet h3{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em;text-wrap:balance}
+.sheet .kicker{margin-bottom:6px}
+.sheet p{margin:8px 0 2px;font-size:15px;color:var(--dim);font-weight:500}
+.sheet .bild{height:150px;border-radius:22px;margin:14px 0 4px}
 
-/* ---------- Tab Bar ---------- */
+/* ---------- Tab Bar: schwebend, immer sichtbar ---------- */
 .tabs{
   position:absolute;left:18px;right:18px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:30;
   display:flex;gap:4px;background:var(--ink);border-radius:31px;padding:6px;
@@ -247,7 +270,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 .tab{
   flex:1;height:50px;border-radius:25px;display:flex;align-items:center;justify-content:center;gap:7px;
-  color:rgba(255,255,255,.6);
+  color:rgba(255,255,255,.6);transition:background-color .22s ease,color .22s ease;
 }
 .tab svg{width:21px;height:21px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab b{font-size:14px;font-weight:650;letter-spacing:-.015em}
@@ -255,13 +278,16 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .tab[aria-selected="true"] svg{stroke-width:2.1}
 .tab[aria-selected="true"] b{font-weight:750}
 
-/* ---------- Prototyp-Schalter (kein App-Element) ---------- */
-.demo{
-  display:block;width:100%;margin-top:30px;border:1.5px dashed var(--faint);border-radius:16px;
-  padding:12px 15px;font-size:13px;font-weight:600;color:var(--dim);
+/* Vorschau-Schalter — nur fuer uns, nicht fuer Opa */
+.vorschau{
+  display:block;width:100%;margin-top:26px;border:1.5px dashed var(--faint);border-radius:16px;
+  padding:11px 14px;font-size:12.5px;font-weight:600;color:var(--faint);
 }
 
-@media (prefers-reduced-motion:reduce){.sheet{animation:none}.cta:active{transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .sheet,.scrim,.pane.zeigen{animation:none}
+  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active{transform:none}
+}
 </style>
 <style>
   :root{color-scheme:light}
@@ -275,98 +301,38 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   <!-- ================= WOCHE ================= -->
   <div class="pane" id="p-week">
     <div class="scroll">
-
       <div class="topbar">
-        <div class="face f-opa">O</div>
+        <div class="face f-opa" id="opa-initial">O</div>
         <div class="mid">
-          <b>Hallo Opa</b>
-          <span id="today-line">Sonntag, 6. September</span>
+          <b id="anrede">Hallo Opa</b>
+          <span id="heute-zeile"></span>
         </div>
-        <div class="bell">
-          <svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg>
-          <i></i>
-        </div>
+        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i></i></div>
       </div>
 
-      <!-- Hero: das Ereignis der Woche, Motiv bricht oben aus -->
-      <div class="hero" id="hero">
-        <div class="art" id="art">
-          <svg viewBox="0 0 146 146" aria-hidden="true">
-            <defs>
-              <linearGradient id="g1" x1=".2" y1="0" x2=".7" y2="1">
-                <stop offset="0" stop-color="#9FE0F0"/><stop offset="1" stop-color="#1C5E78"/>
-              </linearGradient>
-              <linearGradient id="g2" x1=".2" y1="0" x2=".8" y2="1">
-                <stop offset="0" stop-color="#FFC98A"/><stop offset="1" stop-color="#C0641F"/>
-              </linearGradient>
-              <linearGradient id="g3" x1=".1" y1="0" x2=".9" y2="1">
-                <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#B9CBD3"/>
-              </linearGradient>
-              <linearGradient id="g4" x1=".2" y1="0" x2=".8" y2="1">
-                <stop offset="0" stop-color="#7FC4A9"/><stop offset="1" stop-color="#1F6448"/>
-              </linearGradient>
-            </defs>
-            <rect x="16" y="86" width="46" height="46" rx="16" fill="url(#g4)"/>
-            <circle cx="96" cy="52" r="24" fill="none" stroke="url(#g2)" stroke-width="15"/>
-            <circle cx="60" cy="62" r="34" fill="none" stroke="url(#g1)" stroke-width="21"/>
-            <ellipse cx="49" cy="41" rx="11" ry="6" fill="rgba(255,255,255,.55)" transform="rotate(-34 49 41)"/>
-            <rect x="86" y="94" width="40" height="26" rx="13" fill="url(#g3)"/>
-          </svg>
-        </div>
+      <button class="hero tap" id="hero">
+        <div class="art" id="art"></div>
         <div class="inner">
           <div class="top">
             <div class="txt">
-              <span class="chip" id="chip">In 2 Tagen</span>
-              <h2 id="hero-title">Warmbadetag im Hallenbad</h2>
+              <span class="chip" id="chip"></span>
+              <h2 id="hero-titel"></h2>
             </div>
-            <p class="meta" id="hero-meta">Montag 14:30 · das warme Wasser, 31,5 Grad</p>
+            <p class="meta" id="hero-meta"></p>
           </div>
           <div class="band" id="band">
-            <div class="ic">P</div>
-            <div>
-              <b>Papa holt dich ab</b>
-              <span>Montag um 14:10 vor der Tür</span>
-            </div>
-          </div>
-          <div class="band state" id="band-done" hidden>
-            <div class="ic">✓</div>
-            <div>
-              <b>Warst du. Schön.</b>
-              <span>Papa hat dich um 16:20 zurückgebracht</span>
-            </div>
+            <div class="ic" id="band-ic"></div>
+            <div><b id="band-titel"></b><span id="band-text"></span></div>
           </div>
         </div>
-      </div>
+      </button>
 
-      <!-- Wochenstreifen -->
-      <div class="week" id="week">
-        <div class="wd today"><span class="dot"><i></i></span><b>So</b><span class="num">6</span></div>
-        <div class="wd event"><span class="dot"><i></i></span><b>Mo</b><span class="num">7</span></div>
-        <div class="wd"><span class="dot"><i></i></span><b>Di</b><span class="num">8</span></div>
-        <div class="wd"><span class="dot"><i></i></span><b>Mi</b><span class="num">9</span></div>
-        <div class="wd"><span class="dot"><i></i></span><b>Do</b><span class="num">10</span></div>
-        <div class="wd"><span class="dot"><i></i></span><b>Fr</b><span class="num">11</span></div>
-        <div class="wd"><span class="dot"><i></i></span><b>Sa</b><span class="num">12</span></div>
-      </div>
+      <div class="week" id="week"></div>
 
-      <!-- vor dem Termin: nur die ruhige Nebenaktion -->
-      <div id="before">
-        <button class="cta quiet">Passt mir doch nicht</button>
-      </div>
-      <!-- nach dem Termin: erst jetzt der farbige Knopf -->
-      <div id="after" hidden>
-        <button class="cta" id="open-sheet">Wie war's?</button>
-      </div>
+      <div id="aktion"></div>
 
-      <div class="sec"><h3>Dein Buch</h3><span>14 Seiten</span></div>
-      <div class="rail">
-        <div class="tile"><div class="ph ph-3"></div><b>Kuchen mit Mama</b><small>10. August</small></div>
-        <div class="tile"><div class="ph ph-2"></div><b>Große Radtour</b><small>28. Juli</small></div>
-        <div class="tile"><div class="ph ph-4"></div><b>Männerkreis</b><small>19. August</small></div>
-        <div class="tile"><div class="ph ph-6"></div><b>Am Deich</b><small>20. Juli</small></div>
-      </div>
-
-      <button class="demo" id="toggle">Prototyp · umschalten auf Montagabend, nach dem Schwimmen</button>
+      <div class="sec"><h3>Dein Buch</h3><span id="buch-zahl"></span></div>
+      <div class="rail" id="rail"></div>
     </div>
   </div>
 
@@ -376,73 +342,14 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
       <div class="topbar">
         <div class="face f-opa">O</div>
         <div class="spread"></div>
-        <div class="bell">
-          <svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg>
-        </div>
+        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg></div>
       </div>
-
       <div class="title">
         <p class="eyebrow">Seit April · wird zu Weihnachten gedruckt</p>
         <h1>Dein Buch</h1>
       </div>
-
-      <div class="filters">
-        <button class="fil" aria-pressed="true" data-f="all">Alles</button>
-        <button class="fil" aria-pressed="false" data-f="fam">Mit Familie</button>
-        <button class="fil" aria-pressed="false" data-f="neu">Zum ersten Mal</button>
-        <button class="fil" aria-pressed="false" data-f="oma">Mit Oma</button>
-      </div>
-
-      <div class="stack" id="stack">
-        <div class="entry e-wasser" data-t="neu">
-          <div class="ph ph-1"></div>
-          <div class="cap">
-            <div class="kicker">September</div>
-            <h4>Warmbadetag</h4>
-          </div>
-          <div class="foot">♥ 3 · 1 Sprachnachricht</div>
-        </div>
-        <div class="entry e-runde" data-t="neu">
-          <div class="ph ph-4"></div>
-          <div class="cap">
-            <div class="kicker">August</div>
-            <h4>Männerkreis im Gemeindehaus</h4>
-          </div>
-          <div class="foot">♥ 4</div>
-        </div>
-        <div class="entry e-kaffee" data-t="fam">
-          <div class="ph ph-3"></div>
-          <div class="cap">
-            <div class="kicker">August</div>
-            <h4>Kuchen mit Mama</h4>
-          </div>
-          <div class="foot">♥ 5 · 2 Fotos</div>
-        </div>
-        <div class="entry e-erz" data-t="oma">
-          <div class="ph ph-5"></div>
-          <div class="cap">
-            <div class="kicker">August</div>
-            <h4>Bank am Feld, mit Oma</h4>
-          </div>
-          <div class="foot">♥ 4</div>
-        </div>
-        <div class="entry e-rad" data-t="all">
-          <div class="ph ph-2"></div>
-          <div class="cap">
-            <div class="kicker">Juli</div>
-            <h4>Große Radtour</h4>
-          </div>
-          <div class="foot">♥ 6</div>
-        </div>
-        <div class="entry e-werk" data-t="fam">
-          <div class="ph ph-6"></div>
-          <div class="cap">
-            <div class="kicker">Juli</div>
-            <h4>Am Deich mit dem Enkel</h4>
-          </div>
-          <div class="foot">♥ 3 · 1 Sprachnachricht</div>
-        </div>
-      </div>
+      <div class="filters" id="filters"></div>
+      <div class="stack" id="stack"></div>
       <p class="hint">Platzhalter — hier stehen später echte Fotos.</p>
     </div>
   </div>
@@ -451,63 +358,27 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   <div class="pane" id="p-fam" hidden>
     <div class="scroll">
       <div class="topbar">
-        <div class="faces">
-          <div class="face f-a">P</div>
-          <div class="face f-b">M</div>
-          <div class="face f-c">I</div>
-        </div>
+        <div class="faces" id="faces"></div>
         <div class="spread"></div>
-        <div class="bell">
-          <svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg>
-          <i></i>
-        </div>
+        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i></i></div>
       </div>
-
       <div class="title">
-        <p class="eyebrow">Sonntag 12:00 · du bist dran</p>
+        <p class="eyebrow" id="fam-eyebrow">du bist dran</p>
         <h1>Nächste Woche</h1>
       </div>
-
-      <div class="stack">
-        <button class="opt e-wasser" aria-pressed="true" data-d="a">
-          <div class="kicker">Steht schon</div>
-          <h4>Warmbadetag</h4>
-          <p class="sub">Montag 14:30 · Hallenbad</p>
-          <span class="note">Angemeldet — kein Anruf nötig</span>
-        </button>
-        <button class="opt e-erz" aria-pressed="false" data-d="b">
-          <div class="kicker">Zu zweit möglich</div>
-          <h4>Spielenachmittag</h4>
-          <p class="sub">Mittwoch 15:00 · Gemeindehaus</p>
-          <span class="note">Einmal dort anrufen</span>
-        </button>
-        <button class="opt e-runde" aria-pressed="false" data-d="c">
-          <div class="kicker">Noch nie da gewesen</div>
-          <h4>Männerkreis</h4>
-          <p class="sub">Dienstag 20:00 · jeder 3. Dienstag im Monat</p>
-          <span class="note">Erstes Mal — nach Mitfahrt fragen</span>
-        </button>
-      </div>
-
+      <div class="stack" id="vorschlaege"></div>
       <div class="draft">
         <h5>WhatsApp an Opa</h5>
-        <p class="bubble" id="draft">Opa, Montag 14:30 Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Hast du Lust? Dann meld ich dich an. Papa würde dich um 14:10 abholen.</p>
+        <p class="bubble" id="draft"></p>
       </div>
-      <button class="cta">Text kopieren und senden</button>
+      <button class="cta" id="kopieren">Text kopieren</button>
+      <button class="vorschau" id="vorschau">Vorschau: Woche zeigen, als wäre der Termin schon gewesen</button>
     </div>
   </div>
 
   <!-- ================= SHEET ================= -->
   <div class="scrim" id="scrim" hidden></div>
-  <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-label="Wie war es">
-    <div class="grip"></div>
-    <h3>Wie war's im Bad?</h3>
-    <p>Papa, Mama und dein Enkel warten schon.</p>
-    <button class="cta">Foto machen</button>
-    <button class="cta quiet">Etwas erzählen</button>
-    <button class="cta quiet">War schön — ohne Foto</button>
-    <button class="cta quiet" id="close-sheet">Später</button>
-  </div>
+  <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"></div>
 
   <!-- ================= TAB BAR ================= -->
   <nav class="tabs" role="tablist">
@@ -527,91 +398,440 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 </div>
 
 <script>
-(function(){
-  /* Tabs */
-  var tabs=document.querySelectorAll('.tab');
-  tabs.forEach(function(t){
-    t.addEventListener('click',function(){
-      tabs.forEach(function(o){
-        o.setAttribute('aria-selected','false');
-        document.getElementById(o.dataset.p).hidden=true;
-      });
-      t.setAttribute('aria-selected','true');
-      document.getElementById(t.dataset.p).hidden=false;
-    });
-  });
+/* ==========================================================================
+   INHALT — hier und nur hier wird geändert, was in der App steht.
+   Kein CSS, kein Layout, keine Technik. Später kommt genau dieser Block
+   vom Server; bis dahin steht er hier.
+   ========================================================================== */
+var INHALT = {
 
-  /* Sheet */
-  var sheet=document.getElementById('sheet'),scrim=document.getElementById('scrim');
-  function close(){sheet.hidden=true;scrim.hidden=true;}
-  document.getElementById('open-sheet').addEventListener('click',function(){sheet.hidden=false;scrim.hidden=false;});
-  document.getElementById('close-sheet').addEventListener('click',close);
-  scrim.addEventListener('click',close);
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+  anrede: "Hallo Opa",
 
-  /* Buch-Filter */
-  var fils=document.querySelectorAll('.fil'),entries=document.querySelectorAll('#stack .entry');
-  fils.forEach(function(f){
-    f.addEventListener('click',function(){
-      fils.forEach(function(x){x.setAttribute('aria-pressed','false');});
-      f.setAttribute('aria-pressed','true');
-      var v=f.dataset.f;
-      entries.forEach(function(e){e.hidden = !(v==='all' || e.dataset.t===v);});
-    });
-  });
+  familie: [
+    { kuerzel: "P", farbe: "f-a" },
+    { kuerzel: "M", farbe: "f-b" },
+    { kuerzel: "I", farbe: "f-c" }
+  ],
 
-  /* Familie: Auswahl steuert den WhatsApp-Entwurf */
-  var texts={
-    a:'Opa, Montag 14:30 Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Hast du Lust? Dann meld ich dich an. Papa würde dich um 14:10 abholen.',
-    b:'Opa, Mittwoch 15 Uhr ist Spielenachmittag im Gemeindehaus. Oma könnte mitkommen. Sollen wir euch beide anmelden?',
-    c:'Opa, nächsten Dienstag um 20 Uhr trifft sich der Männerkreis im Gemeindehaus. Ich frag, ob dich jemand mitnimmt — und beim ersten Mal komm ich mit. Was meinst du?'
+  // Das Ereignis dieser Woche.
+  // wochentag: 1 = Montag ... 7 = Sonntag
+  // gewesenAb: ab dieser Stunde gilt es als vorbei
+  ereignis: {
+    titel:      "Warmbadetag im Hallenbad",
+    kategorie:  "wasser",
+    wochentag:  1,
+    zeit:       "14:30",
+    gewesenAb:  17,
+    ort:        "Hallenbad",
+    zusatz:     "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
+    abholung:   { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
+    danach:     { titel: "Warst du. Schön.", text: "Papa hat dich um 16:20 zurückgebracht" }
+  },
+
+  buch: [
+    { monat: "September", titel: "Warmbadetag",           farbe: "e-wasser", foto: "ph-1", reaktionen: "♥ 3 · 1 Sprachnachricht", art: "neu" },
+    { monat: "August",    titel: "Männerkreis im Gemeindehaus", farbe: "e-runde",  foto: "ph-4", reaktionen: "♥ 4",                 art: "neu" },
+    { monat: "August",    titel: "Kuchen mit Mama",       farbe: "e-kaffee", foto: "ph-3", reaktionen: "♥ 5 · 2 Fotos",        art: "familie" },
+    { monat: "August",    titel: "Bank am Feld, mit Oma", farbe: "e-erz",    foto: "ph-5", reaktionen: "♥ 4",                  art: "oma" },
+    { monat: "Juli",      titel: "Große Radtour",         farbe: "e-rad",    foto: "ph-2", reaktionen: "♥ 6",                  art: "alles" },
+    { monat: "Juli",      titel: "Am Deich mit dem Enkel", farbe: "e-werk",  foto: "ph-6", reaktionen: "♥ 3 · 1 Sprachnachricht", art: "familie" }
+  ],
+
+  filter: [
+    { schluessel: "alles",   name: "Alles" },
+    { schluessel: "familie", name: "Mit Familie" },
+    { schluessel: "neu",     name: "Zum ersten Mal" },
+    { schluessel: "oma",     name: "Mit Oma" }
+  ],
+
+  vorschlaege: [
+    {
+      kicker: "Steht schon", titel: "Warmbadetag", farbe: "e-wasser",
+      wann: "Montag 14:30 · Hallenbad", hinweis: "Angemeldet — kein Anruf nötig",
+      text: "Opa, Montag 14:30 Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Hast du Lust? Dann meld ich dich an. Papa würde dich um 14:10 abholen."
+    },
+    {
+      kicker: "Zu zweit möglich", titel: "Spielenachmittag", farbe: "e-erz",
+      wann: "Mittwoch 15:00 · Gemeindehaus", hinweis: "Einmal dort anrufen",
+      text: "Opa, Mittwoch 15 Uhr ist Spielenachmittag im Gemeindehaus. Oma könnte mitkommen. Sollen wir euch beide anmelden?"
+    },
+    {
+      kicker: "Noch nie da gewesen", titel: "Männerkreis", farbe: "e-runde",
+      wann: "Dienstag 20:00 · jeder 3. Dienstag im Monat", hinweis: "Erstes Mal — nach Mitfahrt fragen",
+      text: "Opa, nächsten Dienstag um 20 Uhr trifft sich der Männerkreis im Gemeindehaus. Ich frag, ob dich jemand mitnimmt — und beim ersten Mal komm ich mit. Was meinst du?"
+    }
+  ]
+};
+
+/* ========================================================================== */
+(function () {
+  "use strict";
+
+  var TAGE_KURZ = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+  var TAGE_LANG = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+  var MONATE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- Datum ---------- */
+  function mitternacht(d) { var x = new Date(d); x.setHours(0,0,0,0); return x; }
+  function montagDieserWoche(d) {
+    var x = mitternacht(d);
+    var wt = (x.getDay() + 6) % 7;          // 0 = Montag
+    x.setDate(x.getDate() - wt);
+    return x;
+  }
+  function plusTage(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function tageDazwischen(a, b) {
+    return Math.round((mitternacht(b) - mitternacht(a)) / 86400000);
+  }
+  function langesDatum(d) {
+    return TAGE_LANG[(d.getDay() + 6) % 7] + ", " + d.getDate() + ". " + MONATE[d.getMonth()];
+  }
+
+  /* ---------- Motive: dieselben Formen wie das App-Icon, je Kategorie umgefärbt ---------- */
+  var FARBPAARE = {
+    wasser:    ["#A9E6F5","#17607C"],
+    runde:     ["#DCC0E8","#5B3D74"],
+    kaffee:    ["#FFD3A6","#9A5220"],
+    rad:       ["#C6EDB4","#2F6A33"],
+    erzaehlen: ["#FBE6A8","#8A6A15"],
+    werk:      ["#E6D6C4","#6E5540"]
   };
-  var opts=document.querySelectorAll('.opt');
-  opts.forEach(function(o){
-    o.addEventListener('click',function(){
-      opts.forEach(function(x){x.setAttribute('aria-pressed','false');});
-      o.setAttribute('aria-pressed','true');
-      document.getElementById('draft').textContent=texts[o.dataset.d];
+  var motivZaehler = 0;
+
+  function motiv(kategorie) {
+    var f = FARBPAARE[kategorie] || FARBPAARE.wasser;
+    var n = "m" + (++motivZaehler);
+    return '<svg viewBox="0 0 146 146" aria-hidden="true"><defs>' +
+      '<linearGradient id="a' + n + '" x1=".2" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="' + f[0] + '"/><stop offset="1" stop-color="' + f[1] + '"/></linearGradient>' +
+      '<linearGradient id="b' + n + '" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#FFCE95"/><stop offset="1" stop-color="#BE5F1B"/></linearGradient>' +
+      '<linearGradient id="c' + n + '" x1=".1" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#B9CBD3"/></linearGradient>' +
+      '</defs>' +
+      '<circle cx="99" cy="47" r="24" fill="none" stroke="url(#b' + n + ')" stroke-width="15"/>' +
+      '<rect x="86" y="92" width="42" height="26" rx="13" fill="url(#c' + n + ')"/>' +
+      '<circle cx="58" cy="62" r="34" fill="none" stroke="url(#a' + n + ')" stroke-width="21"/>' +
+      '<ellipse cx="47" cy="41" rx="11" ry="6" fill="rgba(255,255,255,.5)" transform="rotate(-34 47 41)"/>' +
+      '</svg>';
+  }
+
+  function motivKamera() {
+    var n = "k" + (++motivZaehler);
+    return '<svg viewBox="0 0 146 146" aria-hidden="true"><defs>' +
+      '<linearGradient id="a' + n + '" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#B7E9C6"/><stop offset="1" stop-color="#1F6448"/></linearGradient>' +
+      '<linearGradient id="b' + n + '" x1=".1" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C4D2C0"/></linearGradient>' +
+      '<linearGradient id="c' + n + '" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#FFC98A"/><stop offset="1" stop-color="#C0641F"/></linearGradient>' +
+      '</defs>' +
+      '<rect x="88" y="92" width="42" height="34" rx="15" fill="url(#c' + n + ')"/>' +
+      '<rect x="24" y="46" width="90" height="70" rx="24" fill="url(#a' + n + ')"/>' +
+      '<rect x="52" y="34" width="34" height="16" rx="8" fill="url(#a' + n + ')"/>' +
+      '<circle cx="69" cy="81" r="23" fill="url(#b' + n + ')"/>' +
+      '<circle cx="69" cy="81" r="11" fill="#1F6448"/>' +
+      '<ellipse cx="56" cy="68" rx="9" ry="5" fill="rgba(255,255,255,.5)" transform="rotate(-34 56 68)"/>' +
+      '</svg>';
+  }
+
+  /* ---------- Zustand ---------- */
+  var vorschauGewesen = false;   // nur der Schalter im Familie-Reiter
+
+  // Der Termin dieser Woche. Ist er schon vorbei, gilt der der naechsten Woche —
+  // die App zeigt immer das, was als Naechstes kommt, nie etwas Abgelaufenes.
+  // Am Abend des Termintags bleibt er stehen, damit "Wie war's?" noch geht.
+  function terminDatum() {
+    var termin = plusTage(montagDieserWoche(new Date()), INHALT.ereignis.wochentag - 1);
+    if (tageDazwischen(new Date(), termin) < 0) termin = plusTage(termin, 7);
+    return termin;
+  }
+
+  function istGewesen() {
+    if (vorschauGewesen) return true;
+    var jetzt = new Date();
+    var diff = tageDazwischen(jetzt, terminDatum());
+    if (diff < 0) return true;
+    if (diff === 0 && jetzt.getHours() >= INHALT.ereignis.gewesenAb) return true;
+    return false;
+  }
+
+  function abstandText() {
+    var diff = tageDazwischen(new Date(), terminDatum());
+    if (istGewesen()) return diff === 0 ? "Heute gewesen" : "War am " + TAGE_LANG[(terminDatum().getDay() + 6) % 7];
+    if (diff === 0) return "Heute";
+    if (diff === 1) return "Morgen";
+    return "In " + diff + " Tagen";
+  }
+
+  /* ---------- Sheet ---------- */
+  var sheet = $("sheet"), scrim = $("scrim");
+
+  function sheetZu() { sheet.hidden = true; scrim.hidden = true; }
+
+  function sheetAuf(inhaltHtml) {
+    sheet.innerHTML = '<div class="grip"></div>' + inhaltHtml;
+    sheet.hidden = false;
+    scrim.hidden = false;
+    var zu = sheet.querySelector("[data-zu]");
+    if (zu) zu.addEventListener("click", sheetZu);
+  }
+
+  scrim.addEventListener("click", sheetZu);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") sheetZu(); });
+
+  /* ---------- Woche zeichnen ---------- */
+  function zeichneWoche() {
+    var e = INHALT.ereignis;
+    var termin = terminDatum();
+    var gewesen = istGewesen();
+    var heute = new Date();
+
+    $("anrede").textContent = INHALT.anrede;
+    $("heute-zeile").textContent = langesDatum(heute);
+
+    $("art").innerHTML = gewesen ? motivKamera() : motiv(e.kategorie);
+    document.querySelector("#hero .inner").style.background =
+      gewesen ? "var(--c-rad)" : "var(--c-" + e.kategorie + ")";
+
+    $("chip").textContent = abstandText();
+    $("hero-titel").textContent = e.titel;
+    $("hero-meta").textContent = gewesen
+      ? TAGE_LANG[(termin.getDay() + 6) % 7] + " · war um " + e.zeit
+      : TAGE_LANG[(termin.getDay() + 6) % 7] + " " + e.zeit + " · " + e.ort;
+
+    var band = gewesen ? e.danach : e.abholung;
+    $("band").className = "band" + (gewesen ? " fertig" : "");
+    $("band-ic").textContent = gewesen ? "✓" : e.abholung.kuerzel;
+    $("band-titel").textContent = band.titel;
+    $("band-text").textContent = band.text;
+
+    // Wochenstreifen: die naechsten sieben Tage, heute zuerst.
+    // So steht der Termin immer drin — eine Kalenderwoche haette ihn
+    // am Wochenende nach hinten aus dem Bild geschoben.
+    var streifen = "";
+    for (var i = 0; i < 7; i++) {
+      var tag = plusTage(heute, i);
+      var klassen = "wd";
+      if (i === 0) klassen += " today";
+      if (tageDazwischen(tag, termin) === 0) klassen += " event";
+      streifen += '<button class="' + klassen + '" data-tag="' + i + '">' +
+        '<span class="dot"><i></i></span><b>' + TAGE_KURZ[(tag.getDay() + 6) % 7] + '</b>' +
+        '<span class="num">' + tag.getDate() + "</span></button>";
+    }
+    $("week").innerHTML = streifen;
+    Array.prototype.forEach.call($("week").children, function (el) {
+      el.addEventListener("click", function () {
+        var tag = plusTage(new Date(), +el.dataset.tag);
+        if (tageDazwischen(tag, termin) === 0) { ereignisSheet(); return; }
+        sheetAuf(
+          '<div class="kicker">' + langesDatum(tag) + "</div>" +
+          "<h3>Nichts vorgesehen</h3>" +
+          "<p>An dem Tag steht nichts an. Das ist auch mal schön.</p>" +
+          '<button class="cta quiet" data-zu>Zurück</button>'
+        );
+      });
+    });
+
+    // Aktion — vor dem Termin kein farbiger Knopf
+    $("aktion").innerHTML = gewesen
+      ? '<button class="cta" id="wie-wars">Wie war\'s?</button>'
+      : '<button class="cta quiet" id="passt-nicht">Passt mir doch nicht</button>';
+
+    if (gewesen) {
+      $("wie-wars").addEventListener("click", rueckmeldungSheet);
+    } else {
+      $("passt-nicht").addEventListener("click", function () {
+        sheetAuf(
+          "<h3>Passt dir nicht?</h3>" +
+          "<p>Kein Problem. Wir sagen ab und suchen was anderes.</p>" +
+          '<button class="cta">Ja, bitte absagen</button>' +
+          '<button class="cta quiet" data-zu>Doch, passt schon</button>'
+        );
+      });
+    }
+
+    // Buch-Streifen
+    $("buch-zahl").textContent = INHALT.buch.length + " Seiten";
+    $("rail").innerHTML = INHALT.buch.slice(0, 5).map(function (b, i) {
+      return '<button class="tile tap" data-b="' + i + '">' +
+        '<div class="ph ' + b.foto + '"></div><b>' + b.titel + "</b>" +
+        "<small>" + b.monat + "</small></button>";
+    }).join("");
+    Array.prototype.forEach.call($("rail").children, function (el) {
+      el.addEventListener("click", function () { buchSheet(INHALT.buch[+el.dataset.b]); });
+    });
+  }
+
+  function ereignisSheet() {
+    var e = INHALT.ereignis, termin = terminDatum(), gewesen = istGewesen();
+    sheetAuf(
+      '<div class="kicker">' + abstandText() + "</div>" +
+      "<h3>" + e.titel + "</h3>" +
+      "<p>" + langesDatum(termin) + " um " + e.zeit + " Uhr · " + e.ort + "</p>" +
+      "<p>" + e.zusatz + "</p>" +
+      "<p>" + (gewesen ? e.danach.titel : e.abholung.titel + " " + e.abholung.text) + "</p>" +
+      (gewesen ? '<button class="cta" id="sheet-wie">Wie war\'s?</button>' : "") +
+      '<button class="cta quiet" data-zu>Zurück</button>'
+    );
+    var b = $("sheet-wie");
+    if (b) b.addEventListener("click", rueckmeldungSheet);
+  }
+
+  function rueckmeldungSheet() {
+    sheetAuf(
+      "<h3>Wie war's?</h3>" +
+      "<p>Papa, Mama und dein Enkel warten schon.</p>" +
+      '<button class="cta">Foto machen</button>' +
+      '<button class="cta quiet">Etwas erzählen</button>' +
+      '<button class="cta quiet">War schön — ohne Foto</button>' +
+      '<button class="cta quiet" data-zu>Später</button>'
+    );
+  }
+
+  function buchSheet(b) {
+    sheetAuf(
+      '<div class="bild ph ' + b.foto + '"></div>' +
+      '<div class="kicker">' + b.monat + "</div>" +
+      "<h3>" + b.titel + "</h3>" +
+      "<p>" + b.reaktionen + "</p>" +
+      '<button class="cta quiet" data-zu>Zurück</button>'
+    );
+  }
+
+  /* ---------- Buch zeichnen ---------- */
+  function zeichneBuch() {
+    $("filters").innerHTML = INHALT.filter.map(function (f, i) {
+      return '<button class="fil" aria-pressed="' + (i === 0) + '" data-f="' + f.schluessel + '">' + f.name + "</button>";
+    }).join("");
+
+    $("stack").innerHTML = INHALT.buch.map(function (b, i) {
+      return '<button class="entry tap ' + b.farbe + '" data-b="' + i + '" data-art="' + b.art + '">' +
+        '<div class="ph ' + b.foto + '"></div>' +
+        '<div class="cap"><div class="kicker">' + b.monat + "</div><h4>" + b.titel + "</h4></div>" +
+        '<div class="foot">' + b.reaktionen + "</div></button>";
+    }).join("");
+
+    Array.prototype.forEach.call($("stack").children, function (el) {
+      el.addEventListener("click", function () { buchSheet(INHALT.buch[+el.dataset.b]); });
+    });
+
+    var fils = $("filters").children;
+    Array.prototype.forEach.call(fils, function (f) {
+      f.addEventListener("click", function () {
+        Array.prototype.forEach.call(fils, function (x) { x.setAttribute("aria-pressed", "false"); });
+        f.setAttribute("aria-pressed", "true");
+        Array.prototype.forEach.call($("stack").children, function (e) {
+          e.hidden = !(f.dataset.f === "alles" || e.dataset.art === f.dataset.f);
+        });
+      });
+    });
+  }
+
+  /* ---------- Familie zeichnen ---------- */
+  function zeichneFamilie() {
+    $("faces").innerHTML = INHALT.familie.map(function (p) {
+      return '<div class="face ' + p.farbe + '">' + p.kuerzel + "</div>";
+    }).join("");
+
+    $("fam-eyebrow").textContent = langesDatum(new Date()) + " · du bist dran";
+
+    $("vorschlaege").innerHTML = INHALT.vorschlaege.map(function (v, i) {
+      return '<button class="opt ' + v.farbe + '" aria-pressed="' + (i === 0) + '" data-v="' + i + '">' +
+        '<div class="kicker">' + v.kicker + "</div><h4>" + v.titel + "</h4>" +
+        '<p class="sub">' + v.wann + "</p>" +
+        '<span class="note">' + v.hinweis + "</span></button>";
+    }).join("");
+
+    $("draft").textContent = INHALT.vorschlaege[0].text;
+
+    var opts = $("vorschlaege").children;
+    Array.prototype.forEach.call(opts, function (o) {
+      o.addEventListener("click", function () {
+        Array.prototype.forEach.call(opts, function (x) { x.setAttribute("aria-pressed", "false"); });
+        o.setAttribute("aria-pressed", "true");
+        $("draft").textContent = INHALT.vorschlaege[+o.dataset.v].text;
+        zuruecksetzenKopieren();
+      });
+    });
+  }
+
+  /* ---------- Kopieren ---------- */
+  var kopierUhr = null;
+
+  function zuruecksetzenKopieren() {
+    clearTimeout(kopierUhr);
+    var b = $("kopieren");
+    b.textContent = "Text kopieren";
+    b.classList.remove("fertig");
+  }
+
+  function inZwischenablage(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (ok, nein) {
+      var t = document.createElement("textarea");
+      t.value = text;
+      t.setAttribute("readonly", "");
+      t.style.cssText = "position:absolute;left:-9999px";
+      document.body.appendChild(t);
+      t.select();
+      t.setSelectionRange(0, text.length);
+      var g = false;
+      try { g = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(t);
+      g ? ok() : nein();
+    });
+  }
+
+  $("kopieren").addEventListener("click", function () {
+    var b = this;
+    inZwischenablage($("draft").textContent).then(function () {
+      b.textContent = "Kopiert ✓";
+      b.classList.add("fertig");
+      clearTimeout(kopierUhr);
+      kopierUhr = setTimeout(zuruecksetzenKopieren, 2500);
+    }).catch(function () {
+      b.textContent = "Ging nicht — Text antippen und halten";
+      clearTimeout(kopierUhr);
+      kopierUhr = setTimeout(zuruecksetzenKopieren, 3500);
     });
   });
 
-  /* Prototyp: Zustand vor / nach dem Termin */
-  var art=document.getElementById('art');
-  var artBefore=art.innerHTML;
-  var artAfter='<svg viewBox="0 0 146 146" aria-hidden="true">'+
-    '<defs>'+
-    '<linearGradient id="h1" x1=".2" y1="0" x2=".8" y2="1">'+
-    '<stop offset="0" stop-color="#B7E9C6"/><stop offset="1" stop-color="#1F6448"/></linearGradient>'+
-    '<linearGradient id="h2" x1=".1" y1="0" x2=".9" y2="1">'+
-    '<stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C4D2C0"/></linearGradient>'+
-    '<linearGradient id="h3" x1=".2" y1="0" x2=".8" y2="1">'+
-    '<stop offset="0" stop-color="#FFC98A"/><stop offset="1" stop-color="#C0641F"/></linearGradient>'+
-    '</defs>'+
-    '<rect x="88" y="92" width="42" height="34" rx="15" fill="url(#h3)"/>'+
-    '<rect x="24" y="46" width="90" height="70" rx="24" fill="url(#h1)"/>'+
-    '<rect x="52" y="34" width="34" height="16" rx="8" fill="url(#h1)"/>'+
-    '<circle cx="69" cy="81" r="23" fill="url(#h2)"/>'+
-    '<circle cx="69" cy="81" r="11" fill="#1F6448"/>'+
-    '<circle cx="101" cy="60" r="5" fill="rgba(255,255,255,.75)"/>'+
-    '<ellipse cx="56" cy="68" rx="9" ry="5" fill="rgba(255,255,255,.5)" transform="rotate(-34 56 68)"/></svg>';
+  /* ---------- Reiter ---------- */
+  var tabs = document.querySelectorAll(".tab");
+  Array.prototype.forEach.call(tabs, function (t) {
+    t.addEventListener("click", function () {
+      Array.prototype.forEach.call(tabs, function (o) {
+        o.setAttribute("aria-selected", "false");
+        $(o.dataset.p).hidden = true;
+        $(o.dataset.p).classList.remove("zeigen");
+      });
+      t.setAttribute("aria-selected", "true");
+      var pane = $(t.dataset.p);
+      pane.hidden = false;
+      void pane.offsetWidth;                 // Animation neu auslösen
+      pane.classList.add("zeigen");
+      pane.querySelector(".scroll").scrollTop = 0;
+      sheetZu();
+    });
+  });
 
-  var done=false, wd=document.querySelectorAll('#week .wd');
-  document.getElementById('toggle').addEventListener('click',function(){
-    done=!done;
-    document.getElementById('before').hidden=done;
-    document.getElementById('after').hidden=!done;
-    document.getElementById('band').hidden=done;
-    document.getElementById('band-done').hidden=!done;
-    document.getElementById('hero').classList.toggle('done',done);
-    art.innerHTML=done?artAfter:artBefore;
-    document.getElementById('chip').textContent=done?'Heute gewesen':'In 2 Tagen';
-    document.getElementById('hero-meta').textContent=done?'Montag · war um 14:30':'Montag 14:30 · das warme Wasser, 31,5 Grad';
-    document.getElementById('today-line').textContent=done?'Montag, 7. September':'Sonntag, 6. September';
-    wd[0].classList.toggle('today',!done);
-    wd[1].classList.toggle('today',done);
-    this.textContent=done
-      ? 'Prototyp · zurück auf Sonntagabend, vor dem Termin'
-      : 'Prototyp · umschalten auf Montagabend, nach dem Schwimmen';
+  $("hero").addEventListener("click", ereignisSheet);
+
+  $("vorschau").addEventListener("click", function () {
+    vorschauGewesen = !vorschauGewesen;
+    this.textContent = vorschauGewesen
+      ? "Vorschau an — zurück zum echten Datum"
+      : "Vorschau: Woche zeigen, als wäre der Termin schon gewesen";
+    zeichneWoche();
+  });
+
+  /* ---------- Los ---------- */
+  zeichneWoche();
+  zeichneBuch();
+  zeichneFamilie();
+
+  // Wenn die App im Hintergrund lag und wieder geöffnet wird: Datum nachziehen.
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) zeichneWoche();
   });
 })();
 </script>

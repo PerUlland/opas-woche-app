@@ -177,11 +177,16 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.today.weg .dot i{background:rgba(255,255,255,.45)}
 .wd.today.weg b{color:rgba(255,255,255,.6)}
 .wd.today.weg .num{color:#fff}
-/* Der Tag, den die grosse Karte gerade zeigt. Nur ein Hauch Farbe —
-   sonst kaempfen zu viele Signale in einer Reihe von sieben Kaesten. */
-.wd.blick{background:#FDF3EE}
-.wd.weg.blick{background:var(--sunk)}
-.wd.today.blick{background:var(--ink)}
+/* Der Tag, den die grosse Karte gerade zeigt: gefuellt.
+   Die Reihe kennt damit genau zwei gefuellte Kaesten — schwarz ist heute,
+   orange ist das, was oben steht. Ist beides derselbe Tag, gewinnt schwarz
+   und die Zeile ueber der Karte bleibt weg: dann ist er am Ausgangspunkt. */
+.wd.blick.event{background:var(--accent);border-color:var(--accent)}
+.wd.blick.event b{color:rgba(255,255,255,.72)}
+.wd.blick.event .num{color:#fff}
+.wd.blick.event .dot i{background:#fff}
+.wd.blick.weg{background:var(--sunk)}
+.wd.today.blick{background:var(--ink);border-color:var(--ink)}
 
 /* Steht nur da, wenn er gerade NICHT auf heute schaut. Eine Zeile, kein
    Kasten, keine Umrandung: Er soll wissen, wo er ist, ohne dass die

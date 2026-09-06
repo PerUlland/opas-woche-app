@@ -5,13 +5,14 @@
 // lokal auf dem Geraet; das Netz wird nur benutzt, um nachzusehen,
 // ob es etwas Neueres gibt.
 
-const VERSION = "v10";
+const VERSION = "v11";
 const CACHE = "opas-woche-" + VERSION;
 
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./opa.jpg",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",

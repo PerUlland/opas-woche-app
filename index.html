@@ -1479,6 +1479,9 @@ var INHALT = {
           abosStarten(function () {
             schirmZu();
             starten();
+            // Erst jetzt, wo die Rueckmeldungen da sind, weiss die App,
+            // ob noch ein Bild auf diesem Geraet wartet.
+            fotosNachreichen();
           });
         })
         .catch(function () {
@@ -2040,6 +2043,8 @@ var INHALT = {
         farbe: "e-" + kat,
         foto: "ph-1",
         bild: x.fotoUrl || (x.fotoLokal ? fotos[x.fotoLokal] : ""),
+        // Bild ist noch nicht im Eimer — die anderen drei sehen es nicht.
+        nurHier: !x.fotoUrl && !!x.fotoLokal,
         bewertung: x.bewertung || 4,
         notiz: x.notiz || "",
         herzen: x.herzen || [],
@@ -2257,7 +2262,7 @@ var INHALT = {
      Woche sind gut 5 MB im Jahr — die freien 5 GB reichen dafür weit
      über Opas Lebenszeit hinaus. */
   function fotoHochladen(datenUri, fertig) {
-    if (!firebaseDa() || !lager) { fertig(null); return; }
+    if (!firebaseDa() || !lager) { fertig(null, "Speicher nicht bereit"); return; }
     var name = "f" + Date.now() + Math.round(Math.random() * 99999) + ".jpg";
     var pfad = "familien/" + FAM + "/fotos/" + name;
     /* "von" steht als Merkmal am Bild, damit die Regel im Eimer weiss, wer
@@ -2271,8 +2276,13 @@ var INHALT = {
       .then(function (erg) { return erg.ref.getDownloadURL(); })
       .then(function (url) { fertig({ pfad: pfad, url: url }); })
       .catch(function (e) {
+        /* Frueher verschwand der Fehler hier lautlos, und eine Seite ohne
+           Bild sah aus wie eine Seite mit Bild. Genau daran ist das erste
+           Foto haengengeblieben: es lag auf einem Geraet, und niemand
+           konnte das sehen. Der Grund wird deshalb weitergereicht — bis
+           nach vorn, wo ein Mensch ihn liest. */
         if (window.console) console.warn("Foto hochladen:", e);
-        fertig(null);
+        fertig(null, (e && e.code) || (e && e.message) || "unbekannt");
       });
   }
 
@@ -2283,6 +2293,38 @@ var INHALT = {
     if (!pfad || !firebaseDa() || !lager) return;
     lager.ref(pfad).delete().catch(function (e) {
       if (window.console) console.warn("Foto wegnehmen:", e);
+    });
+  }
+
+  /* Ein Bild, das nicht hochgeladen werden konnte, bleibt auf dem Geraet
+     liegen — die Seite steht trotzdem im Buch, denn die Rueckmeldung ist
+     mehr wert als das Bild. Aber liegen bleiben soll es nicht fuer immer:
+     bei jedem Start sieht die App nach, ob noch eines wartet, und schickt
+     es los. Das deckt auch den Fall ab, um den es eigentlich geht — er
+     macht das Foto vor Ort, wo oft kein Netz ist.
+
+     Nachreichen kann nur das Geraet, auf dem das Bild liegt. Auf allen
+     anderen steht "fotoLokal" zwar im Dokument, aber das Bild selbst ist
+     dort nicht — dann passiert hier nichts. */
+  var nachreichenLaeuft = {};
+  function fotosNachreichen() {
+    if (!firebaseDa() || !lager) return;
+    docs("rueckmeldungen").forEach(function (r) {
+      if (r.fotoUrl || !r.fotoLokal) return;
+      var bild = fotos[r.fotoLokal];
+      if (!bild || nachreichenLaeuft[r.uid]) return;
+      nachreichenLaeuft[r.uid] = true;
+      fotoHochladen(bild, function (foto) {
+        if (!foto) { nachreichenLaeuft[r.uid] = false; return; }
+        docSchreiben("rueckmeldungen", r.uid,
+          { fotoUrl: foto.url, fotoPfad: foto.pfad, fotoLokal: "" }, true);
+        // Jetzt liegt es im Eimer. Die Kopie auf dem Geraet kann weg —
+        // der Platz dort ist knapp, und ein Bild wiegt rund 100 KB.
+        delete fotos[r.fotoLokal];
+        schreib("fotos", fotos);
+        zeichneAlles();
+        zeichneBuch();
+      });
     });
   }
 
@@ -2387,7 +2429,7 @@ var INHALT = {
            scheitert, bliebe sie für immer so. Geht es schief, wandert die
            Seite trotzdem ins Buch — die Rückmeldung ist mehr wert als das
            Bild, und ohne sie weiss niemand, ob er da war. */
-        function fertig(foto) {
+        function fertig(foto, fehler) {
           var neuerPfad = (foto && foto.pfad) || (stand.fotoUrl ? stand.altPfad : "");
           /* Nur die Felder anfassen, die zu dieser Seite gehoeren. Die
              Herzen bleiben stehen — wer eine Seite nachtraegt, nimmt
@@ -2405,7 +2447,19 @@ var INHALT = {
           // Das alte Bild wegnehmen, wenn es ersetzt oder entfernt wurde.
           if (stand.altPfad && stand.altPfad !== neuerPfad) fotoLoeschen(stand.altPfad);
 
-          if (aendern) {
+          /* Ein Bild, das nicht durchkam, darf nicht aussehen wie eines,
+             das durchkam. Sonst steht er am Sonntag vor der Familie und
+             fragt, warum keiner etwas sagt. */
+          if (fehler) {
+            sheetAuf(
+              "<h3>Beim Bild hat es gehakt</h3>" +
+              "<p>Die Seite steht im Buch — nur das Bild ist noch nicht bei " +
+              "den anderen angekommen. Es liegt hier auf dem Gerät, und die " +
+              "App schickt es beim nächsten Start noch einmal los.</p>" +
+              '<p style="color:var(--faint);font-size:13px">' + roh(fehler) + "</p>" +
+              '<button class="cta quiet" data-zu>Gut</button>'
+            );
+          } else if (aendern) {
             sheetZu();
           } else {
             neueMitteilung({ von: "!", titel: "Steht jetzt im Buch: " + e.titel,
@@ -2471,6 +2525,11 @@ var INHALT = {
       "<h3>" + roh(b.titel) + "</h3>" +
       "<p>" + roh(b.reaktionen) + "</p>" +
       (herzenText(b) ? '<p class="herzen">' + roh(herzenText(b)) + "</p>" : "") +
+      (b.nurHier
+        ? '<p style="color:var(--faint);font-size:13.5px">' +
+          "Das Bild liegt bisher nur auf diesem Gerät. Die anderen sehen es " +
+          "noch nicht.</p>"
+        : "") +
       // Herzen gibt die Familie, Opa bekommt sie. Auf seinen eigenen
       // Seiten hätte der Knopf keinen Sinn.
       (ROLLE === "admin"

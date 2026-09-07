@@ -419,6 +419,13 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
    Er endet mit Absicht nicht am Sonntag: man legt eine Sache auch mal über
    die Wochengrenze, und dann soll das Ziel sichtbar sein.
    -------------------------------------------------------------------- */
+/* Was an dem Tag ohnehin laeuft — Radgruppe, Orga-Tag. Keine Warnung,
+   eine Auskunft: man soll nicht dagegen planen, ohne es zu merken. */
+.routine{display:flex;gap:8px;align-items:baseline;margin:12px 0 0;
+  background:var(--sunk);border-radius:14px;padding:10px 13px}
+.routine b{flex:0 0 auto;font-size:12.5px;font-weight:750;letter-spacing:-.01em}
+.routine span{font-size:12.5px;color:var(--dim);font-weight:500}
+
 .streifen{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:15px 0 2px}
 .st{height:58px;border-radius:15px;background:var(--sunk);display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:2px;transition:transform .12s ease,background-color .18s ease}
@@ -841,12 +848,19 @@ var INHALT = {
     { schluessel: "oma",     name: "Mit Oma" }
   ],
 
-  // Was man in eine leere Woche eintragen kann.
+  /* Die offiziellen Angebote in Hünxe. Aus KATALOG.md, Stand 04.09.2026 —
+     telefonisch noch nicht verifiziert.
+
+     "wochentag" oder "wochentage": an welchen Tagen es läuft.
+     Der Rhythmus steht in "kicker", und zwar ehrlich: die meisten dieser
+     Runden treffen sich einmal im Monat, nicht jede Woche. Die App weiß
+     das Datum nicht — deshalb muss dort stehen, dass man anruft, statt so
+     zu tun, als stünde der Termin fest. */
   vorschlaege: [
     {
       id: "bad", titel: "Warmbadetag", kategorie: "wasser", farbe: "e-wasser",
-      wochentag: 1, zeit: "14:30", gewesenAb: 17, ort: "Hallenbad", emoji: "🏊",
-      kicker: "Läuft jede Woche", hinweis: "Angemeldet — kein Anruf nötig",
+      wochentag: 1, zeit: "14:30", gewesenAb: 17, ort: "Hallenbad Hünxe", emoji: "🏊",
+      kicker: "Jede Woche", hinweis: "Angemeldet — kein Anruf nötig",
       zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
       abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
       rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 16:20" },
@@ -855,29 +869,42 @@ var INHALT = {
     },
     {
       id: "spiel", titel: "Spielenachmittag", kategorie: "erzaehlen", farbe: "e-erz",
-      wochentag: 3, zeit: "15:00", gewesenAb: 18, ort: "Gemeindehaus", emoji: "🃏",
-      kicker: "Zu zweit möglich", hinweis: "Einmal dort anrufen",
+      wochentag: 3, zeit: "15:00", gewesenAb: 18, ort: "Unsere Arche, Bruckhausen", emoji: "🃏",
+      kicker: "Einmal im Monat", hinweis: "Termin dort erfragen · Oma kann mit",
       zusatz: "Karten, Rommé, Kuchen. Oma kann mitkommen.",
       abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
       rueckweg: { kuerzel: "P", titel: "Papa bringt euch zurück", text: "gegen 18 Uhr" },
       danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" },
-      text: "Opa, {TAG} um {ZEIT} ist Spielenachmittag im Gemeindehaus. Oma könnte mitkommen. Ich melde euch beide an."
+      text: "Opa, {TAG} um {ZEIT} ist Spielenachmittag in der Arche. Oma könnte mitkommen. Ich melde euch beide an."
     },
     {
       id: "maenner", titel: "Männerkreis", kategorie: "runde", farbe: "e-runde",
-      wochentag: 2, zeit: "20:00", gewesenAb: 22, ort: "Gemeindehaus", emoji: "👥",
-      kicker: "Noch nie da gewesen", hinweis: "Erstes Mal — jemand fährt mit",
+      wochentag: 2, zeit: "20:00", gewesenAb: 22, ort: "Unsere Arche, Bruckhausen", emoji: "👥",
+      kicker: "Jeder 3. Dienstag", hinweis: "Erstes Mal — jemand fährt mit",
       zusatz: "Jeder dritte Dienstag. Beim ersten Mal komm ich mit.",
       abholung: { kuerzel: "I", titel: "Ich hole dich ab", text: "um 19:40 vor der Tür" },
       rueckweg: { kuerzel: "I", titel: "Ich bringe dich zurück", text: "wann du magst" },
       danach:   { titel: "Warst du. Schön.", text: "Und du bist geblieben bis halb zehn" },
-      text: "Opa, {TAG} um {ZEIT} trifft sich der Männerkreis im Gemeindehaus. Beim ersten Mal komm ich mit und hol dich um 19:40 ab."
+      text: "Opa, {TAG} um {ZEIT} trifft sich der Männerkreis in der Arche. Beim ersten Mal komm ich mit und hol dich um 19:40 ab."
     },
     {
+      id: "erzaehl", titel: "Erzählcafé", kategorie: "erzaehlen", farbe: "e-erz",
+      wochentag: 1, zeit: "15:00", gewesenAb: 18, ort: "Unsere Arche, Bruckhausen", emoji: "☕",
+      kicker: "Einmal im Monat", hinweis: "Termin dort erfragen · Oma erst ab halb vier",
+      zusatz: "Kaffee, Kuchen und Geschichten von früher. Bis 17 Uhr.",
+      abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:40 vor der Tür" },
+      rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 17:15" },
+      danach:   { titel: "Warst du. Schön.", text: "Bis fünf hat es gedauert" },
+      text: "Opa, {TAG} um {ZEIT} ist Erzählcafé in der Arche — Kaffee, Kuchen und Geschichten von früher. Ich melde dich an."
+    },
+    {
+      // Der eine Termin, der seit Jahren von allein läuft. Er steht hier
+      // nicht, weil ihn jemand planen müsste, sondern damit er im Raster
+      // sichtbar ist: an diesen beiden Vormittagen ist er weg.
       id: "rad", titel: "Radtour mit der Gruppe", kategorie: "rad", farbe: "e-rad",
-      wochentag: 6, zeit: "10:00", gewesenAb: 14, ort: "Treffpunkt Kirche", emoji: "🚲",
-      kicker: "Kennt er schon", hinweis: "Läuft von allein",
-      zusatz: "Die Runde, die du kennst. Nichts Neues, nichts Fremdes.",
+      wochentage: [2, 5], zeit: "09:30", gewesenAb: 14, ort: "Treffpunkt Kirche", emoji: "🚲",
+      kicker: "Dienstag und Freitag", hinweis: "Läuft von allein",
+      zusatz: "Die Runde, die du kennst. Zurück gegen eins.",
       abholung: { kuerzel: "\u00b7", titel: "Du fährst selbst", text: "wie immer, Treffpunkt Kirche" },
       rueckweg: { kuerzel: "\u00b7", titel: "Du fährst selbst zurück", text: "wie immer" },
       danach:   { titel: "Warst du. Schön.", text: "Zurück gegen eins" },
@@ -885,39 +912,71 @@ var INHALT = {
     }
   ],
 
-  // Kleine Sachen, für die man nirgends anrufen muss. Ein Tipp füllt das
-  // Formular vor — Tag und Uhrzeit sucht man sich dann selbst aus.
-  // Genau diese Sorte funktioniert in Opas Woche am besten: es braucht
-  // nur einen Menschen, keine Anmeldung.
-  eigenesVorlagen: [
-    { titel: "Eis essen", emoji: "🍦", kategorie: "kaffee", ort: "Eisdiele", zeit: "15:00",
-      zusatz: "Nur wir. Dauert eine Stunde." },
-    { titel: "Kaffee bei uns", emoji: "☕", kategorie: "kaffee", ort: "Bei uns zu Hause", zeit: "15:30",
-      zusatz: "Kuchen ist da." },
-    { titel: "Spaziergang am Deich", emoji: "🌳", kategorie: "werk", ort: "Treffpunkt Deich", zeit: "14:00",
-      zusatz: "Die Runde, die du kennst. Bank auf halber Strecke." },
-    { titel: "Oma besuchen", emoji: "💐", kategorie: "erzaehlen", ort: "Tagespflege", zeit: "15:00",
-      zusatz: "Wir fahren zusammen hin." }
-  ],
-
   /* ------------------------------------------------------------------
      Kleinigkeiten. Der Vorrat, aus dem ein Tag aufgefüllt wird, wenn es
      nichts Offizielles gibt — und das ist an den meisten Tagen so.
 
-     Zwei Regeln stecken in jedem Eintrag:
+     Drei Regeln stecken in jedem Eintrag:
 
      1. Es muss ein Bild daraus werden können. Bei einem Angebot erwartet
         ihn jemand vor Ort; hier wartet jemand auf das Foto. Das ist der
         einzige Wirkstoff, den diese Sorte hat.
      2. Nichts, was nach Aufgabe klingt. Kein Häkchen, kein Nachhaken.
         Passiert es nicht, verschwindet es lautlos.
+     3. Der Satz in "zusatz" steht bei ihm auf der Karte, dort wo bei einem
+        Angebot die Abholung steht. Er muss also für sich allein lesbar
+        sein und sagen, worum es geht — nicht schmücken.
 
-     "tage"   — nur an diesen Wochentagen (1 = Montag). Fehlt es: jeder Tag.
-     "monate" — nur in diesen Monaten. Fehlt es: das ganze Jahr.
-     "omaDa"  — braucht Oma zu Hause. Mo–Do ist sie bis 16 Uhr in der
-                Tagespflege, also dort nur abends.
+     "tage"      — nur an diesen Wochentagen (1 = Montag). Fehlt es: jeder Tag.
+     "monate"    — nur in diesen Monaten. Fehlt es: das ganze Jahr.
+     "omaDa"     — braucht Oma zu Hause. Sie ist Mo, Di, Do, Fr bis 15:30
+                   bei "Hand in Hand"; mittwochs sind die beiden unterwegs.
+     "tageszeit" — frueh / mittag / abend. Vormittags fällt an den Radtagen
+                   von allein weg, das macht passtAnTag().
+
+     Der Inhalt ist ein Vorschlag der App, nicht der Familie. Was davon
+     wirklich taugt, weiß nur, wer die beiden kennt — rauswerfen und
+     umschreiben ist ausdrücklich vorgesehen.
      ------------------------------------------------------------------ */
   kleinigkeiten: [
+
+    /* --- Vormittags. Unter der Woche ist Oma nicht da, und an den
+           Radtagen ist er selbst nicht da. Bleiben Mo, Mi, Do, Sa, So. --- */
+    { titel: "Brötchen holen", emoji: "🥐", kategorie: "kaffee", tageszeit: "frueh",
+      ort: "Bäcker im Ort",
+      zusatz: "Der kurze Weg. Nimm eins mehr mit, falls jemand vorbeikommt." },
+    { titel: "Die Zeitung holen und lesen", emoji: "📰", kategorie: "erzaehlen", tageszeit: "frueh",
+      ort: "Kiosk",
+      zusatz: "Mit einem Kaffee dazu. Wie sonst auch." },
+    { titel: "Die Blumen im Garten gießen", emoji: "🌼", kategorie: "werk", tageszeit: "frueh",
+      ort: "Bei euch im Garten", monate: [4,5,6,7,8,9,10],
+      zusatz: "Und ein Bild davon, wie es gerade aussieht." },
+    { titel: "Das Rad putzen und die Kette ölen", emoji: "🔧", kategorie: "rad", tageszeit: "frueh",
+      ort: "In der Garage",
+      zusatz: "Vor der nächsten Ausfahrt. Zeig uns, wie es glänzt." },
+    { titel: "Zum Friedhof, die Blumen gießen", emoji: "💐", kategorie: "erzaehlen", tageszeit: "frueh",
+      ort: "Friedhof Hünxe",
+      zusatz: "In deinem Tempo. Es hat keine Uhrzeit." },
+    { titel: "Die Post erledigen", emoji: "✉️", kategorie: "werk", tageszeit: "frueh",
+      ort: "Post im Ort",
+      zusatz: "Was liegen geblieben ist. Danach ist es weg." },
+    { titel: "Frühstück auf der Terrasse", emoji: "☕", kategorie: "kaffee", tageszeit: "frueh",
+      ort: "Bei euch draußen", monate: [5,6,7,8,9],
+      zusatz: "Solange es morgens noch warm genug dafür ist." },
+    { titel: "Einmal um den Block", emoji: "🚶", kategorie: "werk", tageszeit: "frueh",
+      ort: "Ab der Haustür",
+      zusatz: "Vor dem Mittagessen. Zwanzig Minuten reichen." },
+    { titel: "Bei Oma in der Tagespflege vorbeischauen", emoji: "💐", kategorie: "erzaehlen", tageszeit: "frueh",
+      ort: "Hand in Hand", tage: [1,4],
+      zusatz: "Kurz Hallo sagen, wenn du sowieso unterwegs bist." },
+    { titel: "Über den Markt gehen", emoji: "🧺", kategorie: "werk", tageszeit: "frueh",
+      ort: "Marktplatz Hünxe",
+      zusatz: "Falls Markt ist. Kaufen musst du nichts." },
+    { titel: "Den Vogel am Futterhaus fotografieren", emoji: "🐦", kategorie: "werk", tageszeit: "frueh",
+      ort: "Am Fenster", monate: [11,12,1,2,3],
+      zusatz: "Wer da war, wollen wir sehen." },
+
+    /* --- Nachmittags. Oma ist unter der Woche ab halb vier zurück. --- */
     { titel: "Mit Oma einmal ums Haus gehen", emoji: "🌳", kategorie: "werk", tageszeit: "mittag",
       ort: "Bei euch", omaDa: true,
       zusatz: "Nur die kleine Runde. Eine Bank steht ja am Weg." },
@@ -927,60 +986,83 @@ var INHALT = {
     { titel: "Auf der Bank am Feld sitzen", emoji: "🪑", kategorie: "erzaehlen", tageszeit: "mittag",
       ort: "Am Feldweg",
       zusatz: "Zehn Minuten sitzen und gucken. Das reicht völlig." },
-    { titel: "Die Blumen im Garten gießen", emoji: "🌼", kategorie: "werk", tageszeit: "frueh",
-      ort: "Bei euch im Garten",
-      zusatz: "Und ein Bild davon, wie es gerade aussieht." },
-    { titel: "Brötchen holen", emoji: "🥐", kategorie: "kaffee", tageszeit: "frueh",
-      ort: "Bäcker im Ort",
-      zusatz: "Der kurze Weg. Nimm eins mehr mit, falls jemand vorbeikommt." },
-    { titel: "Kleine Runde mit dem Rad", emoji: "🚲", kategorie: "rad", tageszeit: "frueh",
-      ort: "Ab der Haustür", monate: [3,4,5,6,7,8,9,10],
-      zusatz: "Keine große Tour. Einmal bis zur Kirche und zurück." },
-    { titel: "Zeitung holen und lesen", emoji: "📰", kategorie: "erzaehlen", tageszeit: "frueh",
-      ort: "Kiosk",
-      zusatz: "Mit einem Kaffee dazu. Wie sonst auch." },
+    { titel: "An die Lippe, ans Wasser gucken", emoji: "🌊", kategorie: "werk", tageszeit: "mittag",
+      ort: "Am Lippedeich",
+      zusatz: "Was gerade vorbeischwimmt. Und ob die Kühe draußen sind." },
+    { titel: "Zum Deich und wieder zurück", emoji: "🚶", kategorie: "werk", tageszeit: "mittag",
+      ort: "Am Lippedeich",
+      zusatz: "Der Weg, den du kennst. Bank auf halber Strecke." },
     { titel: "Enten füttern am Teich", emoji: "🦆", kategorie: "werk", tageszeit: "mittag",
       ort: "Teich im Ort",
       zusatz: "Altbrot mit. Ein Bild davon freut den Enkel." },
-    { titel: "Blumen zum Friedhof bringen", emoji: "💐", kategorie: "erzaehlen", tageszeit: "mittag",
-      ort: "Friedhof Hünxe",
-      zusatz: "In deinem Tempo. Es hat keine Uhrzeit." },
-    { titel: "Im alten Fotoalbum blättern", emoji: "📷", kategorie: "erzaehlen", tageszeit: "abend",
-      ort: "Bei euch",
-      zusatz: "Such ein Bild raus, das wir noch nie gesehen haben." },
     { titel: "In der Werkzeugkiste kramen", emoji: "🔧", kategorie: "werk", tageszeit: "mittag",
       ort: "In der Garage",
       zusatz: "Nicht aufräumen — nur mal wieder in die Hand nehmen." },
-    { titel: "Oma vorlesen", emoji: "📖", kategorie: "erzaehlen", tageszeit: "abend",
-      ort: "Bei euch", omaDa: true,
-      zusatz: "Eine halbe Seite reicht. Sie hört dir gern zu." },
-    { titel: "Deinen Enkel anrufen", emoji: "📱", kategorie: "runde", tageszeit: "abend",
-      ort: "Von zu Hause",
-      zusatz: "Er geht ran. Auch wenn es nur fünf Minuten sind." },
-    { titel: "Kaffee auf der Terrasse", emoji: "☕", kategorie: "kaffee", tageszeit: "mittag",
-      ort: "Bei euch draußen", monate: [4,5,6,7,8,9],
-      zusatz: "Solange es noch warm genug ist." },
-    { titel: "Über den Markt gehen", emoji: "🧺", kategorie: "werk", tageszeit: "frueh",
-      ort: "Marktplatz", tage: [2,5],
-      zusatz: "Guck, was es gibt. Kaufen musst du nichts." },
-    { titel: "Kastanien sammeln gehen", emoji: "🌰", kategorie: "werk", tageszeit: "mittag",
-      ort: "Am Feldweg", monate: [9,10,11],
-      zusatz: "Für die Fensterbank. Und ein Bild von der Ausbeute." },
-    { titel: "Das Spiel im Fernsehen gucken", emoji: "⚽", kategorie: "runde", tageszeit: "abend",
-      ort: "Bei euch", tage: [6,7],
-      zusatz: "Sag uns hinterher, wie es ausgegangen ist." },
-    { titel: "Ein Rezept aufschreiben", emoji: "📝", kategorie: "erzaehlen", tageszeit: "abend",
-      ort: "Bei euch",
-      zusatz: "Eins, das Oma immer gemacht hat. Wir hätten es gern." },
     { titel: "Beim Nachbarn klingeln", emoji: "👋", kategorie: "runde", tageszeit: "mittag",
       ort: "Nebenan",
       zusatz: "Nur Guten Tag sagen. Mehr muss nicht sein." },
-    { titel: "Die Radgruppe anrufen", emoji: "☎️", kategorie: "rad", tageszeit: "abend",
+    { titel: "Kuchen holen für nachher", emoji: "🍰", kategorie: "kaffee", tageszeit: "mittag",
+      ort: "Bäcker im Ort",
+      zusatz: "Such etwas aus, das Oma mag." },
+    { titel: "Kaffee auf der Terrasse", emoji: "☕", kategorie: "kaffee", tageszeit: "mittag",
+      ort: "Bei euch draußen", monate: [4,5,6,7,8,9],
+      zusatz: "Solange es noch warm genug ist." },
+    // Nicht an den Radtagen — da war er schon dreieinhalb Stunden unterwegs.
+    { titel: "Eine kleine Runde mit dem Rad", emoji: "🚲", kategorie: "rad", tageszeit: "mittag",
+      ort: "Ab der Haustür", tage: [1,3,4,6,7], monate: [3,4,5,6,7,8,9,10],
+      zusatz: "Keine große Tour. Einmal bis zur Kirche und zurück." },
+    { titel: "Zum Sportplatz, gucken wer trainiert", emoji: "⚽", kategorie: "runde", tageszeit: "mittag",
+      ort: "Sportplatz Hünxe",
+      zusatz: "Am Zaun stehen und zugucken zählt auch." },
+    { titel: "Kastanien sammeln gehen", emoji: "🌰", kategorie: "werk", tageszeit: "mittag",
+      ort: "Am Feldweg", monate: [9,10,11],
+      zusatz: "Für die Fensterbank. Und ein Bild von der Ausbeute." },
+    { titel: "Laub zusammenharken", emoji: "🍂", kategorie: "werk", tageszeit: "mittag",
+      ort: "Bei euch im Garten", monate: [10,11],
+      zusatz: "So viel du magst. Der Rest darf liegen bleiben." },
+    { titel: "Ein Foto vom Garten machen", emoji: "📷", kategorie: "werk", tageszeit: "mittag",
+      ort: "Bei euch",
+      zusatz: "Wie er gerade aussieht. Wir sehen ihn viel zu selten." },
+
+    /* --- Abends. Oma ist da, geht aber früh ins Bett. --- */
+    { titel: "Oma vorlesen", emoji: "📖", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch", omaDa: true,
+      zusatz: "Eine halbe Seite reicht. Sie hört dir gern zu." },
+    { titel: "Mit Oma Karten spielen", emoji: "🃏", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch", omaDa: true,
+      zusatz: "Rommé, wie immer. Wer gewonnen hat, sagst du uns." },
+    { titel: "Deinen Enkel anrufen", emoji: "📱", kategorie: "runde", tageszeit: "abend",
       ort: "Von zu Hause",
-      zusatz: "Fragen, wann sie diese Woche fahren." }
+      zusatz: "Er geht ran. Auch wenn es nur fünf Minuten sind." },
+    { titel: "Im alten Fotoalbum blättern", emoji: "📷", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Such ein Bild raus, das wir noch nie gesehen haben." },
+    { titel: "Das Spiel im Fernsehen gucken", emoji: "⚽", kategorie: "runde", tageszeit: "abend",
+      ort: "Bei euch", tage: [5,6,7],
+      zusatz: "Sag uns hinterher, wie es ausgegangen ist." },
+    { titel: "Nachsehen, wer oben in der Tabelle steht", emoji: "📊", kategorie: "runde", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Und uns Bescheid sagen. Wir haben ja keine Ahnung." },
+    { titel: "Ein Rezept aufschreiben", emoji: "📝", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Eins, das Oma immer gemacht hat. Wir hätten es gern." },
+    { titel: "Die Radgruppe anrufen", emoji: "☎️", kategorie: "rad", tageszeit: "abend",
+      ort: "Von zu Hause", tage: [1,4,7],
+      zusatz: "Fragen, wo es morgen langgeht." },
+    { titel: "Einen alten Freund anrufen", emoji: "☎️", kategorie: "runde", tageszeit: "abend",
+      ort: "Von zu Hause",
+      zusatz: "Einen, von dem du länger nichts gehört hast." },
+    { titel: "Aufschreiben, wo ihr euch kennengelernt habt", emoji: "✍️", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Drei Sätze reichen. Wir kennen die Geschichte nicht." },
+    { titel: "Musik von früher hören", emoji: "🎵", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Etwas, das ihr beide kennt. Vielleicht singt Oma mit." },
+    { titel: "Den Sonnenuntergang fotografieren", emoji: "🌇", kategorie: "werk", tageszeit: "abend",
+      ort: "Vor der Tür", monate: [3,4,5,8,9,10],
+      zusatz: "Vom Fenster aus reicht auch." }
   ],
 
-  // Was Opa sieht, wenn nichts geplant ist.
   leer: {
     titel: "Diese Woche steht nichts an",
     meta: "Wir melden uns.",
@@ -2128,10 +2210,33 @@ var INHALT = {
     return h;
   }
 
-  // Oma ist Mo–Do bis 16 Uhr in der Tagespflege. Was sie braucht, geht
-  // an diesen Tagen nur abends — Fr bis So jederzeit.
+  /* ---------- Die Woche, die es schon gibt ---------------------------
+     Bevor die App irgendetwas vorschlägt, muss sie wissen, was ohnehin
+     läuft. Alles hier ist von der Familie am 07.09.2026 gesagt worden,
+     nichts davon ist geraten.
+
+       Rad      Dienstag und Freitag, 9:30 bis 13 Uhr, mit der Gruppe
+       Oma      Mo, Di, Do, Fr von 8:00 bis 15:30 bei "Hand in Hand"
+       Mittwoch Orga-Tag der beiden: Friseur, Ergotherapie, Termine
+       Mittag   gegen 12 wird gegessen, danach meist eine Stunde Ruhe
+
+     Für die Kleinigkeiten sind das harte Grenzen — sie haben ja keine
+     feste Zeit, also können sie sich danach richten. Für ein offizielles
+     Angebot sind es keine: das darf querliegen. Dann isst man eben einmal
+     später. Es wird ja nur vorgeschlagen, nicht beschlossen.
+     -------------------------------------------------------------------- */
+  var RADTAGE = [2, 5];                    // Dienstag, Freitag
+  var ORGA_TAG = 3;                        // Mittwoch
+  function radTag(wt) { return RADTAGE.indexOf(wt) >= 0; }
+
+  /* Wann ist Oma zu Hause?
+     Am Wochenende ganz. Am Orga-Tag nur abends, weil die beiden tagsüber
+     unterwegs sind. Sonst ab halb vier — am Vormittag also nie. */
   function omaZuHause(tag, tageszeit) {
-    return ((tag.getDay() + 6) % 7) > 3 || tageszeit === "abend";
+    var wt = (tag.getDay() + 6) % 7 + 1;
+    if (wt === 6 || wt === 7) return true;
+    if (wt === ORGA_TAG) return tageszeit === "abend";
+    return tageszeit !== "frueh";
   }
 
   function passtAnTag(k, tag) {
@@ -2139,7 +2244,32 @@ var INHALT = {
     if (k.tage && k.tage.indexOf(wt) < 0) return false;
     if (k.monate && k.monate.indexOf(tag.getMonth() + 1) < 0) return false;
     if (k.omaDa && !omaZuHause(tag, k.tageszeit)) return false;
+    // Vormittags am Dienstag und Freitag sitzt er auf dem Rad. Ihm dann
+    // eine Kleinigkeit vorzuschlagen hieße, ihn davon abzuhalten — und das
+    // Rad ist der eine Termin, der seit Jahren von allein läuft.
+    if (k.tageszeit === "frueh" && radTag(wt)) return false;
     return true;
+  }
+
+  /* Was an diesem Tag ohnehin läuft. Steht oben im Tagesblatt, damit
+     niemand dagegen plant, ohne es zu merken. */
+  function tagesRoutine(tag) {
+    var wt = (tag.getDay() + 6) % 7 + 1;
+    if (wt === ORGA_TAG) return "Orga-Tag: Friseur, Ergotherapie, was sonst ansteht.";
+    if (radTag(wt)) return "Radgruppe, 9:30 bis 13 Uhr.";
+    return "";
+  }
+
+  /* Ein Satz, wenn ein offizielles Angebot quer zur Gewohnheit liegt.
+     Er verbietet nichts, er sagt nur, was dann verschoben wird. */
+  function quergedacht(v, tag) {
+    var wt = (tag.getDay() + 6) % 7 + 1;
+    if (!v.zeit) return "";
+    // Die Radtour selbst ist die Radzeit — sie kommentiert sich nicht.
+    if (v.id === "rad") return "";
+    if (radTag(wt) && v.zeit < "13:00") return "Liegt in der Radzeit";
+    if (v.zeit >= "11:30" && v.zeit < "14:00") return "Liegt im Mittagessen und der Ruhe danach";
+    return "";
   }
 
   function tagesVorschlaege(datum) {
@@ -2162,26 +2292,48 @@ var INHALT = {
     // 1. Das Offizielle zuerst. Es hat den festen Zeitpunkt — alles
     //    andere richtet sich danach, nicht umgekehrt.
     var raus = INHALT.vorschlaege.filter(function (v) {
-      return v.wochentag === wt && !belegtId(v.id);
+      // Die Radgruppe fährt zweimal in der Woche. Ein Angebot darf deshalb
+      // mehrere Tage tragen, nicht nur einen.
+      var tage = v.wochentage || [v.wochentag];
+      return tage.indexOf(wt) >= 0 && !belegtId(v.id);
     }).map(function (v) {
+      var quer = quergedacht(v, tag);
       return { sorte: "angebot", titel: v.titel, emoji: zeichenVon(v), kategorie: v.kategorie,
                ort: v.ort, zeit: v.zeit, tageszeit: "", zusatz: v.zusatz,
-               hinweis: v.kicker + " · " + v.hinweis, quelle: v };
+               hinweis: v.kicker + " \u00b7 " + v.hinweis + (quer ? " \u00b7 " + quer : ""),
+               quelle: v };
     });
 
     // 2. Auffüllen. Die Reihenfolge des Vorrats hängt am Datum, damit
     //    nicht jeden Tag dasselbe oben steht.
-    INHALT.kleinigkeiten
+    var vorrat = INHALT.kleinigkeiten
       .filter(function (k) { return passtAnTag(k, tag) && !belegtTitel(k.titel); })
       .map(function (k) { return { k: k, r: streuung(datum + "|" + k.titel) }; })
-      .sort(function (a, b) { return a.r - b.r; })
-      .forEach(function (p) {
+      .sort(function (a, b) { return a.r - b.r; });
+
+    /* Die drei sollen einen Tag abbilden und nicht dreimal denselben Abend.
+       Deshalb zwei Durchgänge: erst höchstens eine Sache je Tageszeit,
+       danach wird aufgefüllt, wenn noch Platz ist. Ohne das kann derselbe
+       Tag drei Vorschläge für nach acht bekommen, und der Vormittag bleibt
+       leer, obwohl er der freieste Teil seines Tages ist. */
+    var belegteZeit = {};
+    raus.forEach(function (v) { if (v.tageszeit) belegteZeit[v.tageszeit] = true; });
+
+    function nimm(nurNeueZeit) {
+      vorrat.forEach(function (p) {
         if (raus.length >= VORSCHLAEGE_PRO_TAG) return;
         var k = p.k;
+        if (p.drin) return;
+        if (nurNeueZeit && belegteZeit[k.tageszeit]) return;
+        p.drin = true;
+        belegteZeit[k.tageszeit] = true;
         raus.push({ sorte: "kleinigkeit", titel: k.titel, emoji: zeichenVon(k),
                     kategorie: k.kategorie, ort: k.ort, zeit: "", tageszeit: k.tageszeit,
                     zusatz: k.zusatz, hinweis: "", quelle: k });
       });
+    }
+    nimm(true);
+    nimm(false);
 
     return raus.slice(0, VORSCHLAEGE_PRO_TAG);
   }
@@ -2462,6 +2614,12 @@ var INHALT = {
       '<div class="kicker">' + MONATE[tag.getMonth()] + "</div>" +
       "<h3>" + tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + "</h3>" +
       '<div class="streifen" id="tg-streifen">' + streifen + "</div>";
+
+    var routine = tagesRoutine(tag);
+    if (routine) {
+      html += '<div class="routine"><b>' + tagLang(tag) + "</b><span>" +
+        roh(routine) + "</span></div>";
+    }
 
     if (drin.length) {
       html += '<div class="abschnitt"><h5>Steht schon</h5></div>' +

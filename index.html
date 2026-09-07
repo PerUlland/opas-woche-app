@@ -2033,6 +2033,8 @@ var INHALT = {
       var kat = x.kategorie === "erzaehlen" ? "erz" : (x.kategorie || "werk");
       return {
         uid: x.uid,
+        datum: x.datum,
+        kategorie: x.kategorie || "werk",
         monat: MONATE[d.getMonth()],
         titel: x.titel,
         farbe: "e-" + kat,
@@ -2258,13 +2260,30 @@ var INHALT = {
     if (!firebaseDa() || !lager) { fertig(null); return; }
     var name = "f" + Date.now() + Math.round(Math.random() * 99999) + ".jpg";
     var pfad = "familien/" + FAM + "/fotos/" + name;
-    lager.ref(pfad).putString(datenUri, "data_url", { contentType: "image/jpeg" })
+    /* "von" steht als Merkmal am Bild, damit die Regel im Eimer weiss, wer
+       es wieder wegnehmen darf: der, der es hochgeladen hat, und die
+       Familie. Opa soll sein Bild austauschen koennen, ohne dass dabei
+       eine fremde Buchseite in Gefahr geraet. */
+    lager.ref(pfad).putString(datenUri, "data_url", {
+      contentType: "image/jpeg",
+      customMetadata: { von: meineUid() }
+    })
       .then(function (erg) { return erg.ref.getDownloadURL(); })
       .then(function (url) { fertig({ pfad: pfad, url: url }); })
       .catch(function (e) {
         if (window.console) console.warn("Foto hochladen:", e);
         fertig(null);
       });
+  }
+
+  /* Ein Bild wieder wegnehmen. Schlaegt es fehl, ist das kein Grund,
+     irgendetwas abzubrechen — die Buchseite ist die Sache, die Datei nur
+     ihr Anhang. Eine verwaiste Datei wiegt 100 KB. */
+  function fotoLoeschen(pfad) {
+    if (!pfad || !firebaseDa() || !lager) return;
+    lager.ref(pfad).delete().catch(function (e) {
+      if (window.console) console.warn("Foto wegnehmen:", e);
+    });
   }
 
   function fotoAussuchen(fertig) {
@@ -2283,26 +2302,46 @@ var INHALT = {
   }
 
   /* ---------- Wie war's — und daraus wird die Buchseite ---------- */
+  /* Dasselbe Blatt fuer beides: die erste Rueckmeldung und das spaetere
+     Aendern. Der Unterschied ist nur, ob zu dem Termin schon eine Seite
+     im Buch steht — dann stehen ihre Werte drin, und der Knopf heisst
+     anders. Zwei getrennte Blaetter dafuer zu bauen hiesse, dieselbe
+     Sache zweimal zu pflegen. */
   function rueckmeldungSheet(e) {
-    var stand = { bewertung: 4, notiz: "", fotoId: null, fehler: "" };
+    var da = rueckZu(e.uid);
+    var stand = {
+      bewertung: (da && da.bewertung) || 4,
+      notiz: (da && da.notiz) || "",
+      fotoId: (da && da.fotoLokal) || null,     // Bild auf diesem Geraet
+      fotoUrl: (da && da.fotoUrl) || "",        // Bild, das schon im Eimer liegt
+      altPfad: (da && da.fotoPfad) || "",       // ... und wo genau
+      fehler: ""
+    };
+    var aendern = !!da;
+
+    function bildJetzt() {
+      return stand.fotoUrl || (stand.fotoId && fotos[stand.fotoId]) || "";
+    }
 
     function zeichnen() {
+      var bild = bildJetzt();
       sheetAuf(
         '<div class="kicker">' + langesDatum(ausIso(e.datum)) + "</div>" +
-        "<h3>Wie war's?</h3>" +
+        "<h3>" + (aendern ? roh(e.titel) : "Wie war's?") + "</h3>" +
         '<div class="regler">' +
           '<input type="range" id="bew" min="1" max="5" step="1" value="' + stand.bewertung +
           '" aria-label="Wie war es"><b id="bew-text">' + BEWERTUNG[stand.bewertung - 1] + "</b>" +
         "</div>" +
-        (stand.fotoId
-          ? '<div class="bild ph echt" style="background-image:url(' + fotos[stand.fotoId] + ')"></div>' +
+        (bild
+          ? '<div class="bild ph echt" style="background-image:url(' + bild + ')"></div>' +
+            '<button class="cta quiet" id="foto">Anderes Foto</button>' +
             '<button class="klein" id="foto-weg">Foto wieder wegnehmen</button>'
           : '<button class="cta quiet" id="foto">Foto dazu</button>') +
         (stand.fehler ? '<p style="color:var(--accent);font-weight:600">' + stand.fehler + "</p>" : "") +
         '<textarea class="grund" id="notiz" rows="2" placeholder="Magst du etwas dazuschreiben? Musst du nicht.">' +
           stand.notiz + "</textarea>" +
-        '<button class="cta" id="ins-buch">Ins Buch</button>' +
-        '<button class="cta quiet" data-zu>Später</button>'
+        '<button class="cta" id="ins-buch">' + (aendern ? "Speichern" : "Ins Buch") + "</button>" +
+        '<button class="cta quiet" data-zu>' + (aendern ? "Abbrechen" : "Später") + "</button>"
       );
 
       var regler = $("bew");
@@ -2324,7 +2363,7 @@ var INHALT = {
           if (!schreibSicher("fotos", kopie)) {
             stand.fehler = "Auf dem Gerät ist kein Platz mehr für Fotos.";
           } else {
-            fotos = kopie; stand.fotoId = id; stand.fehler = "";
+            fotos = kopie; stand.fotoId = id; stand.fotoUrl = ""; stand.fehler = "";
           }
           zeichnen();
         });
@@ -2332,9 +2371,9 @@ var INHALT = {
 
       var weg = $("foto-weg");
       if (weg) weg.addEventListener("click", function () {
-        delete fotos[stand.fotoId];
-        schreib("fotos", fotos);
+        if (stand.fotoId) { delete fotos[stand.fotoId]; schreib("fotos", fotos); }
         stand.fotoId = null;
+        stand.fotoUrl = "";
         zeichnen();
       });
 
@@ -2349,31 +2388,79 @@ var INHALT = {
            Seite trotzdem ins Buch — die Rückmeldung ist mehr wert als das
            Bild, und ohne sie weiss niemand, ob er da war. */
         function fertig(foto) {
+          var neuerPfad = (foto && foto.pfad) || (stand.fotoUrl ? stand.altPfad : "");
+          /* Nur die Felder anfassen, die zu dieser Seite gehoeren. Die
+             Herzen bleiben stehen — wer eine Seite nachtraegt, nimmt
+             niemandem sein Herz weg. */
           docSchreiben("rueckmeldungen", e.uid, {
             terminUid: e.uid, datum: e.datum, titel: e.titel, kategorie: e.kategorie,
             bewertung: stand.bewertung, notiz: stand.notiz.trim(),
-            fotoUrl: (foto && foto.url) || "",
-            fotoPfad: (foto && foto.pfad) || "",
-            fotoLokal: foto ? "" : (stand.fotoId || ""),
-            von: meineUid(), wann: iso(new Date()), herzen: []
-          });
-          neueMitteilung({ von: "!", titel: "Steht jetzt im Buch: " + e.titel,
-            text: BEWERTUNG[stand.bewertung - 1] + (stand.fotoId ? " · mit Foto" : "") });
-          sheetAuf(
-            "<h3>Steht im Buch</h3>" +
-            "<p>Die drei bekommen es gleich zu sehen.</p>" +
-            '<button class="cta quiet" data-zu>Gut</button>'
-          );
+            fotoUrl: (foto && foto.url) || stand.fotoUrl || "",
+            fotoPfad: neuerPfad,
+            fotoLokal: (foto || stand.fotoUrl) ? "" : (stand.fotoId || ""),
+            von: (da && da.von) || meineUid(), wann: iso(new Date()),
+            herzen: (da && da.herzen) || []
+          }, true);
+
+          // Das alte Bild wegnehmen, wenn es ersetzt oder entfernt wurde.
+          if (stand.altPfad && stand.altPfad !== neuerPfad) fotoLoeschen(stand.altPfad);
+
+          if (aendern) {
+            sheetZu();
+          } else {
+            neueMitteilung({ von: "!", titel: "Steht jetzt im Buch: " + e.titel,
+              text: BEWERTUNG[stand.bewertung - 1] + (bildJetzt() ? " · mit Foto" : "") });
+            sheetAuf(
+              "<h3>Steht im Buch</h3>" +
+              "<p>Die drei bekommen es gleich zu sehen.</p>" +
+              '<button class="cta quiet" data-zu>Gut</button>'
+            );
+          }
           zeichneAlles();
           zeichneBuch();
         }
 
+        // Nur ein frisch ausgesuchtes Bild muss hoch. Eins, das schon im
+        // Eimer liegt, bleibt, wo es ist.
         if (stand.fotoId && firebaseDa()) fotoHochladen(fotos[stand.fotoId], fertig);
         else fertig(null);
       });
     }
 
     zeichnen();
+  }
+
+  /* Eine Buchseite nachtraeglich aendern.
+     Der Termin dazu kann laengst geloescht sein — die Seite bleibt ja
+     auch dann bestehen, es ist ja trotzdem passiert. Deshalb wird sie
+     notfalls aus der Seite selbst wieder zusammengesetzt. */
+  function seiteBearbeiten(b) {
+    var e = docVon("termine", b.uid) ||
+      { uid: b.uid, datum: b.datum, titel: b.titel, kategorie: b.kategorie };
+    rueckmeldungSheet(e);
+  }
+
+  /* Eine Buchseite loeschen. Nur die Familie darf das, und der Server
+     setzt es durch — bei Opa steht der Knopf nicht da UND die Regel
+     wuerde ihn abweisen. Eine Seite ist etwas, das war; sie soll nicht
+     mit einem verrutschten Finger verschwinden, deshalb die Rueckfrage. */
+  function seiteLoeschenSheet(b) {
+    sheetAuf(
+      "<h3>Diese Seite löschen?</h3>" +
+      "<p>„" + roh(b.titel) + "“ vom " + roh(b.monat) + " verschwindet aus dem Buch. " +
+      "Das lässt sich nicht rückgängig machen.</p>" +
+      '<button class="cta" id="s-weg">Ja, löschen</button>' +
+      '<button class="cta quiet" data-zu>Doch nicht</button>'
+    );
+    $("s-weg").addEventListener("click", function () {
+      var doc = docVon("rueckmeldungen", b.uid);
+      if (doc && doc.fotoPfad) fotoLoeschen(doc.fotoPfad);
+      if (doc && doc.fotoLokal) { delete fotos[doc.fotoLokal]; schreib("fotos", fotos); }
+      docLoeschen("rueckmeldungen", b.uid);
+      sheetZu();
+      zeichneAlles();
+      zeichneBuch();
+    });
   }
 
   function buchSheet(b) {
@@ -2390,8 +2477,19 @@ var INHALT = {
         ? '<button class="cta' + (meins ? "" : " leise") + '" id="herz">' +
             (meins ? "♥ Geherzt" : "♥ Ein Herz dalassen") + "</button>"
         : "") +
-      '<button class="cta quiet" data-zu>Zurück</button>'
+      // Ändern darf jeder, dem die Seite gehört, und die Familie sowieso.
+      // Löschen nur die Familie — dasselbe steht in den Regeln am Server.
+      // "leise" statt "quiet": sonst sieht Aendern aus wie Zurueck, und zwei
+      // gleich aussehende Knoepfe untereinander sind eine Falle.
+      '<button class="cta leise" id="seite-aendern">Ändern</button>' +
+      '<button class="cta quiet" data-zu>Zurück</button>' +
+      (ROLLE === "admin"
+        ? '<button class="loeschen" id="seite-weg">Diese Seite löschen</button>'
+        : "")
     );
+    $("seite-aendern").addEventListener("click", function () { seiteBearbeiten(b); });
+    var sw = $("seite-weg");
+    if (sw) sw.addEventListener("click", function () { seiteLoeschenSheet(b); });
     var h = $("herz");
     if (h) h.addEventListener("click", function () {
       herzUmschalten(b);

@@ -567,6 +567,9 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .mit p{margin:2px 0 0!important;font-size:13.5px!important;color:var(--dim);font-weight:500}
 .mit small{display:block;font-size:12px;color:var(--faint);font-weight:600;margin-top:5px}
 .leer{text-align:center;padding:26px 10px 6px;color:var(--dim);font-size:15px;font-weight:500}
+/* Die Herzen der Familie unter einer Buchseite. In der Akzentfarbe, weil
+   sie das Einzige sind, was von uns zu ihm zurueckkommt. */
+.herzen{color:var(--accent)!important;font-weight:700!important}
 
 /* ---------- Sheet ---------- */
 .scrim{position:absolute;inset:0;background:rgba(20,24,28,.42);z-index:40;animation:auf .25s ease}
@@ -647,6 +650,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-storage-compat.js"></script>
 <script>
 /* Das ist KEIN Passwort und KEIN Geheimnis — diese Werte stehen in jeder
    Firebase-Web-App im Quelltext. Sie sagen nur, welches Projekt gemeint ist.
@@ -720,7 +724,6 @@ window.OW_FAMILIE = "ulland";   // familien/{fam} — dieser eine Zweig
         <p class="eyebrow">Seit April · wird zu Weihnachten gedruckt</p>
         <h1>Dein Buch</h1>
       </div>
-      <div class="filters" id="filters"></div>
       <div class="stack" id="stack"></div>
       <p class="hint">Platzhalter — hier stehen später echte Fotos.</p>
     </div>
@@ -804,53 +807,18 @@ var INHALT = {
       satz: "Ich hole dich ab",  satzZurueck: "Ich bringe dich zurück" }
   ],
 
-  // Der Plan. Jeder Eintrag bekommt ein echtes Datum.
-  // "inWochen" und "wochentag" sind nur die Platzhalter-Aussaat, damit die
-  // Beispiele mitwandern statt zu verfallen. Echte Termine tragen später
-  // ihr Datum direkt.
-  plan: [
-    {
-      id: "bad", inWochen: 0, wochentag: 1, zeit: "14:30", gewesenAb: 17, emoji: "🏊",
-      titel: "Warmbadetag im Hallenbad", kategorie: "wasser", ort: "Hallenbad",
-      zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
-      abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
-      rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 16:20" },
-      danach:   { titel: "Warst du. Schön.", text: "Papa hat dich um 16:20 zurückgebracht" }
-    },
-        {
-      id: "spiel", inWochen: 1, wochentag: 3, zeit: "15:00", gewesenAb: 18, emoji: "🃏",
-      titel: "Spielenachmittag", kategorie: "erzaehlen", ort: "Gemeindehaus",
-      zusatz: "Karten, Rommé, Kuchen. Oma kommt mit.",
-      abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
-      rueckweg: { kuerzel: "P", titel: "Papa bringt euch zurück", text: "gegen 18 Uhr" },
-      danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" }
-    }
-    // Die Wochen danach stehen mit Absicht leer — so sieht man, was dann passiert.
-  ],
+  /* Hier standen bis zum 07.09.2026 Beispieldaten: zwei erfundene Termine,
+     sechs Buchseiten mit Farbverläufen statt Fotos und zwei Mitteilungen
+     ("Papa hat dich angemeldet"). Sie sind weg, und zwar ersatzlos.
 
-  // Mitteilungen. "vorTagen" ist wieder nur die Aussaat.
-  mitteilungen: [
-    { id: "m1", vorTagen: 1, von: "P", titel: "Papa hat dich angemeldet",
-      text: "Warmbadetag am Montag um 14:30. Er holt dich um 14:10 ab." },
-    { id: "m2", vorTagen: 3, von: "M", titel: "Mama hat dein Foto geherzt",
-      text: "Und dein Enkel auch. Drei Herzen auf der Seite vom Männerkreis." }
-  ],
+     Der Grund ist nicht Ordnungsliebe. Auf einem frisch eingerichteten
+     Gerät sahen sie aus wie echte Termine — ein Warmbadetag am Montag um
+     14:30, Abholung um 14:10. Bei jemandem, der sich darauf verlässt,
+     heißt das: er steht um zehn nach zwei vor der Tür und es kommt keiner.
 
-  buch: [
-    { monat: "September", titel: "Warmbadetag",           farbe: "e-wasser", foto: "ph-1", reaktionen: "♥ 3 · 1 Sprachnachricht", art: "neu" },
-    { monat: "August",    titel: "Männerkreis", farbe: "e-runde",  foto: "ph-4", reaktionen: "♥ 4",                 art: "neu" },
-    { monat: "August",    titel: "Kuchen mit Mama",       farbe: "e-kaffee", foto: "ph-3", reaktionen: "♥ 5 · 2 Fotos",        art: "familie" },
-    { monat: "August",    titel: "Bank am Feld, mit Oma", farbe: "e-erz",    foto: "ph-5", reaktionen: "♥ 4",                  art: "oma" },
-    { monat: "Juli",      titel: "Große Radtour",         farbe: "e-rad",    foto: "ph-2", reaktionen: "♥ 6",                  art: "alles" },
-    { monat: "Juli",      titel: "Am Deich mit dem Enkel", farbe: "e-werk",  foto: "ph-6", reaktionen: "♥ 3 · 1 Sprachnachricht", art: "familie" }
-  ],
-
-  filter: [
-    { schluessel: "alles",   name: "Alles" },
-    { schluessel: "familie", name: "Mit Familie" },
-    { schluessel: "neu",     name: "Zum ersten Mal" },
-    { schluessel: "oma",     name: "Mit Oma" }
-  ],
+     Was jetzt dasteht, hat jemand eingetragen. Steht nichts da, steht
+     nichts da — und die Woche sagt das auch so.
+     ------------------------------------------------------------------ */
 
   /* Die offiziellen Angebote in Hünxe. Aus KATALOG.md, Stand 04.09.2026 —
      telefonisch noch nicht verifiziert.
@@ -1121,9 +1089,34 @@ var INHALT = {
   function tagLang(d) { return TAGE_LANG[(d.getDay() + 6) % 7]; }
 
   /* ---------- Gedächtnis ---------------------------------------------------
-     Alles, was in der App passiert, liegt auf DIESEM Gerät. Es übersteht
-     Neuladen und Neustart, aber es geht nirgendwohin. Genau hier wird
-     später der Server ansetzen.
+     Zwei Welten, eine Schnittstelle.
+
+     MIT Firebase liegt alles in Firestore unter familien/<fam> und kommt
+     über Live-Abos zurück. Was einer ändert, sehen die anderen. Auch ohne
+     Netz: Firestore hält Schreibvorgänge vor und schickt sie nach, sobald
+     wieder Empfang da ist. Der Bildschirm zeichnet sich neu, weil die
+     Daten sich geändert haben — nicht, weil jemand daneben zeichneAlles()
+     gerufen hat.
+
+     OHNE Firebase liegt dasselbe im localStorage. Das ist kein Notbetrieb,
+     sondern der Weg, auf dem hier entwickelt und geprüft wird.
+
+     Sechs Sammlungen, alle mit demselben Zuschnitt: ein Dokument je Sache,
+     die Kennung heißt "uid".
+
+       mitglieder      wer dazugehört (nur lesen, gepflegt in der Konsole)
+       termine         der Plan
+       intern          "Unter uns" — eine EIGENE Sammlung, weil Regeln pro
+                       Dokument gelten und nicht pro Feld. Als Feld am Termin
+                       könnte Opa sie lesen; hier ruft sein Konto sie gar
+                       nicht erst ab.
+       rueckmeldungen  die Buchseiten, mitsamt den Herzen der Familie
+       mitteilungen    was in der Glocke steht
+       wuensche        Tage, an denen Opa selbst die Hand gehoben hat
+
+     Zwei Dinge bleiben mit Absicht auf dem Gerät, weil sie pro Mensch
+     gelten und nicht pro Familie: welche Mitteilungen ICH gelesen habe und
+     welche Hinweise ICH weggeklickt habe.
      ---------------------------------------------------------------------- */
   function lies(schluessel, ersatz) {
     try {
@@ -1134,24 +1127,117 @@ var INHALT = {
   function schreib(schluessel, wert) {
     try { localStorage.setItem("ow." + schluessel, JSON.stringify(wert)); } catch (e) {}
   }
-
-  var gelesen   = lies("gelesen", []);    // gelesene Mitteilungen
-  var abgesagt  = lies("abgesagt", []);   // abgesagte Termine
-  var gruende   = lies("gruende", {});    // warum abgesagt wurde
-  var erledigt  = lies("erledigt", []);   // Termine mit Rückmeldung
-  var eigene    = lies("eigene", []);     // selbst eingeplante Termine
-  var geloescht = lies("geloescht", []);  // von der Familie wieder herausgenommen
-  var extraMit  = lies("extraMit", []);   // Mitteilungen, die in der App entstanden sind
-  var erlebt    = lies("erlebt", []);     // Rückmeldungen — das sind die Buchseiten
-  var fotos     = lies("fotos", {});      // Bilder, nach Kennung
-  var weggeklickt = lies("weggeklickt", []); // Hinweise, die wir gelesen haben
-  var gemeldet    = lies("gemeldet", []);    // Tage, an denen er selbst Lust gemeldet hat
-
-  // Wie schreib(), sagt aber, ob es geklappt hat. Fotos koennen den
-  // Speicher des Geraets sprengen; dann muss der Mensch das erfahren.
+  // Wie schreib(), sagt aber, ob es geklappt hat. Ohne Firebase liegen die
+  // Fotos auf dem Gerät und koennen dessen Speicher sprengen; dann muss der
+  // Mensch das erfahren.
   function schreibSicher(k, w) {
     try { localStorage.setItem("ow." + k, JSON.stringify(w)); return true; }
     catch (e) { return false; }
+  }
+
+  var SAMMLUNGEN = ["mitglieder", "termine", "intern", "rueckmeldungen",
+                    "mitteilungen", "wuensche"];
+  var daten = {};
+  SAMMLUNGEN.forEach(function (k) { daten[k] = []; });
+
+  var gelesen     = lies("gelesen", []);      // von MIR gelesene Mitteilungen
+  var weggeklickt = lies("weggeklickt", []);  // von MIR weggeklickte Hinweise
+  var fotos       = lies("fotos", {});        // nur ohne Firebase: Bilder am Gerät
+
+  function lokalLaden() {
+    SAMMLUNGEN.forEach(function (k) { daten[k] = lies(k, []); });
+    // In der Vorschau gibt es keine Mitglieder-Sammlung. Ein Eintrag fuer
+    // das eigene Geraet reicht, damit Namen und Kuerzel etwas anzeigen.
+    if (!daten.mitglieder.length) {
+      daten.mitglieder = [{ uid: "ich", name: "Ich", kuerzel: "I", rolle: ROLLE || "admin" }];
+    }
+  }
+
+  function docs(sammlung) { return daten[sammlung] || []; }
+  function docVon(sammlung, uid) {
+    var l = docs(sammlung);
+    for (var i = 0; i < l.length; i++) if (l[i].uid === uid) return l[i];
+    return null;
+  }
+
+  /* Etwas schreiben. "teilweise" heißt: nur die genannten Felder anfassen
+     und den Rest stehen lassen — das ist der Weg, auf dem Opa absagen darf,
+     ohne Titel oder Zeit berühren zu können. Die Regeln auf dem Server
+     erlauben ihm genau zwei Felder; hier schreiben wir auch nur die zwei. */
+  function docSchreiben(sammlung, uid, felder, teilweise) {
+    if (firebaseDa() && db) {
+      var ref = db.collection("familien").doc(FAM).collection(sammlung).doc(uid);
+      (teilweise ? ref.set(felder, { merge: true }) : ref.set(felder))
+        .catch(function (e) { speicherFehler(e); });
+      return;
+    }
+    var l = docs(sammlung), i = -1, a;
+    for (var k = 0; k < l.length; k++) if (l[k].uid === uid) { i = k; break; }
+    var neu = {};
+    if (teilweise && i >= 0) for (a in l[i]) neu[a] = l[i][a];
+    for (a in felder) neu[a] = felder[a];
+    neu.uid = uid;
+    if (i >= 0) l[i] = neu; else l.push(neu);
+    schreib(sammlung, l);
+    zeichneAlles();
+  }
+
+  function docLoeschen(sammlung, uid) {
+    if (firebaseDa() && db) {
+      db.collection("familien").doc(FAM).collection(sammlung).doc(uid).delete()
+        .catch(function (e) { speicherFehler(e); });
+      return;
+    }
+    daten[sammlung] = docs(sammlung).filter(function (x) { return x.uid !== uid; });
+    schreib(sammlung, daten[sammlung]);
+    zeichneAlles();
+  }
+
+  /* Wenn der Server etwas ablehnt, ist das fast immer ein Fehler von uns
+     und keiner des Menschen davor — Firestore legt Schreibvorgänge ohne
+     Netz von allein auf Halde. Eine Ablehnung wegen fehlender Rechte darf
+     deshalb nicht still bleiben. */
+  function speicherFehler(e) {
+    var code = (e && e.code) || "";
+    if (window.console) console.warn("Speichern:", code, e);
+    if (code.indexOf("permission-denied") >= 0) {
+      sheetAuf("<h3>Das darf dieses Gerät nicht</h3>" +
+        "<p>Die Änderung wurde nicht gespeichert. Sag Per Bescheid.</p>" +
+        '<button class="cta quiet" data-zu>Gut</button>');
+    }
+  }
+
+  /* Die Live-Abos. Ab hier kommt jede Änderung von selbst zurück —
+     auch die von den anderen drei Geräten. */
+  var abosLaufen = false;
+  function abosStarten(fertig) {
+    if (abosLaufen) { fertig(); return; }
+    abosLaufen = true;
+    var basis = db.collection("familien").doc(FAM);
+    var wartet = true;
+    function fertigEinmal() { if (wartet) { wartet = false; fertig(); } }
+
+    SAMMLUNGEN.forEach(function (sammlung) {
+      // Opas Konto ruft "Unter uns" gar nicht erst ab. Täte es das, wiesen
+      // die Regeln es ab — richtig so, aber es hätte hier nichts zu suchen.
+      if (sammlung === "intern" && ROLLE !== "admin") return;
+      basis.collection(sammlung).onSnapshot(function (schnapp) {
+        var raus = [];
+        schnapp.forEach(function (d) {
+          var x = d.data() || {};
+          x.uid = d.id;
+          raus.push(x);
+        });
+        daten[sammlung] = raus;
+        if (sammlung === "termine") fertigEinmal();
+        zeichneAlles();
+      }, function (e) {
+        if (window.console) console.warn("Abo " + sammlung + ":", e);
+        if (sammlung === "termine") fertigEinmal();
+      });
+    });
+    // Sollte das Termin-Abo gar nicht antworten, geht die App trotzdem auf.
+    setTimeout(fertigEinmal, 6000);
   }
 
   var BEWERTUNG = ["War nicht so", "Ging so", "Schön", "Sehr schön", "Richtig schön"];
@@ -1172,7 +1258,7 @@ var INHALT = {
   var FAM   = window.OW_FAMILIE || "ulland";
   var KONTO = null;   // { uid, email } oder null
   var ROLLE = null;   // "admin" | "user" | null
-  var auth  = null, db = null;
+  var auth  = null, db = null, lager = null;
 
   function firebaseDa() {
     return !!(window.firebase && window.OW_FIREBASE && window.OW_FIREBASE.apiKey &&
@@ -1332,6 +1418,8 @@ var INHALT = {
     firebase.initializeApp(window.OW_FIREBASE);
     auth = firebase.auth();
     db = firebase.firestore();
+    // Der Eimer für die Fotos. Er braucht Blaze — das ist entschieden.
+    try { lager = firebase.storage(); } catch (e) { lager = null; }
     db.enablePersistence({ synchronizeTabs: true }).catch(function () {});
 
     ladeSchirm();
@@ -1360,8 +1448,16 @@ var INHALT = {
           var d = snap.data() || {};
           ROLLE = d.rolle === "admin" ? "admin" : "user";
           if (d.anrede) INHALT.anrede = d.anrede;
-          schirmZu();
-          starten();
+          KONTO.name = d.name || "";
+          KONTO.kuerzel = d.kuerzel || "";
+          // Erst wenn der Plan einmal da war, geht die App auf. Sonst
+          // blitzt "Diese Woche steht nichts an" auf, bevor die Termine
+          // eintreffen — und das ist eine Aussage, keine Ladeanzeige.
+          ladeSchirm("Wird geladen …");
+          abosStarten(function () {
+            schirmZu();
+            starten();
+          });
         })
         .catch(function () {
           ROLLE = null;
@@ -1370,44 +1466,66 @@ var INHALT = {
     });
   }
 
-  /* ---------- Plan aufbauen ---------- */
-  function aussaat() {
-    var mo = montagDieserWoche(new Date());
-    var roh = INHALT.plan.map(function (e) {
-      var k = {}; for (var s in e) k[s] = e[s];
-      k.versatz = e.inWochen * 7 + e.wochentag - 1;   // Tage nach Montag
-      return k;
-    });
-    // Die Beispiele sollen mitwandern statt zu verfallen: liegt der
-    // früheste schon hinter uns, rückt der ganze Plan um volle Wochen
-    // vor — die Abstände zwischen den Terminen bleiben dabei erhalten.
-    var frueh = Math.min.apply(null, roh.map(function (r) { return r.versatz; }));
-    var heuteVersatz = tageDazwischen(mo, new Date());
-    var schub = 0;
-    while (frueh + schub * 7 < heuteVersatz && schub < 520) schub++;
-    return roh.map(function (k) {
-      k.datum = iso(plusTage(mo, k.versatz + schub * 7));
-      return k;
-    });
-  }
-
+  /* ---------- Plan ------------------------------------------------------
+     Es gibt keine Beispieltermine mehr. Was hier steht, hat jemand
+     eingetragen — und wenn nichts dasteht, steht eben nichts da. Das ist
+     der ehrlichere Anfang: ein erfundener Warmbadetag auf seinem Gerät
+     hieße, dass er um 14:10 vor der Tür wartet.
+     ---------------------------------------------------------------------- */
   function alleTermine() {
-    return aussaat().concat(eigene)
-      .filter(function (e) { return geloescht.indexOf(schluessel(e)) < 0; })
-      .sort(function (a, b) {
-        return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0;
-      });
+    return docs("termine").slice().sort(function (a, b) {
+      return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0;
+    });
   }
 
-  /* Der Schlüssel eines Termins.
-     Selbst angelegte Termine tragen ein eigenes, festes Kennzeichen. Das
-     ist wichtig, weil man sie verschieben können soll: zieht ein Termin
-     auf einen anderen Tag um, folgen ihm Absage, Grund und Rückmeldung.
-     Die Beispieltermine aus INHALT haben keins — die hängen an Datum und
-     Art, und beim ersten Ändern werden sie zu echten Terminen. */
-  function schluessel(e) { return e.uid || (e.datum + "|" + e.id); }
-  function istAbgesagt(e) { return abgesagt.indexOf(schluessel(e)) >= 0; }
-  function istErledigt(e) { return erledigt.indexOf(schluessel(e)) >= 0; }
+  /* Der Schlüssel eines Termins ist seine Kennung, sonst nichts. Sie bleibt
+     ihm auch beim Verschieben — Absage, Grund und Rückmeldung folgen ihm
+     deshalb von allein auf den neuen Tag. */
+  function schluessel(e) { return e.uid; }
+  function istAbgesagt(e) { return !!e.abgesagt; }
+  function grundVon(e) { return e.absagegrund || ""; }
+  function rueckZu(uid) { return docVon("rueckmeldungen", uid); }
+  function istErledigt(e) { return !!rueckZu(e.uid); }
+
+  /* "Unter uns" liegt in einer eigenen Sammlung. Opas Gerät hat sie nie
+     abgerufen, also ist sie dort auch leer — nicht versteckt, sondern
+     schlicht nicht da. */
+  function internVon(uid) {
+    var d = docVon("intern", uid);
+    return d ? (d.text || "") : "";
+  }
+
+  /* Wer ist das? Aus der Mitglieder-Sammlung, die in der Konsole gepflegt
+     wird. Ohne Firebase kennt die App nur sich selbst. */
+  function nameVon(uid) {
+    var m = docVon("mitglieder", uid);
+    return (m && (m.name || m.kuerzel)) || "Jemand";
+  }
+  function kuerzelVon(uid) {
+    var m = docVon("mitglieder", uid);
+    return (m && m.kuerzel) || "?";
+  }
+  function meineUid() { return (KONTO && KONTO.uid) || "ich"; }
+
+  /* ---------- Schreiben ---------- */
+  function terminSpeichern(obj, internText) {
+    docSchreiben("termine", obj.uid, obj);
+    // Die Notiz nur anfassen, wenn wir sie überhaupt sehen dürfen.
+    if (ROLLE === "admin") {
+      if (internText) docSchreiben("intern", obj.uid, { text: internText });
+      else if (docVon("intern", obj.uid)) docLoeschen("intern", obj.uid);
+    }
+  }
+  function terminLoeschen(e) {
+    docLoeschen("termine", e.uid);
+    if (docVon("intern", e.uid)) docLoeschen("intern", e.uid);
+  }
+  function absageSetzen(e, grund) {
+    docSchreiben("termine", e.uid, { abgesagt: true, absagegrund: grund }, true);
+  }
+  function absageZuruecknehmen(e) {
+    docSchreiben("termine", e.uid, { abgesagt: false, absagegrund: "" }, true);
+  }
 
   /* ---------- Zeichen, Zeit, Sorte ------------------------------------
      Drei kleine Fragen, die überall gestellt werden. Die Antworten stehen
@@ -1526,24 +1644,20 @@ var INHALT = {
 
   /* ---------- Mitteilungen ---------- */
   function alleMitteilungen() {
-    var heute = mitternacht(new Date());
-    var fest = INHALT.mitteilungen.map(function (m) {
-      var k = {}; for (var s in m) k[s] = m[s];
-      k.datum = iso(plusTage(heute, -m.vorTagen));
-      return k;
-    });
-    return fest.concat(extraMit).sort(function (a, b) {
+    return docs("mitteilungen").slice().sort(function (a, b) {
       return a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0;
     });
   }
+  // Gelesen ist eine Sache zwischen mir und meinem Gerät — die geht
+  // niemanden sonst etwas an und bleibt deshalb lokal.
   function ungelesen() {
-    return alleMitteilungen().filter(function (m) { return gelesen.indexOf(m.id) < 0; });
+    return alleMitteilungen().filter(function (m) { return gelesen.indexOf(m.uid) < 0; });
   }
   function neueMitteilung(m) {
-    m.datum = iso(new Date());
-    m.id = m.id || ("x" + Date.now() + Math.round(Math.random() * 999));
-    extraMit.push(m);
-    schreib("extraMit", extraMit);
+    var id = "m" + Date.now() + Math.round(Math.random() * 9999);
+    docSchreiben("mitteilungen", id, {
+      von: m.von || "!", titel: m.titel, text: m.text, datum: iso(new Date())
+    });
   }
   function zeichneGlocken() {
     var n = ungelesen().length;
@@ -1567,7 +1681,7 @@ var INHALT = {
       html += '<div class="leer">Hier ist noch nichts.<br>Wenn etwas ansteht, siehst du es hier.</div>';
     } else {
       html += '<div class="mits">' + liste.map(function (m) {
-        var neu = gelesen.indexOf(m.id) < 0;
+        var neu = gelesen.indexOf(m.uid) < 0;
         return '<div class="mit' + (neu ? " neu" : "") + '">' +
           '<div class="ic">' + (m.von || "!") + "</div><div>" +
           "<b>" + roh(m.titel) + "</b><p>" + roh(m.text) + "</p>" +
@@ -1578,7 +1692,7 @@ var INHALT = {
     sheetAuf(html);
 
     // Angesehen heisst gelesen. Der Punkt geht weg.
-    liste.forEach(function (m) { if (gelesen.indexOf(m.id) < 0) gelesen.push(m.id); });
+    liste.forEach(function (m) { if (gelesen.indexOf(m.uid) < 0) gelesen.push(m.uid); });
     schreib("gelesen", gelesen);
     setTimeout(zeichneGlocken, 600);
   }
@@ -1816,7 +1930,7 @@ var INHALT = {
     // Steht gar nichts an, ist der einzige sinnvolle Knopf der, mit dem
     // er selbst etwas anstösst.
     if (!e) {
-      if (gemeldet.indexOf(iso(new Date())) < 0) {
+      if (!docVon("wuensche", iso(new Date()))) {
         ziel.innerHTML = '<button class="cta leise" id="lust-heute">Ich hätte Lust auf etwas</button>';
         $("lust-heute").addEventListener("click", function () { lustMelden(new Date()); });
       }
@@ -1855,9 +1969,7 @@ var INHALT = {
 
     var doch = $("doch");
     if (doch) doch.addEventListener("click", function () {
-      var s = schluessel(e);
-      abgesagt = abgesagt.filter(function (x) { return x !== s; });
-      schreib("abgesagt", abgesagt);
+      absageZuruecknehmen(e);
       neueMitteilung({ von: "!", titel: "Doch zugesagt",
         text: e.titel + " steht wieder. Die Familie weiß Bescheid." });
       werkbank = "";
@@ -1869,36 +1981,66 @@ var INHALT = {
     if (nein) nein.addEventListener("click", function () { absageSheet(e); });
   }
 
-  /* Das Buch ist keine feste Liste mehr. Jede Rückmeldung wird eine Seite —
-     mit Foto, wenn eins dabei war, sonst mit Farbe. Die alten Einträge aus
-     INHALT hängen als Vergangenheit hinten dran. */
+  /* Jede Rückmeldung ist eine Buchseite — mit Foto, wenn eins dabei war,
+     sonst mit Farbe. Beispielseiten gibt es keine mehr: das Buch fängt
+     leer an und füllt sich mit dem, was wirklich war. */
   function buchSeiten() {
-    var meine = erlebt.slice().sort(function (a, b) {
+    return docs("rueckmeldungen").slice().sort(function (a, b) {
       return a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0;
     }).map(function (x) {
       var d = ausIso(x.datum);
       var kat = x.kategorie === "erzaehlen" ? "erz" : (x.kategorie || "werk");
       return {
+        uid: x.uid,
         monat: MONATE[d.getMonth()],
         titel: x.titel,
         farbe: "e-" + kat,
         foto: "ph-1",
-        fotoId: x.fotoId,
+        bild: x.fotoUrl || (x.fotoLokal ? fotos[x.fotoLokal] : ""),
+        bewertung: x.bewertung || 4,
+        notiz: x.notiz || "",
+        herzen: x.herzen || [],
         reaktionen: BEWERTUNG[(x.bewertung || 4) - 1] +
-          (x.notiz ? " · „" + x.notiz + "“" : "") +
-          (x.fotoId ? " · mit Foto" : ""),
-        art: "neu"
+          (x.notiz ? " · „" + x.notiz + "“" : "")
       };
     });
-    return meine.concat(INHALT.buch);
   }
 
-  function phKlasse(b) { return "ph " + (b.fotoId && fotos[b.fotoId] ? "echt" : b.foto); }
-  function phStil(b)  { return b.fotoId && fotos[b.fotoId] ? ' style="background-image:url(' + fotos[b.fotoId] + ')"' : ""; }
+  /* Die Herzen der Familie.
+     Sie sind der Gegenpart zum Foto: er schickt etwas los, und es kommt
+     etwas zurück. Ohne das schickt er drei Bilder und hört nie wieder
+     davon — dann ist der Kreis tot (Abschnitt 5).
+     Namen statt einer Zahl, weil "Mama und Papa" wärmer ist als "2". */
+  function herzenText(seite) {
+    if (!seite.herzen.length) return "";
+    var namen = seite.herzen.map(nameVon);
+    if (namen.length === 1) return "♥ " + namen[0];
+    return "♥ " + namen.slice(0, -1).join(", ") + " und " + namen[namen.length - 1];
+  }
+  function habIchGeherzt(seite) {
+    return seite.herzen.indexOf(meineUid()) >= 0;
+  }
+  function herzUmschalten(seite) {
+    var ich = meineUid();
+    var herzen = seite.herzen.slice();
+    var i = herzen.indexOf(ich);
+    if (i >= 0) herzen.splice(i, 1); else herzen.push(ich);
+    docSchreiben("rueckmeldungen", seite.uid, { herzen: herzen }, true);
+    // Nur beim Geben eine Mitteilung. Ein zurückgenommenes Herz muss
+    // niemand erfahren.
+    if (i < 0) {
+      neueMitteilung({ von: kuerzelVon(ich),
+        titel: nameVon(ich) + " hat dein Bild geherzt",
+        text: seite.titel });
+    }
+  }
+
+  function phKlasse(b) { return "ph " + (b.bild ? "echt" : b.foto); }
+  function phStil(b)  { return b.bild ? ' style="background-image:url(' + b.bild + ')"' : ""; }
 
   function zeichneRail() {
     var seiten = buchSeiten();
-    $("buch-zahl").textContent = seiten.length + " Seiten";
+    $("buch-zahl").textContent = seiten.length + (seiten.length === 1 ? " Seite" : " Seiten");
     $("rail").innerHTML = seiten.slice(0, 5).map(function (b, i) {
       return '<button class="tile tap" data-b="' + i + '">' +
         '<div class="' + phKlasse(b) + '"' + phStil(b) + "></div><b>" + roh(b.titel) + "</b>" +
@@ -1940,7 +2082,7 @@ var INHALT = {
      muss dafür nichts ausdenken und nichts schreiben; das Ausdenken ist
      unsere Arbeit. */
   function leerSheet(tag) {
-    var schon = gemeldet.indexOf(iso(tag)) >= 0;
+    var schon = !!docVon("wuensche", iso(tag));
     sheetAuf(
       '<div class="kicker">' + wannKurz(tag) + "</div>" +
       "<h3>Nichts vorgesehen</h3>" +
@@ -1958,8 +2100,7 @@ var INHALT = {
   /* Er hebt die Hand. Mehr passiert hier nicht — kein Vorschlag, keine
      Auswahl, keine Frage zurück. Was daraus wird, ist unsere Sache. */
   function lustMelden(tag) {
-    gemeldet.push(iso(tag));
-    schreib("gemeldet", gemeldet);
+    docSchreiben("wuensche", iso(tag), { datum: iso(tag), von: meineUid() });
     neueMitteilung({ von: "O", titel: "Opa hätte Lust auf etwas",
       text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " ist bei ihm noch frei." });
     sheetAuf(
@@ -2023,10 +2164,7 @@ var INHALT = {
   }
 
   function absagen(e, grund) {
-    abgesagt.push(schluessel(e));
-    schreib("abgesagt", abgesagt);
-    gruende[schluessel(e)] = grund;
-    schreib("gruende", gruende);
+    absageSetzen(e, grund);
     neueMitteilung({ von: "!", titel: "Abgesagt: " + e.titel, text: grund });
     werkbank = "";
     // Die Karte bleibt auf dem abgesagten Termin stehen, damit er sieht,
@@ -2064,6 +2202,28 @@ var INHALT = {
       bild.src = leser.result;
     };
     leser.readAsDataURL(datei);
+  }
+
+  /* Ein Foto gehört in den Speicher-Eimer und nicht in die Datenbank.
+     Ein Firestore-Dokument darf zwar 1 MB gross sein, ein verkleinertes
+     Bild passt da also rein — aber es würde bei jedem Abruf der Seite
+     mitgeladen, von allen vier Geräten, immer wieder. Im Eimer liegt es
+     einmal, wird einmal geladen und danach vom Browser behalten.
+
+     Auf 800 px und JPEG 0,72 wiegt ein Bild rund 100 KB. Ein Foto pro
+     Woche sind gut 5 MB im Jahr — die freien 5 GB reichen dafür weit
+     über Opas Lebenszeit hinaus. */
+  function fotoHochladen(datenUri, fertig) {
+    if (!firebaseDa() || !lager) { fertig(null); return; }
+    var name = "f" + Date.now() + Math.round(Math.random() * 99999) + ".jpg";
+    var pfad = "familien/" + FAM + "/fotos/" + name;
+    lager.ref(pfad).putString(datenUri, "data_url", { contentType: "image/jpeg" })
+      .then(function (erg) { return erg.ref.getDownloadURL(); })
+      .then(function (url) { fertig({ pfad: pfad, url: url }); })
+      .catch(function (e) {
+        if (window.console) console.warn("Foto hochladen:", e);
+        fertig(null);
+      });
   }
 
   function fotoAussuchen(fertig) {
@@ -2138,22 +2298,37 @@ var INHALT = {
       });
 
       $("ins-buch").addEventListener("click", function () {
-        erledigt.push(schluessel(e));
-        schreib("erledigt", erledigt);
-        erlebt.push({
-          datum: e.datum, titel: e.titel, kategorie: e.kategorie,
-          bewertung: stand.bewertung, notiz: stand.notiz.trim(), fotoId: stand.fotoId
-        });
-        schreib("erlebt", erlebt);
-        neueMitteilung({ von: "!", titel: "Steht jetzt im Buch: " + e.titel,
-          text: BEWERTUNG[stand.bewertung - 1] + (stand.fotoId ? " · mit Foto" : "") });
-        sheetAuf(
-          "<h3>Steht im Buch</h3>" +
-          "<p>Die drei bekommen es gleich zu sehen.</p>" +
-          '<button class="cta quiet" data-zu>Gut</button>'
-        );
-        zeichneAlles();
-        zeichneBuch();
+        var knopf = $("ins-buch");
+        knopf.disabled = true;
+        knopf.textContent = stand.fotoId ? "Bild wird gespeichert …" : "Wird gespeichert …";
+
+        /* Erst das Bild in den Eimer, dann die Seite. Andersherum stünde
+           kurz eine Buchseite ohne Bild da, und wenn das Hochladen dann
+           scheitert, bliebe sie für immer so. Geht es schief, wandert die
+           Seite trotzdem ins Buch — die Rückmeldung ist mehr wert als das
+           Bild, und ohne sie weiss niemand, ob er da war. */
+        function fertig(foto) {
+          docSchreiben("rueckmeldungen", e.uid, {
+            terminUid: e.uid, datum: e.datum, titel: e.titel, kategorie: e.kategorie,
+            bewertung: stand.bewertung, notiz: stand.notiz.trim(),
+            fotoUrl: (foto && foto.url) || "",
+            fotoPfad: (foto && foto.pfad) || "",
+            fotoLokal: foto ? "" : (stand.fotoId || ""),
+            von: meineUid(), wann: iso(new Date()), herzen: []
+          });
+          neueMitteilung({ von: "!", titel: "Steht jetzt im Buch: " + e.titel,
+            text: BEWERTUNG[stand.bewertung - 1] + (stand.fotoId ? " · mit Foto" : "") });
+          sheetAuf(
+            "<h3>Steht im Buch</h3>" +
+            "<p>Die drei bekommen es gleich zu sehen.</p>" +
+            '<button class="cta quiet" data-zu>Gut</button>'
+          );
+          zeichneAlles();
+          zeichneBuch();
+        }
+
+        if (stand.fotoId && firebaseDa()) fotoHochladen(fotos[stand.fotoId], fertig);
+        else fertig(null);
       });
     }
 
@@ -2161,42 +2336,50 @@ var INHALT = {
   }
 
   function buchSheet(b) {
+    var meins = habIchGeherzt(b);
     sheetAuf(
       '<div class="bild ' + phKlasse(b) + '"' + phStil(b) + "></div>" +
       '<div class="kicker">' + b.monat + "</div>" +
       "<h3>" + roh(b.titel) + "</h3>" +
       "<p>" + roh(b.reaktionen) + "</p>" +
+      (herzenText(b) ? '<p class="herzen">' + roh(herzenText(b)) + "</p>" : "") +
+      // Herzen gibt die Familie, Opa bekommt sie. Auf seinen eigenen
+      // Seiten hätte der Knopf keinen Sinn.
+      (ROLLE === "admin"
+        ? '<button class="cta' + (meins ? "" : " leise") + '" id="herz">' +
+            (meins ? "♥ Geherzt" : "♥ Ein Herz dalassen") + "</button>"
+        : "") +
       '<button class="cta quiet" data-zu>Zurück</button>'
     );
+    var h = $("herz");
+    if (h) h.addEventListener("click", function () {
+      herzUmschalten(b);
+      // Gleich mitziehen, damit man sieht, dass es angekommen ist. Der
+      // Server bestätigt es einen Wimpernschlag später von selbst.
+      var ich = meineUid(), i = b.herzen.indexOf(ich);
+      if (i >= 0) b.herzen.splice(i, 1); else b.herzen.push(ich);
+      buchSheet(b);
+    });
   }
 
   /* ---------- Buch ---------- */
+  /* Die Filterreihe (Alles · Mit Familie · Zum ersten Mal · Mit Oma) ist
+     weggefallen. Sie hing an einem Merkmal, das nur die Beispielseiten
+     trugen — bei einer echten Rückmeldung wird nirgends erfasst, ob Oma
+     dabei war. Vier Knöpfe, von denen drei nichts finden, sind schlimmer
+     als keine. Das Buch ist jetzt schlicht eine Zeitachse. */
   function zeichneBuch() {
-    $("filters").innerHTML = INHALT.filter.map(function (f, i) {
-      return '<button class="fil" aria-pressed="' + (i === 0) + '" data-f="' + f.schluessel + '">' + f.name + "</button>";
-    }).join("");
-
     var seiten = buchSeiten();
     $("stack").innerHTML = seiten.map(function (b, i) {
-      return '<button class="entry tap ' + b.farbe + '" data-b="' + i + '" data-art="' + b.art + '">' +
+      return '<button class="entry tap ' + b.farbe + '" data-b="' + i + '">' +
         '<div class="' + phKlasse(b) + '"' + phStil(b) + "></div>" +
         '<div class="cap"><div class="kicker">' + b.monat + "</div><h4>" + roh(b.titel) + "</h4></div>" +
-        '<div class="foot">' + roh(b.reaktionen) + "</div></button>";
+        '<div class="foot">' + roh(b.reaktionen) +
+          (herzenText(b) ? " · " + roh(herzenText(b)) : "") + "</div></button>";
     }).join("");
 
     Array.prototype.forEach.call($("stack").children, function (el) {
       el.addEventListener("click", function () { buchSheet(seiten[+el.dataset.b]); });
-    });
-
-    var fils = $("filters").children;
-    Array.prototype.forEach.call(fils, function (f) {
-      f.addEventListener("click", function () {
-        Array.prototype.forEach.call(fils, function (x) { x.setAttribute("aria-pressed", "false"); });
-        f.setAttribute("aria-pressed", "true");
-        Array.prototype.forEach.call($("stack").children, function (e) {
-          e.hidden = !(f.dataset.f === "alles" || e.dataset.art === f.dataset.f);
-        });
-      });
     });
   }
 
@@ -2518,7 +2701,7 @@ var INHALT = {
       banner += hinweis("absage|" + schluessel(offeneAbsage), "!",
         "Opa hat abgesagt: " + roh(offeneAbsage.titel) +
           " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")",
-        "„" + roh(gruende[schluessel(offeneAbsage)] || "Ohne Angabe") + "“ · " +
+        "„" + roh(grundVon(offeneAbsage) || "Ohne Angabe") + "“ · " +
           (restWoche ? "In der Woche steht noch etwas anderes."
                      : "Die Woche steht wieder offen."),
         { tag: offeneAbsage.datum });
@@ -2543,7 +2726,8 @@ var INHALT = {
        kommt, sondern von ihm — deshalb steht er oben und nicht in einer
        Liste. Sobald an dem Tag etwas steht, ist er erledigt und geht von
        selbst weg. */
-    gemeldet.forEach(function (d) {
+    docs("wuensche").forEach(function (w) {
+      var d = w.datum || w.uid;
       if (tageDazwischen(new Date(), ausIso(d)) < 0) return;
       var stehtSchon = termine.filter(function (x) {
         return x.datum === d && !istAbgesagt(x);
@@ -2661,7 +2845,7 @@ var INHALT = {
             (istZiehbar(e) && !ab ? ' data-zieh="1"' : "") + ">" +
             '<span class="em">' + zeichenVon(e) + "</span>" +
             '<button class="tx" data-bearb="' + i + '"><b>' + roh(e.titel) + "</b><span>" +
-            (ab ? "Abgesagt \u00b7 " + roh(gruende[schluessel(e)] || "ohne Angabe")
+            (ab ? "Abgesagt \u00b7 " + roh(grundVon(e) || "ohne Angabe")
                 : roh(zeitLang(e)) + " \u00b7 " + roh(e.ort) +
                   (rueckwegOffen(e) ? ' \u00b7 <em class="offen">Rückweg offen</em>' : "")) +
             "</span></button>" +
@@ -2735,14 +2919,11 @@ var INHALT = {
     function verschieben(e, ziel) {
       ziele(false);
       if (!e || !ziel || ziel === e.datum) return;
+      // Nur der Tag ändert sich. Kennung, Absage und Rückmeldung bleiben
+      // am Termin hängen und wandern damit von allein mit.
+      docSchreiben("termine", e.uid, { datum: ziel }, true);
       var kopie = JSON.parse(JSON.stringify(e));
-      kopie.uid = e.uid || kennung();
       kopie.datum = ziel;
-      // Ein Beispieltermin wird beim Verschieben zu einem echten Termin.
-      if (!e.uid) { geloescht.push(schluessel(e)); schreib("geloescht", geloescht); }
-      eigene = eigene.filter(function (x) { return x.uid !== kopie.uid; });
-      eigene.push(kopie);
-      schreib("eigene", eigene);
       var d = ausIso(ziel);
       entwurf = { titel: "WhatsApp an Opa", text: whatsappText(kopie) };
       neueMitteilung({ von: "P", titel: "Verschoben: " + kopie.titel,
@@ -2820,15 +3001,10 @@ var INHALT = {
 
     alle("#sheet [data-weg]").forEach(function (b) {
       b.addEventListener("click", function () {
+        // Mit dem Termin geht auch seine Absage und die Notiz — das
+        // haengt alles an derselben Kennung.
         var raus = drin[+b.dataset.weg];
-        geloescht.push(schluessel(raus));
-        schreib("geloescht", geloescht);
-        eigene = eigene.filter(function (x) { return schluessel(x) !== schluessel(raus); });
-        schreib("eigene", eigene);
-        // Mit dem Termin geht auch seine Absage — sonst bliebe ein Grund
-        // zu etwas stehen, das es nicht mehr gibt.
-        abgesagt = abgesagt.filter(function (x) { return x !== schluessel(raus); });
-        schreib("abgesagt", abgesagt);
+        terminLoeschen(raus);
         neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + raus.titel,
           text: tagLang(tag) + " ist wieder frei." });
         zeichneAlles();
@@ -3013,7 +3189,7 @@ var INHALT = {
           werText: vorhanden.abholung ? vorhanden.abholung.text : "",
           zurueck: knopfKuerzel(vorhanden.rueckweg, "?"),
           zurText: vorhanden.rueckweg ? vorhanden.rueckweg.text : "",
-          intern: vorhanden.intern || "" };
+          intern: internVon(vorhanden.uid) };
 
     // Beim Anlegen auf den Tag, von dem aus das Blatt geöffnet wurde —
     // sonst auf den ersten, der noch nicht vorbei ist.
@@ -3163,7 +3339,6 @@ var INHALT = {
         titel: s.titel.trim(), kategorie: s.kategorie,
         emoji: s.emoji.trim() || zeichenVon({ kategorie: s.kategorie }),
         ort: s.ort.trim() || "bei euch", zusatz: s.zusatz.trim(),
-        intern: s.intern.trim(),
         /* Holt ihn niemand ab, gibt es nichts zu organisieren — dann stand
            im Band bisher "Wann du magst / am Vormittag", und das wiederholt
            nur die Zeile darüber. Die Karte fiel damit sichtbar ab gegenüber
@@ -3195,23 +3370,17 @@ var INHALT = {
       // Der fertige Text eines Angebots wandert mit. Bei etwas Eigenem gibt
       // es keinen — der Text wird dann aus dem Termin selbst gebaut.
       var vorlagenText = (vorhanden && vorhanden.textVorlage) || (q ? q.text : null);
-      if (vorlagenText) obj.textVorlage = vorlagenText;
-      // Ein geänderter Beispieltermin wird dabei zu einem echten Termin.
-      if (vorhanden && !vorhanden.uid) {
-        geloescht.push(schluessel(vorhanden));
-        schreib("geloescht", geloescht);
-      }
-      eigene = eigene.filter(function (x) { return x.uid !== obj.uid; });
-      eigene.push(obj);
-      schreib("eigene", eigene);
+      obj.textVorlage = vorlagenText || "";
 
       // Wer einen abgesagten Termin neu setzt, holt ihn damit zurück. Alles
       // andere wäre unehrlich: der Termin steht dann ja wieder.
-      var warAbgesagt = abgesagt.indexOf(obj.uid) >= 0;
-      if (warAbgesagt) {
-        abgesagt = abgesagt.filter(function (x) { return x !== obj.uid; });
-        schreib("abgesagt", abgesagt);
-      }
+      var warAbgesagt = !!(vorhanden && vorhanden.abgesagt);
+      obj.abgesagt = false;
+      obj.absagegrund = "";
+
+      // Der Termin und die Notiz gehen getrennt weg — zwei Sammlungen,
+      // damit Opa die eine nie zu sehen bekommt.
+      terminSpeichern(obj, s.intern.trim());
 
       entwurf = { titel: "WhatsApp an Opa", text: whatsappText(obj) };
       neueMitteilung({ von: person ? person.kuerzel : "P",
@@ -3223,10 +3392,7 @@ var INHALT = {
 
     var weg = $("t-weg");
     if (weg) weg.addEventListener("click", function () {
-      geloescht.push(schluessel(vorhanden));
-      schreib("geloescht", geloescht);
-      eigene = eigene.filter(function (x) { return schluessel(x) !== schluessel(vorhanden); });
-      schreib("eigene", eigene);
+      terminLoeschen(vorhanden);
       neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + vorhanden.titel,
         text: tagLang(ausIso(vorhanden.datum)) + " ist wieder frei." });
       sheetZu();
@@ -3265,14 +3431,21 @@ var INHALT = {
           return;
         }
         if (b.dataset.reset) {
+          /* Zurücksetzen räumt nur dieses Gerät auf, nie den gemeinsamen
+             Stand. Alles andere wäre ein Knopf, der die Termine der ganzen
+             Familie löscht — und der gehört nicht in eine Werkbank.
+             Ohne Server liegen die Sammlungen ohnehin hier, dann ist es
+             dasselbe. */
+          var lokal = ["gelesen", "weggeklickt", "fotos"];
+          if (!firebaseDa()) lokal = lokal.concat(SAMMLUNGEN);
           try {
-            ["gelesen","abgesagt","gruende","erledigt","eigene","geloescht","extraMit","erlebt","fotos"]
-              .forEach(function (k) { localStorage.removeItem("ow." + k); });
+            lokal.forEach(function (k) { localStorage.removeItem("ow." + k); });
           } catch (e) {}
-          gelesen = []; abgesagt = []; gruende = {}; erledigt = [];
-          eigene = []; geloescht = []; extraMit = []; erlebt = []; fotos = {};
+          gelesen = []; weggeklickt = []; fotos = {};
+          if (!firebaseDa()) SAMMLUNGEN.forEach(function (k) { daten[k] = []; });
           werkbank = ""; entwurf = null;
           zeichneAlles();
+          zeichneBuch();
           return;
         }
         werkbank = b.dataset.z;
@@ -3387,7 +3560,10 @@ var INHALT = {
   if (firebaseDa()) {
     firebaseStart();
   } else {
+    // Die Vorschau auf einem Rechner ohne Firebase. Dieselben Sammlungen,
+    // nur eben im localStorage und nur für dieses Gerät.
     ROLLE = entwicklerRolle();
+    lokalLaden();
     starten();
   }
 

@@ -900,11 +900,23 @@ var INHALT = {
   function anmeldeSchirm(modus, fehler) {
     var el = schirmEl();
     if (modus === "gesendet") {
-      el.innerHTML =
-        '<div class="gate-in"><div class="gate-mark">O</div>' +
-        "<h1>Schau in dein Postfach</h1>" +
-        "<p>Wir haben dir eine Mail von <b>Opas Woche</b> geschickt. Tippe auf den Link darin — dann ist dieses Gerät angemeldet.</p>" +
-        '<button class="cta quiet" id="gate-neu">Andere Adresse</button></div>';
+      // Vom Home-Bildschirm gestartet ist das Antippen des Links eine
+      // Sackgasse: die Mail-App oeffnet immer Safari, und Safari hat einen
+      // anderen Speicher als diese App. Dort anzukommen nuetzt hier nichts.
+      // Also sagen wir gleich den Weg an, der wirklich funktioniert.
+      el.innerHTML = alsApp()
+        ? '<div class="gate-in"><div class="gate-mark">O</div>' +
+          "<h1>Schau in dein Postfach</h1>" +
+          "<p>Wir haben dir eine Mail von <b>Opas Woche</b> geschickt.</p>" +
+          "<p><b>Tippe den Link nicht an.</b> Halte ihn gedrückt, wähle <b>Kopieren</b>, komm hierher zurück und füge ihn unten ein.</p>" +
+          '<button class="cta" id="gate-einf">Link einfügen</button>' +
+          '<button class="cta quiet" id="gate-neu">Andere Adresse</button></div>'
+        : '<div class="gate-in"><div class="gate-mark">O</div>' +
+          "<h1>Schau in dein Postfach</h1>" +
+          "<p>Wir haben dir eine Mail von <b>Opas Woche</b> geschickt. Tippe auf den Link darin — dann ist dieses Gerät angemeldet.</p>" +
+          '<button class="cta quiet" id="gate-einf">Link stattdessen einfügen</button>' +
+          '<button class="cta quiet" id="gate-neu">Andere Adresse</button></div>';
+      $("gate-einf").addEventListener("click", function () { linkSchirm(); });
       $("gate-neu").addEventListener("click", function () { anmeldeSchirm("form"); });
       return;
     }
@@ -920,6 +932,50 @@ var INHALT = {
     try { feld.value = localStorage.getItem("ow.anmeldeMail") || ""; } catch (e) {}
     $("gate-los").addEventListener("click", function () { linkSchicken(feld.value); });
     feld.addEventListener("keydown", function (e) { if (e.key === "Enter") linkSchicken(feld.value); });
+  }
+
+  // Laeuft die App vom Home-Bildschirm statt im Browser?
+  function alsApp() {
+    if (window.navigator.standalone === true) return true;
+    try { return window.matchMedia("(display-mode: standalone)").matches; }
+    catch (e) { return false; }
+  }
+
+  function linkSchirm(fehler) {
+    var el = schirmEl();
+    el.innerHTML =
+      '<div class="gate-in"><div class="gate-mark">O</div>' +
+      "<h1>Link einfügen</h1>" +
+      "<p>Den langen Link aus der Mail hier hineinsetzen — gedrückt halten, <b>Einsetzen</b>.</p>" +
+      '<input class="gate-feld" id="gate-link" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…">' +
+      (fehler ? '<p class="gate-fehler">' + roh(fehler) + "</p>" : "") +
+      '<button class="cta" id="gate-anm">Anmelden</button>' +
+      '<button class="cta quiet" id="gate-zurueck">Zurück</button></div>';
+    var feld = $("gate-link");
+    $("gate-anm").addEventListener("click", function () { mitLinkAnmelden(feld.value); });
+    feld.addEventListener("keydown", function (e) { if (e.key === "Enter") mitLinkAnmelden(feld.value); });
+    $("gate-zurueck").addEventListener("click", function () { anmeldeSchirm("gesendet"); });
+  }
+
+  function mitLinkAnmelden(link) {
+    link = String(link || "").trim();
+    if (!link || !auth.isSignInWithEmailLink(link)) {
+      linkSchirm("Das sieht nicht nach dem Link aus der Mail aus. Er muss vollständig sein, von „https“ bis zum letzten Zeichen.");
+      return;
+    }
+    var mail = "";
+    try { mail = localStorage.getItem("ow.anmeldeMail") || ""; } catch (e) {}
+    if (!mail) {
+      linkSchirm("Ich weiß nicht mehr, an welche Adresse der Link ging. Fordere ihn bitte hier in der App noch einmal an.");
+      return;
+    }
+    ladeSchirm("Wird angemeldet …");
+    auth.signInWithEmailLink(mail, link).then(function () {
+      try { localStorage.removeItem("ow.anmeldeMail"); } catch (e) {}
+    }).catch(function (err) {
+      linkSchirm("Der Link hat nicht funktioniert (" + ((err && err.code) || "Fehler") +
+        "). Meist ist er schon benutzt oder zu alt — dann fordere hier einen neuen an.");
+    });
   }
 
   function linkSchicken(mail) {

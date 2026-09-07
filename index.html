@@ -236,6 +236,20 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
    abgesagten Tag zerlegt, das reicht einmal. */
 .aktionsreihe{display:flex;gap:10px;margin-top:14px}
 .aktionsreihe .cta{flex:1;min-width:0;margin-top:0}
+/* Wenn nichts mehr zu tun ist, steht hier trotzdem etwas.
+   Vorher blieb in dieser Zeile nur der Pfeil stehen — ein Knopf ohne
+   Nachbarn, der aussieht, als fehle etwas. Es fehlt aber nichts: die
+   Sache ist erledigt, und genau das darf dastehen. Kein Knopf, weil es
+   nichts zu druecken gibt. */
+.fertig{
+  flex:1;min-width:0;height:54px;border-radius:18px;background:var(--sunk);
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-size:16.5px;font-weight:650;color:var(--dim);letter-spacing:-.015em;
+}
+.fertig i{font-style:normal;font-size:15px;font-weight:800;color:var(--good);
+  width:24px;height:24px;border-radius:12px;background:var(--page);
+  display:grid;place-items:center;flex:0 0 auto}
+.fertig.still i{color:var(--faint)}
 .zurueck{
   flex:0 0 auto;width:54px;height:54px;border-radius:18px;
   background:var(--sunk);color:var(--ink);
@@ -499,6 +513,9 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .feld{margin-top:14px}
 .feld label{display:block;margin-bottom:6px;font-size:11.5px;font-weight:700;
   color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+/* Eine Zeile Erklaerung unter einem Feld. Nur da, wo das Feld selbst es
+   nicht sagen kann. */
+.feld small{display:block;margin-top:6px;font-size:12.5px;color:var(--faint);font-weight:500;line-height:1.35}
 .feld input,.feld textarea{
   width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;
   font-family:inherit;font-size:16px;font-weight:600;color:var(--ink);
@@ -721,11 +738,10 @@ window.OW_FAMILIE = "ulland";   // familien/{fam} — dieser eine Zweig
         <button class="bell" data-glocke aria-label="Mitteilungen"><svg viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/><path d="M10.3 19a2 2 0 0 0 3.4 0"/></svg><i hidden></i></button>
       </div>
       <div class="title">
-        <p class="eyebrow">Seit April · wird zu Weihnachten gedruckt</p>
+        <p class="eyebrow" id="buch-eyebrow"></p>
         <h1>Dein Buch</h1>
       </div>
       <div class="stack" id="stack"></div>
-      <p class="hint">Platzhalter — hier stehen später echte Fotos.</p>
     </div>
   </div>
 
@@ -795,16 +811,22 @@ var INHALT = {
   // Liegt die Datei nicht daneben, zeigt die App das Kürzel. Kein Fehler.
   opaFoto: "./opa.jpg",
 
-  // "satz" und "satzZurueck" stehen so in Opas Woche. Sie müssen dastehen,
-  // weil "Ich holt dich ab" kein Deutsch ist — der Name allein reicht nicht.
-  // Zwei Sätze, weil es zwei Wege sind: hin und wieder zurück.
+  /* Die drei, die planen — mit ihren richtigen Namen.
+     Vorher stand hier "Papa, Mama, Ich". Das war aus der Sicht dessen
+     geschrieben, der die App gebaut hat, und nicht aus der Sicht dessen,
+     der sie liest: Kai ist Opas Sohn, nicht sein Papa. Wenn auf seiner
+     Karte "Papa holt dich ab" steht, stimmt das für niemanden.
+
+     "satz" und "satzZurueck" stehen so in Opas Woche. Sie müssen ausformuliert
+     dastehen, weil der Name allein kein Satz ist. Zwei davon, weil es zwei
+     Wege sind: hin und wieder zurück. */
   familie: [
-    { kuerzel: "P", farbe: "f-a", name: "Papa",
-      satz: "Papa holt dich ab", satzZurueck: "Papa bringt dich zurück" },
-    { kuerzel: "M", farbe: "f-b", name: "Mama",
-      satz: "Mama holt dich ab", satzZurueck: "Mama bringt dich zurück" },
-    { kuerzel: "I", farbe: "f-c", name: "Ich",
-      satz: "Ich hole dich ab",  satzZurueck: "Ich bringe dich zurück" }
+    { kuerzel: "P", farbe: "f-a", name: "Per",
+      satz: "Per holt dich ab",   satzZurueck: "Per bringt dich zurück" },
+    { kuerzel: "K", farbe: "f-b", name: "Kai",
+      satz: "Kai holt dich ab",   satzZurueck: "Kai bringt dich zurück" },
+    { kuerzel: "J", farbe: "f-c", name: "Jutta",
+      satz: "Jutta holt dich ab", satzZurueck: "Jutta bringt dich zurück" }
   ],
 
   /* Hier standen bis zum 07.09.2026 Beispieldaten: zwei erfundene Termine,
@@ -834,18 +856,18 @@ var INHALT = {
       wochentag: 1, zeit: "14:30", gewesenAb: 17, ort: "Hallenbad Hünxe", emoji: "🏊",
       kicker: "Jede Woche", hinweis: "Angemeldet — kein Anruf nötig",
       zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
-      abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
-      rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 16:20" },
-      danach:   { titel: "Warst du. Schön.", text: "Papa hat dich zurückgebracht" },
-      text: "Opa, {TAG} um {ZEIT} Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Ich meld dich an. Papa holt dich um 14:10 ab."
+      abholung: { kuerzel: "K", titel: "Kai holt dich ab", text: "um 14:10 vor der Tür" },
+      rueckweg: { kuerzel: "K", titel: "Kai bringt dich zurück", text: "gegen 16:20" },
+      danach:   { titel: "Warst du. Schön.", text: "Kai hat dich zurückgebracht" },
+      text: "Opa, {TAG} um {ZEIT} Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Ich meld dich an. Kai holt dich um 14:10 ab."
     },
     {
       id: "spiel", titel: "Spielenachmittag", kategorie: "erzaehlen", farbe: "e-erz",
       wochentag: 3, zeit: "15:00", gewesenAb: 18, ort: "Unsere Arche, Bruckhausen", emoji: "🃏",
       kicker: "Einmal im Monat", hinweis: "Termin dort erfragen · Oma kann mit",
       zusatz: "Karten, Rommé, Kuchen. Oma kann mitkommen.",
-      abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
-      rueckweg: { kuerzel: "P", titel: "Papa bringt euch zurück", text: "gegen 18 Uhr" },
+      abholung: { kuerzel: "K", titel: "Kai holt euch ab", text: "um 14:40 vor der Tür" },
+      rueckweg: { kuerzel: "K", titel: "Kai bringt euch zurück", text: "gegen 18 Uhr" },
       danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" },
       text: "Opa, {TAG} um {ZEIT} ist Spielenachmittag in der Arche. Oma könnte mitkommen. Ich melde euch beide an."
     },
@@ -854,8 +876,8 @@ var INHALT = {
       wochentag: 2, zeit: "20:00", gewesenAb: 22, ort: "Unsere Arche, Bruckhausen", emoji: "👥",
       kicker: "Jeder 3. Dienstag", hinweis: "Erstes Mal — jemand fährt mit",
       zusatz: "Jeder dritte Dienstag. Beim ersten Mal komm ich mit.",
-      abholung: { kuerzel: "I", titel: "Ich hole dich ab", text: "um 19:40 vor der Tür" },
-      rueckweg: { kuerzel: "I", titel: "Ich bringe dich zurück", text: "wann du magst" },
+      abholung: { kuerzel: "P", titel: "Per holt dich ab", text: "um 19:40 vor der Tür" },
+      rueckweg: { kuerzel: "P", titel: "Per bringt dich zurück", text: "wann du magst" },
       danach:   { titel: "Warst du. Schön.", text: "Und du bist geblieben bis halb zehn" },
       text: "Opa, {TAG} um {ZEIT} trifft sich der Männerkreis in der Arche. Beim ersten Mal komm ich mit und hol dich um 19:40 ab."
     },
@@ -864,8 +886,8 @@ var INHALT = {
       wochentag: 1, zeit: "15:00", gewesenAb: 18, ort: "Unsere Arche, Bruckhausen", emoji: "☕",
       kicker: "Einmal im Monat", hinweis: "Termin dort erfragen · Oma erst ab halb vier",
       zusatz: "Kaffee, Kuchen und Geschichten von früher. Bis 17 Uhr.",
-      abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:40 vor der Tür" },
-      rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 17:15" },
+      abholung: { kuerzel: "K", titel: "Kai holt dich ab", text: "um 14:40 vor der Tür" },
+      rueckweg: { kuerzel: "K", titel: "Kai bringt dich zurück", text: "gegen 17:15" },
       danach:   { titel: "Warst du. Schön.", text: "Bis fünf hat es gedauert" },
       text: "Opa, {TAG} um {ZEIT} ist Erzählcafé in der Arche — Kaffee, Kuchen und Geschichten von früher. Ich melde dich an."
     },
@@ -1506,6 +1528,12 @@ var INHALT = {
     return (m && m.kuerzel) || "?";
   }
   function meineUid() { return (KONTO && KONTO.uid) || "ich"; }
+  /* Mein Kuerzel fuer die Glocke. Es steht dort als Absender: wer etwas
+     eingetragen, verschoben oder herausgenommen hat. Vorher stand da fest
+     ein "P" — das stimmte, solange nur einer die App benutzt hat. */
+  function meinKuerzel() {
+    return (KONTO && KONTO.kuerzel) || kuerzelVon(meineUid());
+  }
 
   /* ---------- Schreiben ---------- */
   function terminSpeichern(obj, internText) {
@@ -1559,9 +1587,9 @@ var INHALT = {
      Geraten ist daran nichts weiter als die Grenze selbst; wer es besser
      weiß, ändert die vier Zahlen hier und nirgends sonst. */
   var TAGESZEIT = {
-    frueh:  { kurz: "vormittags",  satz: "am Vormittag",  lang: "Am Vormittag",  ab: "09:00", bis: 13 },
-    mittag: { kurz: "nachmittags", satz: "am Nachmittag", lang: "Am Nachmittag", ab: "14:00", bis: 18 },
-    abend:  { kurz: "abends",      satz: "am Abend",      lang: "Am Abend",      ab: "18:00", bis: 22 }
+    frueh:  { kurz: "vormittags",  satz: "am Vormittag",  lang: "Am Vormittag",  ab: "09:00", bis: "13:00" },
+    mittag: { kurz: "nachmittags", satz: "am Nachmittag", lang: "Am Nachmittag", ab: "14:00", bis: "18:00" },
+    abend:  { kurz: "abends",      satz: "am Abend",      lang: "Am Abend",      ab: "18:00", bis: "22:00" }
   };
   function tzVon(e) { return TAGESZEIT[e && e.tageszeit] || TAGESZEIT.mittag; }
   function zeitKurz(e) { return e.zeit ? e.zeit : tzVon(e).kurz; }
@@ -1602,12 +1630,24 @@ var INHALT = {
     return uhr >= (e.zeit || tzVon(e).ab);
   }
 
+  /* Ab wann gilt ein Termin als gewesen?
+     Das steht am Termin selbst — die Familie kann es beim Planen setzen,
+     weil nur sie weiss, wie lange so etwas dauert. Voreingestellt sind
+     drei Stunden nach dem Beginn, bei einer blossen Tageszeit deren Ende.
+     Aeltere Termine trugen dort eine blosse Stunde als Zahl; die wird
+     mitgelesen, damit nichts umkippt, was schon eingetragen ist. */
+  function vorbeiAb(e) {
+    var v = e.gewesenAb;
+    if (typeof v === "number") return ("0" + v).slice(-2) + ":00";
+    return v || "18:00";
+  }
   function schonVorbei(e) {
     var jetzt = new Date();
     var diff = tageDazwischen(jetzt, ausIso(e.datum));
     if (diff < 0) return true;
-    if (diff === 0 && jetzt.getHours() >= (e.gewesenAb || 18)) return true;
-    return false;
+    if (diff > 0) return false;
+    var uhr = ("0" + jetzt.getHours()).slice(-2) + ":" + ("0" + jetzt.getMinutes()).slice(-2);
+    return uhr >= vorbeiAb(e);
   }
 
   /* Was steht im Vordergrund?
@@ -1944,10 +1984,11 @@ var INHALT = {
     var standard = aktuell();
     var pfeil = !!standard && schluessel(e) !== schluessel(standard);
 
-    // Nichts mehr zu tun: der Tag ist vorbei, oder die Rückmeldung steht schon.
+    /* Nichts mehr zu tun: der Tag ist vorbei, oder die Rückmeldung steht
+       schon. Dann steht hier keine Aufforderung, sondern eine Auskunft. */
     var knopf = "";
-    if (weg && gewesen) knopf = "";
-    else if (gewesen && istErledigt(e)) knopf = "";
+    if (weg && gewesen) knopf = '<div class="fertig still"><i>·</i>War abgesagt</div>';
+    else if (gewesen && istErledigt(e)) knopf = '<div class="fertig"><i>✓</i>Steht im Buch</div>';
     else if (weg)    knopf = '<button class="cta" id="doch">Doch, ich gehe hin</button>';
     // Sobald es angefangen hat, ist die Frage nach dem Foto dran.
     else if (gewesen || laeuftSchon(e)) knopf = '<button class="cta" id="wie-wars">Wie war\'s?</button>';
@@ -2029,7 +2070,7 @@ var INHALT = {
     // Nur beim Geben eine Mitteilung. Ein zurückgenommenes Herz muss
     // niemand erfahren.
     if (i < 0) {
-      neueMitteilung({ von: kuerzelVon(ich),
+      neueMitteilung({ von: meinKuerzel(),
         titel: nameVon(ich) + " hat dein Bild geherzt",
         text: seite.titel });
     }
@@ -2370,6 +2411,26 @@ var INHALT = {
      als keine. Das Buch ist jetzt schlicht eine Zeitachse. */
   function zeichneBuch() {
     var seiten = buchSeiten();
+
+    /* Über dem Titel stand ein Versprechen ("wird zu Weihnachten gedruckt")
+       und darunter eine Entschuldigung ("Platzhalter — hier stehen später
+       echte Fotos"). Beides war aus der Entwurfszeit und stimmt nicht mehr:
+       die Fotos sind echt, und wann gedruckt wird, entscheidet die Familie
+       und nicht die App.
+       Was jetzt dasteht, ist eine Auskunft — wie lange es das Buch schon
+       gibt und wie viel drin ist. Das ist die einzige Zahl, die für ihn
+       etwas heißt: sie wächst. */
+    $("buch-eyebrow").textContent =
+      !seiten.length ? "Fängt mit dem ersten Mal an"
+      : seiten.length === 1 ? "Die erste Seite — jedes Mal kommt eine dazu"
+      : "Seit " + seiten[seiten.length - 1].monat + " · " + seiten.length + " Seiten";
+    if (!seiten.length) {
+      $("stack").innerHTML =
+        '<div class="leer">Hier ist noch nichts.<br>' +
+        "Nach dem ersten Mal steht hier die erste Seite.</div>";
+      return;
+    }
+
     $("stack").innerHTML = seiten.map(function (b, i) {
       return '<button class="entry tap ' + b.farbe + '" data-b="' + i + '">' +
         '<div class="' + phKlasse(b) + '"' + phStil(b) + "></div>" +
@@ -2926,7 +2987,7 @@ var INHALT = {
       kopie.datum = ziel;
       var d = ausIso(ziel);
       entwurf = { titel: "WhatsApp an Opa", text: whatsappText(kopie) };
-      neueMitteilung({ von: "P", titel: "Verschoben: " + kopie.titel,
+      neueMitteilung({ von: meinKuerzel(), titel: "Verschoben: " + kopie.titel,
         text: "Jetzt " + tagLang(d) + ", " + d.getDate() + ". " + MON_KURZ[d.getMonth()] + "." });
       zeichneAlles();
       tagSheet(ziel);
@@ -3005,7 +3066,7 @@ var INHALT = {
         // haengt alles an derselben Kennung.
         var raus = drin[+b.dataset.weg];
         terminLoeschen(raus);
-        neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + raus.titel,
+        neueMitteilung({ von: meinKuerzel(), titel: "Wieder herausgenommen: " + raus.titel,
           text: tagLang(tag) + " ist wieder frei." });
         zeichneAlles();
         tagSheet(datum);
@@ -3146,6 +3207,17 @@ var INHALT = {
        ihn anmelden — und genau das ist bei einem Angebot der Punkt. */
     var q = (v.sorte === "angebot" && v.quelle) ? v.quelle : null;
 
+    /* Wann ist so etwas vorbei?
+       Bei einer Uhrzeit drei Stunden später, bei einer blossen Tageszeit
+       deren Ende. Das ist geraten, und deshalb steht es als Feld im
+       Formular: eine Radtour dauert anders lang als ein Kaffee, und nur
+       wer die Sache kennt, weiss das. */
+    function vorbeiVorschlag(modus, zeit, tageszeit) {
+      if (modus !== "uhr") return (TAGESZEIT[tageszeit] || TAGESZEIT.mittag).bis;
+      var st = Math.min(23, (+String(zeit).split(":")[0] || 15) + 3);
+      return ("0" + st).slice(-2) + ":" + (String(zeit).split(":")[1] || "00");
+    }
+
     /* Im gespeicherten Termin steht "·" für "macht er selbst". Im Formular
        heißt derselbe Fall "-", weil dort ein Knopf dahintersteht. Ohne die
        Umrechnung stand beim Ändern eines selbstgegangenen Termins gar kein
@@ -3160,6 +3232,11 @@ var INHALT = {
           emoji: v.emoji || "", versatz: null,
           modus: v.tageszeit ? "tz" : "uhr",
           zeit: v.zeit || "15:00", tageszeit: v.tageszeit || "mittag",
+          // Der Katalog kennt bei manchen Angeboten ein eigenes Ende — die
+          // Radtour ist um 13 Uhr durch, nicht drei Stunden nach dem Start.
+          // Es steht als Vorschlag da und zieht trotzdem mit, wenn jemand
+          // die Uhrzeit aendert.
+          vorbei: q && q.gewesenAb ? vorbeiAb(q) : "", vorbeiVonHand: false,
           ort: v.ort || "", zusatz: v.zusatz || "",
           // Eine Kleinigkeit macht er allein — das ist ihr ganzes Wesen.
           // Da darf nicht als Voreinstellung "Papa holt dich ab" stehen.
@@ -3183,6 +3260,7 @@ var INHALT = {
           versatz: tageDazwischen(mo, ausIso(vorhanden.datum)),
           modus: vorhanden.zeit ? "uhr" : "tz",
           zeit: vorhanden.zeit || "15:00", tageszeit: vorhanden.tageszeit || "mittag",
+          vorbei: vorbeiAb(vorhanden), vorbeiVonHand: true,
           ort: vorhanden.ort || "",
           zusatz: vorhanden.zusatz || "",
           wer: knopfKuerzel(vorhanden.abholung, "P"),
@@ -3190,6 +3268,9 @@ var INHALT = {
           zurueck: knopfKuerzel(vorhanden.rueckweg, "?"),
           zurText: vorhanden.rueckweg ? vorhanden.rueckweg.text : "",
           intern: internVon(vorhanden.uid) };
+
+    // Ohne eigene Angabe: der Vorschlag, passend zum gewählten Zeitpunkt.
+    if (!s.vorbei) s.vorbei = vorbeiVorschlag(s.modus, s.zeit, s.tageszeit);
 
     // Beim Anlegen auf den Tag, von dem aus das Blatt geöffnet wurde —
     // sonst auf den ersten, der noch nicht vorbei ist.
@@ -3251,6 +3332,10 @@ var INHALT = {
           '<button data-tz="mittag" aria-pressed="' + (s.tageszeit === "mittag") + '">Nachmittags</button>' +
           '<button data-tz="abend" aria-pressed="' + (s.tageszeit === "abend") + '">Abends</button>' +
         "</div></div>" +
+      '<div class="feld"><label>Vorbei ab</label>' +
+        '<input type="time" id="t-vorbei" value="' + roh(s.vorbei) + '">' +
+        "<small>Bis dahin steht der Termin bei ihm im Vordergrund. Danach rückt " +
+        "das Nächste nach vorn, und die Karte wird zur Erinnerung.</small></div>" +
       '<div class="feld"><label>Wo</label><input id="t-ort" value="' + roh(s.ort) +
         '" placeholder="Zum Beispiel: Eisdiele am Markt"></div>' +
       '<div class="feld"><label>Ein Satz dazu</label><textarea id="t-zusatz" rows="2" ' +
@@ -3286,7 +3371,17 @@ var INHALT = {
     }
     tippt("t-titel", "titel", function () { $("t-ok").disabled = s.titel.trim().length < 2; });
     tippt("t-emoji", "emoji");
-    tippt("t-zeit", "zeit");
+    // Wer die Uhrzeit ändert, meint meistens auch ein anderes Ende. Der
+    // Vorschlag zieht deshalb mit — aber nur, solange niemand das Feld
+    // selbst angefasst hat.
+    tippt("t-zeit", "zeit", function () { vorbeiNachziehen(); });
+    tippt("t-vorbei", "vorbei", function () { s.vorbeiVonHand = true; });
+
+    function vorbeiNachziehen() {
+      if (s.vorbeiVonHand) return;
+      s.vorbei = vorbeiVorschlag(s.modus, s.zeit, s.tageszeit);
+      $("t-vorbei").value = s.vorbei;
+    }
     tippt("t-ort", "ort");
     tippt("t-zusatz", "zusatz");
     tippt("t-wertext", "werText");
@@ -3307,10 +3402,11 @@ var INHALT = {
     gruppe("t-tag", "versatz", function (b) { return +b.dataset.tag; });
     gruppe("t-wer", "wer", function (b) { return b.dataset.wer; });
     gruppe("t-zur", "zurueck", function (b) { return b.dataset.zur; });
-    gruppe("t-tz", "tageszeit", function (b) { return b.dataset.tz; });
+    gruppe("t-tz", "tageszeit", function (b) { return b.dataset.tz; }, vorbeiNachziehen);
     gruppe("t-modus", "modus", function (b) { return b.dataset.modus; }, function () {
       $("t-uhrfeld").hidden = s.modus !== "uhr";
       $("t-tzfeld").hidden = s.modus !== "tz";
+      vorbeiNachziehen();
     });
     // Das Zeichen folgt der Farbe, solange niemand ein eigenes gesetzt hat.
     gruppe("t-farbe", "kategorie", function (b) { return b.dataset.farbe; }, function () {
@@ -3323,11 +3419,7 @@ var INHALT = {
       var personZ = INHALT.familie.filter(function (p) { return p.kuerzel === s.zurueck; })[0];
       var mitUhr = s.modus === "uhr";
       var tz = TAGESZEIT[s.tageszeit] || TAGESZEIT.mittag;
-      // Ab wann "Wie war's?" erscheinen darf. Bei einer Uhrzeit drei Stunden
-      // später, bei einer Tageszeit am Ende dieser Tageszeit.
-      var stunde = mitUhr
-        ? Math.min(23, (+String(s.zeit).split(":")[0] || 15) + 3)
-        : tz.bis;
+      var stunde = s.vorbei || vorbeiVorschlag(s.modus, s.zeit, s.tageszeit);
       var obj = {
         // Ein Angebot aus dem Katalog bleibt ein Angebot, auch wenn man die
         // Uhrzeit ändert — sonst stünde im WhatsApp-Text nicht mehr, dass
@@ -3383,7 +3475,7 @@ var INHALT = {
       terminSpeichern(obj, s.intern.trim());
 
       entwurf = { titel: "WhatsApp an Opa", text: whatsappText(obj) };
-      neueMitteilung({ von: person ? person.kuerzel : "P",
+      neueMitteilung({ von: meinKuerzel(),
         titel: (warAbgesagt ? "Neu gelegt: " : neu ? "Neu geplant: " : "Geändert: ") + obj.titel,
         text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " " + zeitSatz(obj) + "." });
       sheetZu();
@@ -3393,7 +3485,7 @@ var INHALT = {
     var weg = $("t-weg");
     if (weg) weg.addEventListener("click", function () {
       terminLoeschen(vorhanden);
-      neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + vorhanden.titel,
+      neueMitteilung({ von: meinKuerzel(), titel: "Wieder herausgenommen: " + vorhanden.titel,
         text: tagLang(ausIso(vorhanden.datum)) + " ist wieder frei." });
       sheetZu();
       zeichneAlles();

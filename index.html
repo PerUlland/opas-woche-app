@@ -132,7 +132,14 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   display:inline-block;background:rgba(255,255,255,.78);color:var(--ink);
   font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:20px;margin-bottom:11px;
 }
-.hero h2{margin:0;font-size:25px;font-weight:800;letter-spacing:-.038em;line-height:1.08;text-wrap:balance}
+/* Zwei Zeilen sind fuer den Titel immer reserviert, auch wenn er nur eine
+   braucht. Sonst ist die Karte bei "Broetchen holen" 27 Pixel flacher als
+   bei "Warmbadetag im Hallenbad", und der ganze Wochenstreifen darunter
+   rutscht beim Umschalten mit. Fuer jemanden, der die Tage mit dem Finger
+   sucht, ist eine Leiste, die sich bewegt, schlimmer als ein bisschen Luft
+   im Farbfeld. Als em, damit es mitwaechst, wenn iOS die Schrift vergroessert. */
+.hero h2{margin:0;font-size:25px;font-weight:800;letter-spacing:-.038em;line-height:1.08;
+  min-height:2.16em;text-wrap:balance}
 .hero .meta{margin:9px 0 0;font-size:14.5px;font-weight:500;color:rgba(20,24,28,.68)}
 .band{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.55);padding:12px 20px}
 .band .ic{
@@ -142,6 +149,13 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .band.fertig .ic{background:var(--good)}
 .band b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.018em}
 .band span{display:block;font-size:13.5px;color:var(--dim);font-weight:500;margin-top:1px}
+/* Auf der Karte steht genau EIN Band: wer ihn abholt.
+   Der Rueckweg stand hier kurz als zweites Band darunter und ist wieder
+   raus. Die Karte ist der Blick von der Tuer aus — sie soll das Gefuehl
+   geben "es ist geplant, jemand kommt", nicht die Fahrgemeinschaft
+   durchdeklinieren. Zwei Baender waren zwei Ansagen, wo eine reicht.
+   Alles Weitere steht im Blatt, das ein Tipp auf die Karte oeffnet: dort
+   erwartet man Einzelheiten, weil man danach gefragt hat. */
 
 /* Ruhiger Grund, wenn nichts ansteht oder abgesagt wurde */
 .hero.stumm .inner{background:var(--sunk)}
@@ -162,22 +176,31 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.today{background:var(--ink);border-color:var(--ink)}
 .wd.today b{color:rgba(255,255,255,.6)}
 .wd.today .num{color:#fff;font-weight:800}
-/* Termin = Rahmen und Punkt. Rahmen heisst "kommt noch". */
+/* Termin = Rahmen und Punkt. Rahmen heisst "kommt noch".
+   Das Orange gilt ausdruecklich nur, solange der Tag nicht heute ist.
+   Auf dem dunklen Heute-Kasten sagt schon die Fuellung "jetzt" und der
+   Punkt "da ist was" — eine dritte Farbe macht daraus ein Durcheinander
+   aus Schwarz, Weiss und Orange. Deshalb :not(.today) und nicht eine
+   Ueberschreibung weiter unten: die Regel steht damit dort, wo sie gilt. */
 .wd.event{border-color:var(--accent);border-width:2px}
-.wd.event b,.wd.event .num{color:var(--accent);font-weight:800}
+.wd.event:not(.today) b,.wd.event:not(.today) .num{color:var(--accent);font-weight:800}
 .wd.event .dot i{background:var(--accent)}
 .wd.today.event{background:var(--ink);border-color:var(--ink)}
 .wd.today.event b{color:rgba(255,255,255,.6)}
 .wd.today.event .num{color:#fff}
 /* Punkt nur, wenn an dem Tag wirklich etwas ist */
-.wd.today.event .dot i{background:#fff}
-/* Abgesagt = grauer Rahmen, grauer Punkt. Sonst sieht der Tag aus wie
-   jeder andere: die Zahl bleibt normal. Ein halb ausgegrauter Tag sieht
-   kaputt aus, nicht abgesagt. */
-.wd.weg{border-color:var(--faint);border-width:2px}
-.wd.weg .dot i{background:var(--faint)}
-.wd.today.weg{border-color:var(--ink)}
-.wd.today.weg .dot i{background:rgba(255,255,255,.5)}
+.wd.today.event .dot i{background:#fff;width:6px;height:6px;border-radius:3px}
+/* Abgesagt = ein grauer Punkt, mehr nicht. Der Kasten steht da wie jeder
+   andere Tag, mit Wochentag UND Datum.
+
+   Die Klasse heisst .ab und nicht mehr .weg — und das ist kein Geschmack:
+   .weg ist weiter unten der Herausnehmen-Knopf im Tagesblatt (34x34,
+   display:grid). Beide Regeln trafen sich auf demselben Element, die
+   spaetere gewann, und der Tag wurde zu einem 34-Pixel-Kaestchen
+   zusammengefaltet. Das Datum stand dann weiss unter dem Kasten im
+   Nichts. Genau so sah es aus. */
+.wd.ab .dot i{background:var(--faint)}
+.wd.today.ab .dot i{background:rgba(255,255,255,.5)}
 
 /* Der Tag, den die grosse Karte gerade zeigt.
    Keine eigene Farbe — in einer Reihe aus sieben Kaesten waeren drei
@@ -189,7 +212,34 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .wd.blick .num{font-size:23px;font-weight:800}
 .wd.blick b{color:var(--ink)}
 .wd.today.blick b{color:rgba(255,255,255,.75)}
-.wd.event.blick b{color:var(--accent)}
+.wd.event.blick:not(.today) b{color:var(--accent)}
+
+/* Der Weg zurueck zu dem, was als Naechstes ansteht.
+   Frueher war das der Heute-Kasten im Streifen: er steht immer vorne und
+   fuehrte immer zum Standard. Das traegt nicht mehr, seit ein Tipp auf
+   einen leeren Tag ein Blatt oeffnet statt die Karte zu wechseln — dann
+   tut derselbe Kasten an einem leeren Montag etwas voellig anderes.
+
+   Er sass kurz als eigene Zeile unter dem Streifen. Das war falsch: sobald
+   man sich einen spaeteren Termin ansah, kam die Zeile dazu und schob alles
+   darunter nach unten. Ein Streifen, unter dem sich beim Antippen die halbe
+   Seite verschiebt, ist genau das, was hier nicht passieren darf.
+   Jetzt steht er IN der Aktionsreihe, links neben dem Knopf: nur der wird
+   schmaler, nichts wandert.
+
+   Und er traegt keinen Text mehr. "Zurueck zum Naechsten" widerspricht sich,
+   wenn man es aus dem Zusammenhang reisst — zurueck und nach vorn in einem
+   Satz. Ein Pfeil sagt dasselbe und behauptet keine Richtung in der Zeit. */
+.reihe{display:flex;gap:10px;margin-top:14px}
+.reihe .cta{flex:1;min-width:0;margin-top:0}
+.zurueck{
+  flex:0 0 auto;width:54px;height:54px;border-radius:18px;
+  background:var(--sunk);color:var(--ink);
+  display:grid;place-items:center;line-height:1;
+  font-size:27px;font-weight:600;padding-bottom:4px;
+  transition:transform .12s ease;
+}
+.zurueck:active{transform:scale(.96)}
 
 /* ---------- Knoepfe ---------- */
 .cta{
@@ -301,59 +351,138 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 .banner .ic{width:30px;height:30px;border-radius:11px;flex:0 0 auto;background:var(--accent);
             color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700}
+.banner .tx{flex:1;min-width:0}
 .banner b{display:block;font-size:15px;font-weight:750;letter-spacing:-.02em}
 .banner span{display:block;font-size:13.5px;color:rgba(20,24,28,.66);font-weight:500;margin-top:2px}
+/* Jeder Hinweis traegt ein X. Was nicht weggeht, liest nach dem dritten Mal
+   niemand mehr — und dann geht auch der naechste unter, der wirklich zaehlt.
+   Weggeklickt wird der Hinweis, nicht die Sache: aendert sich der Anlass,
+   kommt er unter neuem Schluessel wieder. */
+.banner .zu{
+  flex:0 0 auto;width:30px;height:30px;border-radius:15px;margin:-3px -5px 0 0;
+  display:grid;place-items:center;line-height:1;
+  font-size:19px;color:rgba(20,24,28,.45);
+}
+.banner.still{background:var(--sunk)}
+.banner.still .ic{background:var(--ink)}
+.banner.tippbar{transition:transform .12s ease}
+.banner.tippbar:active{transform:scale(.99)}
 
-/* Monatsraster — der Blick von oben. Nur Punkte, keine Titel: es soll
-   auf einen Blick zeigen, wo die Löcher sind, und sonst nichts. */
+/* Monatsraster — der Blick von oben. Ein Kalendermonat, zum Blaettern,
+   vom Montag vor dem Ersten bis zum Sonntag nach dem Letzten.
+   Ein Zeichen auf dem Tag sagt, dass da etwas ist — die Zahl bleibt daneben
+   lesbar, weil man beim Planen das Datum braucht. Dunkel gefüllt heisst
+   weiterhin genau eines: heute. */
 .raster{margin-top:20px}
-.raster .monat{margin:0 0 10px;font-size:12px;font-weight:700;color:var(--faint);
+.raster .monatszeile{display:flex;align-items:center;gap:7px;margin:0 0 10px}
+.raster .monat{margin:0;flex:1;min-width:0;font-size:12px;font-weight:700;color:var(--faint);
   letter-spacing:.07em;text-transform:uppercase}
+.mpfeil{width:32px;height:32px;border-radius:16px;background:var(--sunk);flex:0 0 auto;
+  display:grid;place-items:center;font-size:19px;font-weight:700;color:var(--ink);
+  line-height:1;transition:transform .12s ease}
+.mpfeil:active{transform:scale(.9)}
+/* Nur da, wenn man nicht im laufenden Monat steht. Ein Weg zurueck muss
+   sichtbar sein, sonst blaettert man sich weg und sucht "jetzt". */
+.zuheute{border-radius:15px;background:var(--ink);color:#fff;flex:0 0 auto;
+  font-size:12px;font-weight:700;padding:8px 12px;line-height:1}
 .raster .kopf{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px}
 .raster .kopf span{text-align:center;font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.03em}
 .raster .netz{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.rz{height:40px;border-radius:13px;background:var(--sunk);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:3px;transition:transform .12s ease}
+.rz{height:50px;border-radius:14px;background:var(--sunk);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;transition:transform .12s ease;position:relative}
 .rz:active{transform:scale(.9)}
 .rz .n{font-size:12.5px;font-weight:650;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1}
-.rz i{width:5px;height:5px;border-radius:3px;background:transparent;display:block}
-.rz.hat{background:#FBE3D6}
-.rz.hat .n{color:var(--ink);font-weight:800}
-.rz.hat i{background:var(--accent)}
-.rz.ab i{background:var(--faint)}
+.rz .em{font-size:19px;line-height:1;display:block}
+/* Steht etwas an, rückt die Zahl unter das Zeichen und wird kleiner.
+   Die Fläche trägt dann die Kategoriefarbe — gesetzt wird sie im Skript,
+   damit "heute" dunkel bleiben darf. */
+.rz.hat .n{font-size:10.5px;font-weight:750;color:rgba(20,24,28,.6)}
+/* Mehr als eine Sache an dem Tag. Klein, sonst wird das Raster unruhig. */
+.rz .mehr{position:absolute;top:6px;right:7px;width:5px;height:5px;border-radius:3px;background:var(--ink)}
+/* Tage aus dem Nachbarmonat. Sie bleiben stehen und antippbar, weil eine
+   Woche zusammengehoert — aber sie treten zurueck. Steht dort etwas, holt
+   die Kategoriefarbe sie wieder nach vorn; die wird im Skript gesetzt. */
+.rz.fremd{background:transparent}
+.rz.fremd .n{color:var(--faint)}
+/* Abgesagt: das Zeichen bleibt stehen, aber ohne Farbe. Man sieht, was da war,
+   und es sieht nicht aus wie etwas, das noch gilt. */
+.rz.ab .em{filter:grayscale(1);opacity:.45}
+.rz.ab .mehr{background:var(--faint)}
 .rz.vorbei{opacity:.42}
 .rz.heute{background:var(--ink)}
 .rz.heute .n{color:#fff;font-weight:800}
-/* Punkt nur, wenn an dem Tag wirklich etwas ist — auch heute. */
-.rz.heute.hat i{background:#fff}
-.rz.heute.ab i{background:rgba(255,255,255,.45)}
+.rz.heute.hat .n{color:rgba(255,255,255,.72)}
+.rz.heute .mehr{background:#fff}
 
-.wochen{display:flex;flex-direction:column;gap:10px;margin-top:16px}
-.woche{
-  display:flex;align-items:center;gap:13px;width:100%;
-  border:1.5px solid var(--line);border-radius:20px;padding:13px 15px;
-  transition:transform .12s ease,border-color .2s ease;
-}
-.woche:active{transform:scale(.985)}
-.woche.offen{border-color:var(--accent);border-width:2px;background:#FDF3EE}
-.woche .marke{
-  width:38px;height:38px;border-radius:14px;flex:0 0 auto;display:grid;place-items:center;
-  background:var(--sunk);font-size:11px;font-weight:750;color:var(--dim);
-  text-align:center;line-height:1.15;
-}
-.woche.offen .marke{background:var(--accent);color:#fff}
-.woche .tx{flex:1;min-width:0;padding:0}
-.woche b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.02em}
-.woche span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:2px}
-.woche .pfeil{color:var(--faint);font-size:19px;flex:0 0 auto}
-/* Abgesagt: bleibt sichtbar, aber tritt zurueck. Anfassbar muss es sein —
-   sonst kaeme niemand mehr an den grauen Punkt in Opas Streifen heran. */
-.woche.ab{border-style:dashed}
-.woche.ab .marke{background:var(--sunk);color:var(--faint)}
-.woche.ab b{color:var(--dim)}
-/* Die Zeile "unter uns" — steht nur hier, nie in Opas Woche. */
-.woche em{display:block;font-style:normal;font-size:12px;color:var(--faint);
-  font-weight:650;margin-top:4px}
+/* ---------- Tagesblatt ----------------------------------------------
+   Der Streifen zeigt den angetippten Tag und drei Tage links und rechts.
+   Er endet mit Absicht nicht am Sonntag: man legt eine Sache auch mal über
+   die Wochengrenze, und dann soll das Ziel sichtbar sein.
+   -------------------------------------------------------------------- */
+.streifen{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:15px 0 2px}
+.st{height:58px;border-radius:15px;background:var(--sunk);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;transition:transform .12s ease,background-color .18s ease}
+.st .wt{font-size:9.5px;font-weight:700;color:var(--faint);letter-spacing:.04em;text-transform:uppercase;line-height:1}
+.st .n{font-size:15.5px;font-weight:750;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1}
+.st .em{font-size:12px;line-height:1;height:13px}
+.st[aria-pressed="true"]{background:var(--ink)}
+.st[aria-pressed="true"] .wt{color:rgba(255,255,255,.55)}
+.st[aria-pressed="true"] .n{color:#fff}
+.st.vorbei{opacity:.4}
+/* Während etwas gezogen wird: alle Tage, auf die man es legen darf. */
+.st.ziel{background:#FDEDE4;box-shadow:inset 0 0 0 2px var(--accent)}
+.st.ziel .n{color:var(--accent)}
+.st.drueber{background:var(--accent)}
+.st.drueber .n,.st.drueber .wt{color:#fff}
+
+/* Was an dem Tag schon steht. Gedrückt halten schiebt es auf einen anderen Tag. */
+.geplant{display:flex;align-items:center;gap:11px;width:100%;background:var(--sunk);
+  border-radius:18px;padding:11px 13px;margin-top:8px;touch-action:pan-y;
+  transition:transform .14s ease,box-shadow .14s ease,background-color .18s ease}
+.geplant .em{font-size:22px;line-height:1;flex:0 0 auto}
+.geplant .tx{flex:1;min-width:0;text-align:left}
+.geplant b{display:block;font-size:15px;font-weight:750;letter-spacing:-.02em}
+.geplant span{display:block;font-size:12.5px;color:var(--dim);font-weight:500;margin-top:1px}
+.geplant .weg{flex:0 0 auto;width:30px;height:30px;border-radius:15px;display:grid;
+  place-items:center;color:var(--faint);font-size:17px;background:var(--page)}
+.geplant.hebt{transform:scale(1.035);background:var(--page);
+  box-shadow:0 16px 34px -12px rgba(20,24,28,.45);position:relative;z-index:2}
+/* Hingebracht, aber nicht abgeholt: der Termin ist nicht fertig geplant.
+   Das steht in der Farbe da, in der bei uns alles Offene steht. */
+.geplant .offen{font-style:normal;color:var(--accent);font-weight:700}
+.geplant.ab{opacity:.5}
+.geplant.ab b{text-decoration:line-through}
+.zieh-hinweis{margin:9px 0 0!important;font-size:12.5px!important;color:var(--faint);font-weight:600}
+
+/* Die drei Vorschläge. Ein festes Angebot trägt eine graue Zeile, weil dort
+   jemand anruft — das ist ein Hinweis für uns, kein Rang. In Opas Woche steht
+   davon nichts: dort sehen beide Sorten gleich aus und sind gleich viel wert. */
+.vor{display:flex;align-items:flex-start;gap:12px;width:100%;border-radius:20px;
+  padding:14px 15px;margin-top:9px;border:1.5px solid var(--line);background:var(--page);
+  transition:transform .12s ease}
+.vor:active{transform:scale(.982)}
+.vor .em{font-size:24px;line-height:1.05;flex:0 0 auto}
+.vor .tx{flex:1;min-width:0}
+.vor b{display:block;font-size:16px;font-weight:750;letter-spacing:-.025em}
+.vor span{display:block;font-size:13px;color:var(--dim);font-weight:500;margin-top:2px}
+.vor em{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--faint);
+  letter-spacing:.05em;text-transform:uppercase;margin-top:7px}
+.vor .plus{flex:0 0 auto;color:var(--faint);font-size:21px;font-weight:500;line-height:1}
+.vor.fest{background:var(--sunk);border-color:transparent}
+
+/* Archiv: was schon einmal dastand, und der ganze Vorrat.
+   Bewusst schmaler als ein Vorschlag — es ist ein Nachschlagewerk, kein
+   Angebot. Die drei Vorschlaege oben bleiben die Hauptsache. */
+.archivliste{margin-top:10px}
+.arch{display:flex;align-items:center;gap:11px;width:100%;background:var(--sunk);
+  border-radius:16px;padding:10px 13px;margin-top:7px;transition:transform .12s ease}
+.arch:active{transform:scale(.985)}
+.arch .em{font-size:19px;line-height:1;flex:0 0 auto}
+.arch .tx{flex:1;min-width:0;text-align:left}
+.arch b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.02em}
+.arch span{display:block;font-size:12px;color:var(--faint);font-weight:600;margin-top:1px}
+/* Der kleine Knopf neben "Etwas anderes eintragen" */
+.cta.archiv{flex:0 0 auto;width:auto;padding:0 20px;font-size:16px}
 
 /* ---------- Formular: Termin anlegen und ändern ---------- */
 .feld{margin-top:14px}
@@ -366,6 +495,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 .feld textarea{font-weight:500;resize:none}
 .feld input:focus,.feld textarea:focus{outline:none;border-color:var(--accent)}
+.zeile{display:flex;gap:8px}
+.zeile .emj{width:62px;flex:0 0 auto;text-align:center;font-size:21px;padding:12px 4px}
 .wahl{display:flex;gap:6px}
 .wahl button{
   flex:1;min-width:0;border:1.5px solid var(--line);border-radius:13px;padding:9px 2px;
@@ -374,6 +505,10 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 .wahl button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .wahl button[disabled]{opacity:.3}
+/* Beim Rueckweg sind es fuenf Moeglichkeiten. Die Reihe darf umbrechen —
+   drei Menschen oben, die beiden anderen Faelle darunter. */
+.wahl.breit{flex-wrap:wrap;row-gap:6px}
+.wahl.breit button{flex:1 0 28%}
 .farben{display:flex;gap:8px}
 .farben button{flex:1;height:38px;border-radius:13px;border:3px solid transparent}
 .farben button[aria-pressed="true"]{border-color:var(--ink)}
@@ -432,6 +567,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   animation:hoch .32s cubic-bezier(.32,.72,0,1);max-height:88%;overflow-y:auto;
 }
 @keyframes hoch{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet > *{flex:0 0 auto}
 .grip{width:40px;height:5px;border-radius:3px;background:var(--sunk);margin:0 auto 14px;flex:0 0 auto}
 .sheet h3{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em;text-wrap:balance}
 .sheet .kicker{margin-bottom:6px}
@@ -466,7 +602,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 
 @media (prefers-reduced-motion:reduce){
   .sheet,.scrim,.pane.zeigen{animation:none}
-  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active,.woche:active{transform:none}
+  .tap:active,.cta:active,.wd:active,.fil:active,.opt:active,.vor:active{transform:none}
 }
 
 /* ---------- Anmelde-Schirm: liegt über allem, bis klar ist, wer da ist ---------- */
@@ -594,7 +730,6 @@ window.OW_FAMILIE = "ulland";   // familien/{fam} — dieser eine Zweig
 
       <div id="fam-banner"></div>
       <div class="raster" id="raster"></div>
-      <div class="wochen" id="wochen"></div>
 
       <div class="draft">
         <h5 id="draft-titel">WhatsApp an Opa</h5>
@@ -646,12 +781,16 @@ var INHALT = {
   // Liegt die Datei nicht daneben, zeigt die App das Kürzel. Kein Fehler.
   opaFoto: "./opa.jpg",
 
-  // "satz" steht so in Opas Woche. Er muss dastehen, weil "Ich holt dich ab"
-  // kein Deutsch ist — der Name allein reicht dafür nicht.
+  // "satz" und "satzZurueck" stehen so in Opas Woche. Sie müssen dastehen,
+  // weil "Ich holt dich ab" kein Deutsch ist — der Name allein reicht nicht.
+  // Zwei Sätze, weil es zwei Wege sind: hin und wieder zurück.
   familie: [
-    { kuerzel: "P", farbe: "f-a", name: "Papa", satz: "Papa holt dich ab" },
-    { kuerzel: "M", farbe: "f-b", name: "Mama", satz: "Mama holt dich ab" },
-    { kuerzel: "I", farbe: "f-c", name: "Ich",  satz: "Ich hole dich ab" }
+    { kuerzel: "P", farbe: "f-a", name: "Papa",
+      satz: "Papa holt dich ab", satzZurueck: "Papa bringt dich zurück" },
+    { kuerzel: "M", farbe: "f-b", name: "Mama",
+      satz: "Mama holt dich ab", satzZurueck: "Mama bringt dich zurück" },
+    { kuerzel: "I", farbe: "f-c", name: "Ich",
+      satz: "Ich hole dich ab",  satzZurueck: "Ich bringe dich zurück" }
   ],
 
   // Der Plan. Jeder Eintrag bekommt ein echtes Datum.
@@ -660,17 +799,19 @@ var INHALT = {
   // ihr Datum direkt.
   plan: [
     {
-      id: "bad", inWochen: 0, wochentag: 1, zeit: "14:30", gewesenAb: 17,
+      id: "bad", inWochen: 0, wochentag: 1, zeit: "14:30", gewesenAb: 17, emoji: "🏊",
       titel: "Warmbadetag im Hallenbad", kategorie: "wasser", ort: "Hallenbad",
       zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
       abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
+      rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 16:20" },
       danach:   { titel: "Warst du. Schön.", text: "Papa hat dich um 16:20 zurückgebracht" }
     },
         {
-      id: "spiel", inWochen: 1, wochentag: 3, zeit: "15:00", gewesenAb: 18,
+      id: "spiel", inWochen: 1, wochentag: 3, zeit: "15:00", gewesenAb: 18, emoji: "🃏",
       titel: "Spielenachmittag", kategorie: "erzaehlen", ort: "Gemeindehaus",
       zusatz: "Karten, Rommé, Kuchen. Oma kommt mit.",
       abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
+      rueckweg: { kuerzel: "P", titel: "Papa bringt euch zurück", text: "gegen 18 Uhr" },
       danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" }
     }
     // Die Wochen danach stehen mit Absicht leer — so sieht man, was dann passiert.
@@ -704,37 +845,41 @@ var INHALT = {
   vorschlaege: [
     {
       id: "bad", titel: "Warmbadetag", kategorie: "wasser", farbe: "e-wasser",
-      wochentag: 1, zeit: "14:30", gewesenAb: 17, ort: "Hallenbad",
+      wochentag: 1, zeit: "14:30", gewesenAb: 17, ort: "Hallenbad", emoji: "🏊",
       kicker: "Läuft jede Woche", hinweis: "Angemeldet — kein Anruf nötig",
       zusatz: "Das warme Wasser, 31,5 Grad. Seniorenzeit, ihr seid unter euch.",
       abholung: { kuerzel: "P", titel: "Papa holt dich ab", text: "um 14:10 vor der Tür" },
+      rueckweg: { kuerzel: "P", titel: "Papa bringt dich zurück", text: "gegen 16:20" },
       danach:   { titel: "Warst du. Schön.", text: "Papa hat dich zurückgebracht" },
       text: "Opa, {TAG} um {ZEIT} Warmbadetag im Hallenbad — das warme Wasser, 31,5 Grad. Ich meld dich an. Papa holt dich um 14:10 ab."
     },
     {
       id: "spiel", titel: "Spielenachmittag", kategorie: "erzaehlen", farbe: "e-erz",
-      wochentag: 3, zeit: "15:00", gewesenAb: 18, ort: "Gemeindehaus",
+      wochentag: 3, zeit: "15:00", gewesenAb: 18, ort: "Gemeindehaus", emoji: "🃏",
       kicker: "Zu zweit möglich", hinweis: "Einmal dort anrufen",
       zusatz: "Karten, Rommé, Kuchen. Oma kann mitkommen.",
       abholung: { kuerzel: "P", titel: "Papa holt euch ab", text: "um 14:40 vor der Tür" },
+      rueckweg: { kuerzel: "P", titel: "Papa bringt euch zurück", text: "gegen 18 Uhr" },
       danach:   { titel: "Warst du. Schön.", text: "Ihr wart bis 18 Uhr da" },
       text: "Opa, {TAG} um {ZEIT} ist Spielenachmittag im Gemeindehaus. Oma könnte mitkommen. Ich melde euch beide an."
     },
     {
       id: "maenner", titel: "Männerkreis", kategorie: "runde", farbe: "e-runde",
-      wochentag: 2, zeit: "20:00", gewesenAb: 22, ort: "Gemeindehaus",
+      wochentag: 2, zeit: "20:00", gewesenAb: 22, ort: "Gemeindehaus", emoji: "👥",
       kicker: "Noch nie da gewesen", hinweis: "Erstes Mal — jemand fährt mit",
       zusatz: "Jeder dritte Dienstag. Beim ersten Mal komm ich mit.",
       abholung: { kuerzel: "I", titel: "Ich hole dich ab", text: "um 19:40 vor der Tür" },
+      rueckweg: { kuerzel: "I", titel: "Ich bringe dich zurück", text: "wann du magst" },
       danach:   { titel: "Warst du. Schön.", text: "Und du bist geblieben bis halb zehn" },
       text: "Opa, {TAG} um {ZEIT} trifft sich der Männerkreis im Gemeindehaus. Beim ersten Mal komm ich mit und hol dich um 19:40 ab."
     },
     {
       id: "rad", titel: "Radtour mit der Gruppe", kategorie: "rad", farbe: "e-rad",
-      wochentag: 6, zeit: "10:00", gewesenAb: 14, ort: "Treffpunkt Kirche",
+      wochentag: 6, zeit: "10:00", gewesenAb: 14, ort: "Treffpunkt Kirche", emoji: "🚲",
       kicker: "Kennt er schon", hinweis: "Läuft von allein",
       zusatz: "Die Runde, die du kennst. Nichts Neues, nichts Fremdes.",
-      abholung: { kuerzel: "I", titel: "Du fährst selbst", text: "wie immer, Treffpunkt Kirche" },
+      abholung: { kuerzel: "\u00b7", titel: "Du fährst selbst", text: "wie immer, Treffpunkt Kirche" },
+      rueckweg: { kuerzel: "\u00b7", titel: "Du fährst selbst zurück", text: "wie immer" },
       danach:   { titel: "Warst du. Schön.", text: "Zurück gegen eins" },
       text: "Opa, {TAG} um {ZEIT} fährt die Gruppe wieder. Treffpunkt wie immer an der Kirche."
     }
@@ -745,14 +890,94 @@ var INHALT = {
   // Genau diese Sorte funktioniert in Opas Woche am besten: es braucht
   // nur einen Menschen, keine Anmeldung.
   eigenesVorlagen: [
-    { titel: "Eis essen", kategorie: "kaffee", ort: "Eisdiele", zeit: "15:00",
+    { titel: "Eis essen", emoji: "🍦", kategorie: "kaffee", ort: "Eisdiele", zeit: "15:00",
       zusatz: "Nur wir. Dauert eine Stunde." },
-    { titel: "Kaffee bei uns", kategorie: "kaffee", ort: "Bei uns zu Hause", zeit: "15:30",
+    { titel: "Kaffee bei uns", emoji: "☕", kategorie: "kaffee", ort: "Bei uns zu Hause", zeit: "15:30",
       zusatz: "Kuchen ist da." },
-    { titel: "Spaziergang am Deich", kategorie: "werk", ort: "Treffpunkt Deich", zeit: "14:00",
+    { titel: "Spaziergang am Deich", emoji: "🌳", kategorie: "werk", ort: "Treffpunkt Deich", zeit: "14:00",
       zusatz: "Die Runde, die du kennst. Bank auf halber Strecke." },
-    { titel: "Oma besuchen", kategorie: "erzaehlen", ort: "Tagespflege", zeit: "15:00",
+    { titel: "Oma besuchen", emoji: "💐", kategorie: "erzaehlen", ort: "Tagespflege", zeit: "15:00",
       zusatz: "Wir fahren zusammen hin." }
+  ],
+
+  /* ------------------------------------------------------------------
+     Kleinigkeiten. Der Vorrat, aus dem ein Tag aufgefüllt wird, wenn es
+     nichts Offizielles gibt — und das ist an den meisten Tagen so.
+
+     Zwei Regeln stecken in jedem Eintrag:
+
+     1. Es muss ein Bild daraus werden können. Bei einem Angebot erwartet
+        ihn jemand vor Ort; hier wartet jemand auf das Foto. Das ist der
+        einzige Wirkstoff, den diese Sorte hat.
+     2. Nichts, was nach Aufgabe klingt. Kein Häkchen, kein Nachhaken.
+        Passiert es nicht, verschwindet es lautlos.
+
+     "tage"   — nur an diesen Wochentagen (1 = Montag). Fehlt es: jeder Tag.
+     "monate" — nur in diesen Monaten. Fehlt es: das ganze Jahr.
+     "omaDa"  — braucht Oma zu Hause. Mo–Do ist sie bis 16 Uhr in der
+                Tagespflege, also dort nur abends.
+     ------------------------------------------------------------------ */
+  kleinigkeiten: [
+    { titel: "Mit Oma einmal ums Haus gehen", emoji: "🌳", kategorie: "werk", tageszeit: "mittag",
+      ort: "Bei euch", omaDa: true,
+      zusatz: "Nur die kleine Runde. Eine Bank steht ja am Weg." },
+    { titel: "Mit Oma ein Eis essen", emoji: "🍦", kategorie: "kaffee", tageszeit: "mittag",
+      ort: "Eisdiele am Markt", omaDa: true, monate: [4,5,6,7,8,9],
+      zusatz: "Zwei Kugeln. Mach ein Bild, wir wollen sehen, welche Sorte." },
+    { titel: "Auf der Bank am Feld sitzen", emoji: "🪑", kategorie: "erzaehlen", tageszeit: "mittag",
+      ort: "Am Feldweg",
+      zusatz: "Zehn Minuten sitzen und gucken. Das reicht völlig." },
+    { titel: "Die Blumen im Garten gießen", emoji: "🌼", kategorie: "werk", tageszeit: "frueh",
+      ort: "Bei euch im Garten",
+      zusatz: "Und ein Bild davon, wie es gerade aussieht." },
+    { titel: "Brötchen holen", emoji: "🥐", kategorie: "kaffee", tageszeit: "frueh",
+      ort: "Bäcker im Ort",
+      zusatz: "Der kurze Weg. Nimm eins mehr mit, falls jemand vorbeikommt." },
+    { titel: "Kleine Runde mit dem Rad", emoji: "🚲", kategorie: "rad", tageszeit: "frueh",
+      ort: "Ab der Haustür", monate: [3,4,5,6,7,8,9,10],
+      zusatz: "Keine große Tour. Einmal bis zur Kirche und zurück." },
+    { titel: "Zeitung holen und lesen", emoji: "📰", kategorie: "erzaehlen", tageszeit: "frueh",
+      ort: "Kiosk",
+      zusatz: "Mit einem Kaffee dazu. Wie sonst auch." },
+    { titel: "Enten füttern am Teich", emoji: "🦆", kategorie: "werk", tageszeit: "mittag",
+      ort: "Teich im Ort",
+      zusatz: "Altbrot mit. Ein Bild davon freut den Enkel." },
+    { titel: "Blumen zum Friedhof bringen", emoji: "💐", kategorie: "erzaehlen", tageszeit: "mittag",
+      ort: "Friedhof Hünxe",
+      zusatz: "In deinem Tempo. Es hat keine Uhrzeit." },
+    { titel: "Im alten Fotoalbum blättern", emoji: "📷", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Such ein Bild raus, das wir noch nie gesehen haben." },
+    { titel: "In der Werkzeugkiste kramen", emoji: "🔧", kategorie: "werk", tageszeit: "mittag",
+      ort: "In der Garage",
+      zusatz: "Nicht aufräumen — nur mal wieder in die Hand nehmen." },
+    { titel: "Oma vorlesen", emoji: "📖", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch", omaDa: true,
+      zusatz: "Eine halbe Seite reicht. Sie hört dir gern zu." },
+    { titel: "Deinen Enkel anrufen", emoji: "📱", kategorie: "runde", tageszeit: "abend",
+      ort: "Von zu Hause",
+      zusatz: "Er geht ran. Auch wenn es nur fünf Minuten sind." },
+    { titel: "Kaffee auf der Terrasse", emoji: "☕", kategorie: "kaffee", tageszeit: "mittag",
+      ort: "Bei euch draußen", monate: [4,5,6,7,8,9],
+      zusatz: "Solange es noch warm genug ist." },
+    { titel: "Über den Markt gehen", emoji: "🧺", kategorie: "werk", tageszeit: "frueh",
+      ort: "Marktplatz", tage: [2,5],
+      zusatz: "Guck, was es gibt. Kaufen musst du nichts." },
+    { titel: "Kastanien sammeln gehen", emoji: "🌰", kategorie: "werk", tageszeit: "mittag",
+      ort: "Am Feldweg", monate: [9,10,11],
+      zusatz: "Für die Fensterbank. Und ein Bild von der Ausbeute." },
+    { titel: "Das Spiel im Fernsehen gucken", emoji: "⚽", kategorie: "runde", tageszeit: "abend",
+      ort: "Bei euch", tage: [6,7],
+      zusatz: "Sag uns hinterher, wie es ausgegangen ist." },
+    { titel: "Ein Rezept aufschreiben", emoji: "📝", kategorie: "erzaehlen", tageszeit: "abend",
+      ort: "Bei euch",
+      zusatz: "Eins, das Oma immer gemacht hat. Wir hätten es gern." },
+    { titel: "Beim Nachbarn klingeln", emoji: "👋", kategorie: "runde", tageszeit: "mittag",
+      ort: "Nebenan",
+      zusatz: "Nur Guten Tag sagen. Mehr muss nicht sein." },
+    { titel: "Die Radgruppe anrufen", emoji: "☎️", kategorie: "rad", tageszeit: "abend",
+      ort: "Von zu Hause",
+      zusatz: "Fragen, wann sie diese Woche fahren." }
   ],
 
   // Was Opa sieht, wenn nichts geplant ist.
@@ -833,6 +1058,8 @@ var INHALT = {
   var extraMit  = lies("extraMit", []);   // Mitteilungen, die in der App entstanden sind
   var erlebt    = lies("erlebt", []);     // Rückmeldungen — das sind die Buchseiten
   var fotos     = lies("fotos", {});      // Bilder, nach Kennung
+  var weggeklickt = lies("weggeklickt", []); // Hinweise, die wir gelesen haben
+  var gemeldet    = lies("gemeldet", []);    // Tage, an denen er selbst Lust gemeldet hat
 
   // Wie schreib(), sagt aber, ob es geklappt hat. Fotos koennen den
   // Speicher des Geraets sprengen; dann muss der Mensch das erfahren.
@@ -1096,6 +1323,54 @@ var INHALT = {
   function istAbgesagt(e) { return abgesagt.indexOf(schluessel(e)) >= 0; }
   function istErledigt(e) { return erledigt.indexOf(schluessel(e)) >= 0; }
 
+  /* ---------- Zeichen, Zeit, Sorte ------------------------------------
+     Drei kleine Fragen, die überall gestellt werden. Die Antworten stehen
+     hier zusammen, damit sie überall dieselben sind.
+     ------------------------------------------------------------------ */
+
+  // Jede Kategorie hat ein Zeichen als Rückfall, eigene Zeichen gewinnen.
+  // Warum Emoji und keine eigenen Symbole: der Vorrat an Kleinigkeiten ist
+  // offen. Ein festes Symbolset kann ihn nie abdecken — für "Blumen gießen"
+  // gibt es kein Icon, aber ein Emoji. Genau die Eigenschaft, die sie
+  // gestalterisch unsauber macht, ist hier der Grund.
+  var KAT_ZEICHEN = {
+    wasser: "🏊", kaffee: "☕", runde: "👥",
+    rad: "🚲", erzaehlen: "📖", werk: "🌳"
+  };
+  function zeichenVon(e) {
+    return (e && e.emoji) || (e && KAT_ZEICHEN[e.kategorie]) || "·";
+  }
+
+  /* Ein Termin hat entweder eine Uhrzeit oder nur eine Tageszeit.
+     Eine Kleinigkeit braucht keine Minute — "am Nachmittag" ist genau
+     genug. Auf einer Uhrzeit zu bestehen macht aus ihr eine Verabredung,
+     die sie nicht ist, und dann steht bei ihm "14:10 Papa holt dich ab"
+     für etwas, das er längst allein kann. */
+  var TAGESZEIT = {
+    frueh:  { kurz: "vormittags",  satz: "am Vormittag",  lang: "Am Vormittag",  bis: 13 },
+    mittag: { kurz: "nachmittags", satz: "am Nachmittag", lang: "Am Nachmittag", bis: 18 },
+    abend:  { kurz: "abends",      satz: "am Abend",      lang: "Am Abend",      bis: 22 }
+  };
+  function tzVon(e) { return TAGESZEIT[e && e.tageszeit] || TAGESZEIT.mittag; }
+  function zeitKurz(e) { return e.zeit ? e.zeit : tzVon(e).kurz; }
+  function zeitLang(e) { return e.zeit ? e.zeit + " Uhr" : tzVon(e).lang; }
+  function zeitSatz(e) { return e.zeit ? "um " + e.zeit : tzVon(e).satz; }
+
+  /* Wem gehört der Zeitpunkt? Ein Angebot aus dem Katalog gehört dem
+     Anbieter — der Warmbadetag findet dienstags einfach nicht statt, den
+     kann man nicht verschieben. Alles andere gehört uns und darf wandern.
+     Das ist die ganze Regel hinter dem Ziehen im Tagesblatt. */
+  function istAngebot(e) { return !!e.id && e.id !== "eig"; }
+
+  /* Wer hingebracht wird, muss auch wieder zurück. Solange dazu nichts
+     dasteht, ist der Termin nicht fertig geplant — und das gehört beim
+     Planen sichtbar gemacht, nicht am Abend vorher gemerkt.
+     Geht er allein hin ("·"), gibt es nichts zu klären. */
+  function rueckwegOffen(e) {
+    return !!(e.abholung && e.abholung.kuerzel !== "\u00b7" && !e.rueckweg);
+  }
+  function istZiehbar(e) { return !istAngebot(e); }
+
   function schonVorbei(e) {
     var jetzt = new Date();
     var diff = tageDazwischen(jetzt, ausIso(e.datum));
@@ -1285,13 +1560,12 @@ var INHALT = {
     return "In " + Math.round(diff / 7) + " Wochen";
   }
 
-  /* Welchen Tag schaut er gerade an?
+  /* Welchen Termin schaut er gerade an?
      null heisst: den Standard, also das nächste, was ansteht. Tippt er im
-     Streifen auf einen anderen Tag, steht hier entweder dessen Termin
-     ({key}) oder, wenn dort nichts ist, der Tag selbst ({tag}).
-     Beim Tipp auf heute, beim Reiterwechsel und beim Wiederöffnen der App
+     Streifen auf einen Tag, an dem etwas steht, steht hier dessen Termin.
+     Beim Zurück-Knopf, beim Reiterwechsel und beim Wiederöffnen der App
      fällt es auf null zurück: Herumschauen ist ein Ausflug, kein Zustand. */
-  var blick = null;      // {key: …} oder {tag: …} oder null
+  var blick = null;      // {key: …} oder null
   var imFokus = null;    // der Termin, den die grosse Karte gerade zeigt
 
   // Nur die sieben Tage im Streifen sind erreichbar. Was herausrutscht
@@ -1304,11 +1578,6 @@ var INHALT = {
     var t = alleTermine().filter(function (x) { return schluessel(x) === s; })[0];
     return (t && imStreifen(ausIso(t.datum))) ? t : null;
   }
-  function tagImStreifen(s) {
-    var d = ausIso(s);
-    return imStreifen(d) ? d : null;
-  }
-
   /* "Heute", "Morgen", "In 4 Tagen" — mehr braucht es im Streifen nicht,
      weil dort ohnehin nur sieben Tage liegen. */
   function wannKurz(d) {
@@ -1321,16 +1590,13 @@ var INHALT = {
     $("anrede").textContent = INHALT.anrede;
     $("heute-zeile").textContent = langesDatum(heute);
 
-    var e = null, leerTag = null;
+    var e = null;
     if (werkbank !== "leer") {
       if (blick && blick.key) {
         e = terminZu(blick.key);
         if (!e) blick = null;
-      } else if (blick && blick.tag) {
-        leerTag = tagImStreifen(blick.tag);
-        if (!leerTag) blick = null;
       }
-      if (!e && !leerTag) e = aktuell();
+      if (!e) e = aktuell();
     }
     imFokus = e;
 
@@ -1341,18 +1607,7 @@ var INHALT = {
     $("hero").classList.toggle("stumm", !e || weg);
     innen.style.background = "";
 
-    if (leerTag) {
-      // Ein Tag, an dem nichts ansteht. Dasselbe Bild wie sonst, nur auf
-      // diesen Tag bezogen — damit jeder Tipp im Streifen dasselbe tut.
-      $("art").innerHTML = motiv("still");
-      $("chip").textContent = wannKurz(leerTag);
-      $("hero-titel").textContent = "Nichts vorgesehen";
-      $("hero-meta").textContent = langesDatum(leerTag);
-      $("band").className = "band";
-      $("band-ic").textContent = "·";
-      $("band-titel").textContent = INHALT.leer.band.titel;
-      $("band-text").textContent = INHALT.leer.band.text;
-    } else if (!e) {
+    if (!e) {
       $("art").innerHTML = motiv("still");
       $("chip").textContent = "Nichts vorgesehen";
       $("hero-titel").textContent = INHALT.leer.titel;
@@ -1365,7 +1620,7 @@ var INHALT = {
       $("art").innerHTML = motiv("still");
       $("chip").textContent = "Abgesagt";
       $("hero-titel").textContent = e.titel;
-      $("hero-meta").textContent = tagLang(ausIso(e.datum)) + " " + e.zeit + " · abgesagt";
+      $("hero-meta").textContent = tagLang(ausIso(e.datum)) + " " + zeitKurz(e) + " · abgesagt";
       $("band").className = "band";
       $("band-ic").textContent = "·";
       $("band-titel").textContent = "Die Familie weiß Bescheid";
@@ -1376,29 +1631,36 @@ var INHALT = {
       $("chip").textContent = abstandText(e, gewesen);
       $("hero-titel").textContent = e.titel;
       $("hero-meta").textContent = gewesen
-        ? tagLang(ausIso(e.datum)) + " · war um " + e.zeit
-        : tagLang(ausIso(e.datum)) + " " + e.zeit + " · " + e.ort;
+        ? tagLang(ausIso(e.datum)) + " · war " + zeitSatz(e)
+        : tagLang(ausIso(e.datum)) + " " + zeitKurz(e) + " · " + e.ort;
       var band = gewesen ? e.danach : e.abholung;
       $("band").className = "band" + (gewesen ? " fertig" : "");
       $("band-ic").textContent = gewesen ? "✓" : e.abholung.kuerzel;
       $("band-titel").textContent = band.titel;
       $("band-text").textContent = band.text;
+      // Der Rückweg steht mit Absicht nicht hier, sondern erst im Blatt,
+      // das ein Tipp auf die Karte öffnet. Siehe ereignisSheet().
     }
 
-    zeichneStreifen(leerTag ? iso(leerTag) : (e ? e.datum : null));
+    zeichneStreifen(e ? e.datum : null);
     zeichneAktion(e, gewesen, weg);
     zeichneRail();
   }
 
   /* Die nächsten sieben Tage, heute zuerst.
        Oranger Rahmen, oranger Punkt = da steht etwas an.
-       Grauer Rahmen, grauer Punkt   = da war etwas, es ist abgesagt.
+       Grauer Punkt                  = da war etwas, es ist abgesagt.
        Grosse Zahl                   = das ist der Tag, den die Karte zeigt.
      Der angeschaute Tag bekommt mit Absicht keine eigene Farbe: in einer
      Reihe aus sieben Kaesten waeren drei Farbbedeutungen zu viel. Die Zahl
      waechst stattdessen — das sieht man auch aus dem Augenwinkel.
-     Jeder Tipp tut dasselbe: er wechselt die Karte oben. Auch an Tagen,
-     an denen nichts ansteht. Heute fuehrt immer zurueck zum Standard. */
+
+     Die grosse Karte zeigt nur noch Termine. Ein Tipp auf einen leeren Tag
+     oeffnet stattdessen ein Blatt von unten. Der Unterschied ist nicht
+     kosmetisch: vorher machte ein Fingertipp aus einer leeren Stelle eine
+     Ansage ("Nichts vorgesehen"), die dann oben stehen blieb, wo sonst das
+     Naechste steht. Jetzt bleibt oben stehen, was ansteht — und das Blatt
+     ist eine Auskunft, die man wieder zumacht. */
   function zeichneStreifen(fokusDatum) {
     var heute = new Date();
     var termine = alleTermine();
@@ -1414,7 +1676,7 @@ var INHALT = {
       var offen = hat.filter(function (x) { return !istAbgesagt(x); });
       var k = "wd" + (i === 0 ? " today" : "");
       if (offen.length) k += " event";
-      else if (hat.length) k += " weg";
+      else if (hat.length) k += " ab";
       if (fokusDatum && iso(tag) === fokusDatum) k += " blick";
       html += '<button class="' + k + '" data-tag="' + i + '">' +
         '<span class="dot"><i></i></span><b>' + tagKurz(tag) + "</b>" +
@@ -1424,14 +1686,11 @@ var INHALT = {
 
     Array.prototype.forEach.call($("week").children, function (el) {
       el.addEventListener("click", function () {
-        var n = +el.dataset.tag;
-        // Heute ist der Weg zurueck. Der Kasten steht immer vorne und ist
-        // immer da — deshalb braucht es keine zusaetzliche Zurueck-Taste.
-        if (n === 0) { blick = null; zeichneWoche(); return; }
-        var tag = plusTage(new Date(), n);
+        var tag = plusTage(new Date(), +el.dataset.tag);
         var hat = amTag(tag);
-        if (hat.length > 1) { tagSheet(tag, hat); return; }
-        blick = hat.length ? { key: schluessel(hat[0]) } : { tag: iso(tag) };
+        if (!hat.length) { leerSheet(tag); return; }
+        if (hat.length > 1) { wahlSheet(tag, hat); return; }
+        blick = { key: schluessel(hat[0]) };
         zeichneWoche();
       });
     });
@@ -1440,32 +1699,60 @@ var INHALT = {
   function zeichneAktion(e, gewesen, weg) {
     var ziel = $("aktion");
     ziel.innerHTML = "";
-    if (!e) return;
+
+    // Steht gar nichts an, ist der einzige sinnvolle Knopf der, mit dem
+    // er selbst etwas anstösst.
+    if (!e) {
+      if (gemeldet.indexOf(iso(new Date())) < 0) {
+        ziel.innerHTML = '<button class="cta leise" id="lust-heute">Ich hätte Lust auf etwas</button>';
+        $("lust-heute").addEventListener("click", function () { lustMelden(new Date()); });
+      }
+      return;
+    }
+
+    /* Zeigt die Karte etwas anderes als das, was als Nächstes ansteht?
+       Dann steht links in dieser Reihe ein Pfeil zurück. Er gehört hierher
+       und nicht in eine eigene Zeile darüber — sonst schiebt er beim
+       Auftauchen alles nach unten. So wird nur der Knopf daneben schmaler. */
+    var standard = aktuell();
+    var pfeil = !!standard && schluessel(e) !== schluessel(standard);
 
     // Nichts mehr zu tun: der Tag ist vorbei, oder die Rückmeldung steht schon.
-    if (weg && gewesen) return;
-    if (gewesen && istErledigt(e)) return;
+    var knopf = "";
+    if (weg && gewesen) knopf = "";
+    else if (gewesen && istErledigt(e)) knopf = "";
+    else if (weg)    knopf = '<button class="cta" id="doch">Doch, ich gehe hin</button>';
+    else if (gewesen) knopf = '<button class="cta" id="wie-wars">Wie war\'s?</button>';
+    else              knopf = '<button class="cta leise" id="passt-nicht">Passt mir doch nicht</button>';
 
-    if (weg) {
-      ziel.innerHTML = '<button class="cta" id="doch">Doch, ich gehe hin</button>';
-      $("doch").addEventListener("click", function () {
-        var s = schluessel(e);
-        abgesagt = abgesagt.filter(function (x) { return x !== s; });
-        schreib("abgesagt", abgesagt);
-        neueMitteilung({ von: "!", titel: "Doch zugesagt",
-          text: e.titel + " steht wieder. Die Familie weiß Bescheid." });
-        werkbank = "";
-        zeichneAlles();
+    if (!pfeil && !knopf) return;
+
+    ziel.innerHTML = '<div class="reihe">' +
+      (pfeil ? '<button class="zurueck" id="zur-naechstes" ' +
+                 'aria-label="Zurück zu dem, was als Nächstes ansteht">\u2039</button>' : "") +
+      knopf + "</div>";
+
+    if (pfeil) {
+      $("zur-naechstes").addEventListener("click", function () {
+        blick = null;
+        zeichneWoche();
       });
-      return;
     }
-    if (gewesen) {
-      ziel.innerHTML = '<button class="cta" id="wie-wars">Wie war\'s?</button>';
-      $("wie-wars").addEventListener("click", function () { rueckmeldungSheet(e); });
-      return;
-    }
-    ziel.innerHTML = '<button class="cta leise" id="passt-nicht">Passt mir doch nicht</button>';
-    $("passt-nicht").addEventListener("click", function () { absageSheet(e); });
+
+    var doch = $("doch");
+    if (doch) doch.addEventListener("click", function () {
+      var s = schluessel(e);
+      abgesagt = abgesagt.filter(function (x) { return x !== s; });
+      schreib("abgesagt", abgesagt);
+      neueMitteilung({ von: "!", titel: "Doch zugesagt",
+        text: e.titel + " steht wieder. Die Familie weiß Bescheid." });
+      werkbank = "";
+      zeichneAlles();
+    });
+    var wie = $("wie-wars");
+    if (wie) wie.addEventListener("click", function () { rueckmeldungSheet(e); });
+    var nein = $("passt-nicht");
+    if (nein) nein.addEventListener("click", function () { absageSheet(e); });
   }
 
   /* Das Buch ist keine feste Liste mehr. Jede Rückmeldung wird eine Seite —
@@ -1509,13 +1796,17 @@ var INHALT = {
   }
 
   /* ---------- Sheets ---------- */
-  function tagSheet(tag, liste) {
+
+  /* Opas Blatt, wenn an einem Tag mehr als eine Sache steht: welche davon
+     soll die Karte oben zeigen? Nicht zu verwechseln mit dem Tagesblatt
+     weiter unten — das ist die Planungsfläche der Familie. */
+  function wahlSheet(tag, liste) {
     sheetAuf(
       '<div class="kicker">' + langesDatum(tag) + "</div>" +
       "<h3>Was an dem Tag ansteht</h3>" +
       liste.map(function (x, i) {
         return '<button class="cta' + (i ? " quiet" : "") + '" data-x="' + i + '">' +
-          roh(x.titel) + " · " + roh(x.zeit) + (istAbgesagt(x) ? " · abgesagt" : "") + "</button>";
+          roh(x.titel) + " · " + roh(zeitKurz(x)) + (istAbgesagt(x) ? " · abgesagt" : "") + "</button>";
       }).join("") +
       '<button class="cta quiet" data-zu>Zurück</button>'
     );
@@ -1528,15 +1819,66 @@ var INHALT = {
     });
   }
 
+  /* Ein Tag, an dem nichts steht.
+     Das Blatt sagt genau das und nicht mehr — und trägt einen Knopf, mit
+     dem er selbst etwas anstossen kann. Das ist der einzige Weg, auf dem
+     etwas von ihm zu uns kommt, ohne dass wir vorher gefragt haben. Er
+     muss dafür nichts ausdenken und nichts schreiben; das Ausdenken ist
+     unsere Arbeit. */
+  function leerSheet(tag) {
+    var schon = gemeldet.indexOf(iso(tag)) >= 0;
+    sheetAuf(
+      '<div class="kicker">' + wannKurz(tag) + "</div>" +
+      "<h3>Nichts vorgesehen</h3>" +
+      "<p>" + langesDatum(tag) + "</p>" +
+      "<p>" + INHALT.leer.band.titel + ". " + INHALT.leer.band.text + ".</p>" +
+      (schon
+        ? '<div class="leer">Wir wissen Bescheid.<br>Wir melden uns.</div>'
+        : '<button class="cta" id="lust">Ich hätte Lust auf etwas</button>') +
+      '<button class="cta quiet" data-zu>Zurück</button>'
+    );
+    var b = $("lust");
+    if (b) b.addEventListener("click", function () { lustMelden(tag); });
+  }
+
+  /* Er hebt die Hand. Mehr passiert hier nicht — kein Vorschlag, keine
+     Auswahl, keine Frage zurück. Was daraus wird, ist unsere Sache. */
+  function lustMelden(tag) {
+    gemeldet.push(iso(tag));
+    schreib("gemeldet", gemeldet);
+    neueMitteilung({ von: "O", titel: "Opa hätte Lust auf etwas",
+      text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " ist bei ihm noch frei." });
+    sheetAuf(
+      "<h3>Ist angekommen</h3>" +
+      "<p>Wir schauen, was an dem Tag geht, und melden uns.</p>" +
+      '<button class="cta quiet" data-zu>Gut</button>'
+    );
+    zeichneAlles();
+  }
+
+  /* Ein Band im Fliesstext.
+     "Papa holt dich ab" + "um 14:10 vor der Tür" ist ein Satz und laeuft
+     ohne Trenner richtig. "Wann du magst" + "In deinem Tempo." sind zwei —
+     ohne Trenner stossen sie aneinander. Grossbuchstabe heisst: neuer Satz. */
+  function bandSatz(b) {
+    if (!b) return "";
+    if (!b.text) return b.titel;
+    return b.titel + (/^[A-ZÄÖÜ]/.test(b.text) ? " \u00b7 " : " ") + b.text;
+  }
+
   function ereignisSheet(e) {
     if (!e) return;
     var d = ausIso(e.datum), gewesen = schonVorbei(e), weg = istAbgesagt(e);
     sheetAuf(
       '<div class="kicker">' + (weg ? "Abgesagt" : abstandText(e, gewesen)) + "</div>" +
       "<h3>" + roh(e.titel) + "</h3>" +
-      "<p>" + langesDatum(d) + " um " + roh(e.zeit) + " Uhr · " + roh(e.ort) + "</p>" +
-      "<p>" + roh(e.zusatz) + "</p>" +
-      (weg ? "" : "<p>" + (gewesen ? e.danach.titel : e.abholung.titel + " " + e.abholung.text) + "</p>") +
+      "<p>" + langesDatum(d) + " " + roh(zeitSatz(e)) + " · " + roh(e.ort) + "</p>" +
+      (e.zusatz && !(e.abholung && e.abholung.text === e.zusatz)
+        ? "<p>" + roh(e.zusatz) + "</p>" : "") +
+      (weg ? "" : "<p>" + roh(gewesen ? e.danach.titel : bandSatz(e.abholung)) + "</p>") +
+      // Der Rückweg als eigener Satz. Für ihn ist das die Frage, die zählt.
+      (!weg && !gewesen && e.rueckweg && e.rueckweg.kuerzel !== "\u00b7"
+        ? "<p>" + roh(bandSatz(e.rueckweg)) + "</p>" : "") +
       (gewesen && !weg ? '<button class="cta" id="sheet-wie">Wie war\'s?</button>' : "") +
       (!gewesen && !weg ? '<button class="cta quiet" id="sheet-nein">Passt mir doch nicht</button>' : "") +
       '<button class="cta quiet" data-zu>Zurück</button>'
@@ -1748,48 +2090,205 @@ var INHALT = {
   var WOCHEN_VORAUS = 5;
   var entwurf = null;
 
+  /* Welcher Monat steht gerade im Raster? null heisst: der laufende.
+     Zurueckblaettern ist kein Luxus — daran sieht man, wie man die
+     letzten Wochen getaktet hat, und das ist die Frage aus Abschnitt 9
+     (leicht / Anker / mit Oma / etwas Neues). Nach vorn plant man. */
+  var blickMonat = null;
+
+  function monatsAnker() {
+    var d = blickMonat || new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+  function monatWechseln(n) {
+    var a = monatsAnker();
+    blickMonat = new Date(a.getFullYear(), a.getMonth() + n, 1);
+    zeichneFamilie();
+  }
+
+  /* ---------- Was könnte man an diesem Tag vorschlagen? ---------------
+     Erst das Offizielle: was an diesem Wochentag wirklich stattfindet.
+     Dann aufgefüllt auf drei — mit Kleinigkeiten aus dem Vorrat.
+
+     Die Auswahl hängt am Datum, nicht am Zufall. Dasselbe Blatt zweimal
+     geöffnet zeigt dasselbe; sonst könnte man einen Vorschlag nicht
+     wiederfinden, den man gerade noch gesehen hat.
+
+     Es ist mit Absicht keine KI im Spiel. Katalog plus ein gepflegter
+     Vorrat fühlt sich fast genauso an, läuft ohne Netz und ohne Server —
+     und ein LLM kann später an genau dieser Stelle andocken, ohne dass
+     sich am Blatt etwas ändert.
+     ------------------------------------------------------------------ */
+  var VORSCHLAEGE_PRO_TAG = 3;
+
+  // Kleiner, stabiler Zahlenwert aus einem Text. Ersetzt den Zufall.
+  function streuung(text) {
+    var h = 0;
+    for (var i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) % 100000;
+    return h;
+  }
+
+  // Oma ist Mo–Do bis 16 Uhr in der Tagespflege. Was sie braucht, geht
+  // an diesen Tagen nur abends — Fr bis So jederzeit.
+  function omaZuHause(tag, tageszeit) {
+    return ((tag.getDay() + 6) % 7) > 3 || tageszeit === "abend";
+  }
+
+  function passtAnTag(k, tag) {
+    var wt = (tag.getDay() + 6) % 7 + 1;              // 1 = Montag
+    if (k.tage && k.tage.indexOf(wt) < 0) return false;
+    if (k.monate && k.monate.indexOf(tag.getMonth() + 1) < 0) return false;
+    if (k.omaDa && !omaZuHause(tag, k.tageszeit)) return false;
+    return true;
+  }
+
+  function tagesVorschlaege(datum) {
+    var tag = ausIso(datum);
+    var wt = (tag.getDay() + 6) % 7 + 1;
+    var schon = alleTermine().filter(function (e) {
+      return e.datum === datum && !istAbgesagt(e);
+    });
+    /* Steht das an dem Tag schon? Ein Angebot wird über seine Kennung
+       erkannt, nicht über den Titel: im Katalog heisst es "Warmbadetag",
+       im Plan "Warmbadetag im Hallenbad". Über den Titel verglichen käme
+       es als Vorschlag zurück, obwohl es längst steht. */
+    function belegtId(id) {
+      return schon.filter(function (e) { return e.id === id; }).length > 0;
+    }
+    function belegtTitel(titel) {
+      return schon.filter(function (e) { return e.titel === titel; }).length > 0;
+    }
+
+    // 1. Das Offizielle zuerst. Es hat den festen Zeitpunkt — alles
+    //    andere richtet sich danach, nicht umgekehrt.
+    var raus = INHALT.vorschlaege.filter(function (v) {
+      return v.wochentag === wt && !belegtId(v.id);
+    }).map(function (v) {
+      return { sorte: "angebot", titel: v.titel, emoji: zeichenVon(v), kategorie: v.kategorie,
+               ort: v.ort, zeit: v.zeit, tageszeit: "", zusatz: v.zusatz,
+               hinweis: v.kicker + " · " + v.hinweis, quelle: v };
+    });
+
+    // 2. Auffüllen. Die Reihenfolge des Vorrats hängt am Datum, damit
+    //    nicht jeden Tag dasselbe oben steht.
+    INHALT.kleinigkeiten
+      .filter(function (k) { return passtAnTag(k, tag) && !belegtTitel(k.titel); })
+      .map(function (k) { return { k: k, r: streuung(datum + "|" + k.titel) }; })
+      .sort(function (a, b) { return a.r - b.r; })
+      .forEach(function (p) {
+        if (raus.length >= VORSCHLAEGE_PRO_TAG) return;
+        var k = p.k;
+        raus.push({ sorte: "kleinigkeit", titel: k.titel, emoji: zeichenVon(k),
+                    kategorie: k.kategorie, ort: k.ort, zeit: "", tageszeit: k.tageszeit,
+                    zusatz: k.zusatz, hinweis: "", quelle: k });
+      });
+
+    return raus.slice(0, VORSCHLAEGE_PRO_TAG);
+  }
+
   function whatsappText(e) {
     var d = ausIso(e.datum);
     var tag = tagLang(d);
     if (tageDazwischen(new Date(), d) > 7) tag += ", " + d.getDate() + ". " + MON_KURZ[d.getMonth()];
-    if (e.textVorlage) return e.textVorlage.replace("{TAG}", tag).replace("{ZEIT}", e.zeit);
-    // Bei etwas Selbstgemachtem gibt es nichts anzumelden — da kommt nur jemand.
-    return "Opa, " + tag + " um " + e.zeit + " " + e.titel +
-      (e.ort ? " · " + e.ort : "") + ". " +
-      (e.id === "eig" ? "" : "Ich melde dich an. ") +
-      e.abholung.titel + " " + e.abholung.text + ".";
+    var text;
+    if (e.textVorlage) {
+      text = e.textVorlage.replace("{TAG}", tag).replace("{ZEIT}", e.zeit || zeitKurz(e));
+    } else {
+      var kopf = "Opa, " + tag + " " + zeitSatz(e) + " " + e.titel +
+        // Steht der Ort schon im Titel ("Warmbadetag im Hallenbad"), wäre
+        // ein zweites "· Hallenbad" dahinter nur Geräusch.
+        (e.ort && e.titel.indexOf(e.ort) < 0 ? " \u00b7 " + e.ort : "") + ". ";
+      // Ein Angebot muss jemand anmelden, etwas Selbstgemachtes nicht.
+      if (istAngebot(e)) kopf += "Ich melde dich an. ";
+      // Holt ihn jemand ab, ist das die wichtigste Zeile. Macht er es allein,
+      // steht dort nichts Organisatorisches — dann zählt, warum es schön wird.
+      var holt = e.abholung && e.abholung.kuerzel !== "\u00b7";
+      text = kopf + (holt ? e.abholung.titel + " " + e.abholung.text + "."
+                          : (e.zusatz || "Ganz wie du magst."));
+    }
+
+    /* Und wie er wieder heimkommt. Das steht auch dann dahinter, wenn der
+       Text aus dem Katalog kommt — die fertigen Texte dort erzählen nur die
+       Hinfahrt, und genau das war die Lücke: wer hingebracht wird, fragt
+       sich ab dem Moment, wer ihn wieder holt. */
+    if (e.rueckweg && e.rueckweg.kuerzel !== "\u00b7") {
+      text += " " + e.rueckweg.titel + " " + e.rueckweg.text + ".";
+    }
+    return text;
   }
 
-  /* Der Blick von oben. Nur Punkte, keine Titel — die Frage, die dieses
-     Raster beantwortet, ist "wo sind die Löcher", und dafür braucht man
-     keine Namen. Ein Tipp auf einen Tag öffnet die Woche, in der er liegt. */
-  function zeichneRaster(mo, termine) {
+  /* Der Blick von oben. Fünf Wochenzeilen ab diesem Montag — nie ein
+     Kalendermonat, damit "diese Woche" immer die oberste Zeile ist und
+     man "jetzt" nie suchen muss.
+
+     Auf einem Tag mit Termin steht sein Zeichen, und die Fläche trägt die
+     Farbe der Kategorie. Damit sieht man die Dosierung über den Monat —
+     welche Woche voll ist, welche leer, und was für eine Sorte Woche es
+     war. Ein Wochenmarker daneben wäre Doppelung.
+
+     Gefüllt dunkel heisst weiterhin genau eines: heute.
+     Ein Tipp auf einen Tag öffnet das Tagesblatt. */
+  function zeichneRaster(termine) {
     var heute = mitternacht(new Date());
+    var erster = monatsAnker();
+    var monat = erster.getMonth();
+
+    // Das Raster faengt am Montag vor dem Monatsersten an und hoert am
+    // Sonntag nach dem Monatsletzten auf — die Woche bleibt die Einheit,
+    // auch wenn sie ueber den Monatswechsel laeuft.
+    var start = montagDieserWoche(erster);
+    var letzter = new Date(erster.getFullYear(), monat + 1, 0);
+    var zeilen = Math.ceil((tageDazwischen(start, letzter) + 1) / 7);
+
     var zellen = "";
-    for (var i = 0; i < WOCHEN_VORAUS * 7; i++) {
-      var tag = plusTage(mo, i);
+    for (var i = 0; i < zeilen * 7; i++) {
+      var tag = plusTage(start, i);
       var drauf = termine.filter(function (x) { return x.datum === iso(tag); });
       var steht = drauf.filter(function (x) { return !istAbgesagt(x); });
+      var zeigt = steht[0] || drauf[0] || null;
+      var istHeute = +tag === +heute;
+
       var k = "rz";
-      if (+tag === +heute) k += " heute";
+      if (tag.getMonth() !== monat) k += " fremd";
+      if (istHeute) k += " heute";
       else if (tag < heute) k += " vorbei";
-      if (steht.length) k += " hat";
-      else if (drauf.length) k += " ab";
-      zellen += '<button class="' + k + '" data-w="' + Math.floor(i / 7) + '" ' +
-        'aria-label="' + langesDatum(tag) + '">' +
-        '<span class="n">' + tag.getDate() + "</span><i></i></button>";
+      if (zeigt) k += " hat";
+      if (zeigt && !steht.length) k += " ab";
+
+      // Die Farbe kommt aus der Kategorie und wird hier gesetzt, nicht im
+      // CSS: an "heute" darf sie nicht ran, sonst wäre der dunkle Tag weg.
+      var farbe = (zeigt && steht.length && !istHeute)
+        ? ' style="background:var(--c-' + zeigt.kategorie + ')"' : "";
+
+      zellen += '<button class="' + k + '"' + farbe + ' data-tag="' + iso(tag) + '" ' +
+        'aria-label="' + langesDatum(tag) + (zeigt ? ", " + roh(zeigt.titel) : "") + '">' +
+        (drauf.length > 1 ? '<span class="mehr"></span>' : "") +
+        (zeigt ? '<span class="em">' + zeichenVon(zeigt) + "</span>" : "") +
+        '<span class="n">' + tag.getDate() + "</span></button>";
     }
-    var bis = plusTage(mo, WOCHEN_VORAUS * 7 - 1);
-    var spanne = MONATE[mo.getMonth()] +
-      (bis.getMonth() !== mo.getMonth() ? " – " + MONATE[bis.getMonth()] : "");
+    var imLaufenden = erster.getFullYear() === heute.getFullYear() &&
+                      monat === heute.getMonth();
 
     $("raster").innerHTML =
-      '<p class="monat">' + spanne + "</p>" +
+      '<div class="monatszeile">' +
+        '<p class="monat">' + MONATE[monat] + " " + erster.getFullYear() + "</p>" +
+        (imLaufenden ? "" : '<button class="zuheute" data-m="0">Heute</button>') +
+        '<button class="mpfeil" data-m="-1" aria-label="Ein Monat zurück">\u2039</button>' +
+        '<button class="mpfeil" data-m="1" aria-label="Ein Monat weiter">\u203a</button>' +
+      "</div>" +
       '<div class="kopf">' + TAGE_KURZ.map(function (t) { return "<span>" + t + "</span>"; }).join("") + "</div>" +
       '<div class="netz">' + zellen + "</div>";
 
+    Array.prototype.forEach.call($("raster").querySelectorAll("[data-m]"), function (el) {
+      el.addEventListener("click", function () {
+        var n = +el.dataset.m;
+        if (n === 0) { blickMonat = null; zeichneFamilie(); return; }
+        monatWechseln(n);
+      });
+    });
+
     Array.prototype.forEach.call($("raster").querySelectorAll(".rz"), function (el) {
-      el.addEventListener("click", function () { wochenSheet(+el.dataset.w); });
+      el.addEventListener("click", function () { tagSheet(el.dataset.tag); });
     });
   }
 
@@ -1805,6 +2304,25 @@ var INHALT = {
       return istAbgesagt(e) && tageDazwischen(new Date(), ausIso(e.datum)) >= 0;
     })[0];
 
+    /* Ein Hinweis oben in der Familien-Ansicht.
+       Jeder trägt ein X. Was nicht weggeht, liest nach dem dritten Mal
+       niemand mehr — und dann geht auch der nächste unter, der wirklich
+       zählt. Weggeklickt wird der Hinweis, nicht die Sache: ändert sich
+       der Anlass, kommt er unter einem neuen Schlüssel wieder.
+       Wo ein Tag dranhängt, öffnet ein Tipp dessen Tagesblatt — man liest
+       so einen Hinweis ja, um etwas daran zu tun. */
+    function hinweis(sch, ic, titel, text, art) {
+      if (weggeklickt.indexOf(sch) >= 0) return "";
+      art = art || {};
+      return '<div class="banner' + (art.still ? " still" : "") +
+        (art.tag ? " tippbar" : "") + '"' +
+        (art.tag ? ' data-tagblatt="' + art.tag + '"' : "") + ">" +
+        '<div class="ic">' + ic + "</div>" +
+        '<div class="tx"><b>' + titel + "</b><span>" + text + "</span></div>" +
+        '<button class="zu" data-hinweis="' + sch +
+          '" aria-label="Hinweis wegmachen">\u00d7</button></div>';
+    }
+
     var banner = "";
     if (offeneAbsage) {
       // Steht in der Woche sonst noch etwas? Davon haengt ab, was zu tun ist.
@@ -1813,12 +2331,13 @@ var INHALT = {
         var d = ausIso(x.datum);
         return d >= moA && d <= soA && !istAbgesagt(x);
       }).length;
-      banner += '<div class="banner"><div class="ic">!</div><div><b>Opa hat abgesagt: ' +
-        roh(offeneAbsage.titel) + " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")</b><span>„" +
-        roh(gruende[schluessel(offeneAbsage)] || "Ohne Angabe") + "“ · " +
-        (restWoche ? "In der Woche steht noch etwas anderes."
-                   : "Die Woche steht wieder offen.") +
-        "</span></div></div>";
+      banner += hinweis("absage|" + schluessel(offeneAbsage), "!",
+        "Opa hat abgesagt: " + roh(offeneAbsage.titel) +
+          " (" + tagKurz(ausIso(offeneAbsage.datum)) + ")",
+        "„" + roh(gruende[schluessel(offeneAbsage)] || "Ohne Angabe") + "“ · " +
+          (restWoche ? "In der Woche steht noch etwas anderes."
+                     : "Die Woche steht wieder offen."),
+        { tag: offeneAbsage.datum });
     }
 
     // Termin war, aber es kam nichts zurück. Genau dann ruft man an —
@@ -1828,44 +2347,59 @@ var INHALT = {
       return schonVorbei(e) && !istAbgesagt(e) && !istErledigt(e) && alter >= 0 && alter <= 7;
     })[0];
     if (ohneRueck) {
-      banner += '<div class="banner" style="background:var(--sunk)">' +
-        '<div class="ic" style="background:var(--ink)">?</div><div>' +
-        "<b>Keine Rückmeldung: " + roh(ohneRueck.titel) + "</b>" +
-        "<span>War am " + tagLang(ausIso(ohneRueck.datum)) +
-        ". Ob er da war, weiß bisher niemand.</span></div></div>";
+      banner += hinweis("rueck|" + schluessel(ohneRueck), "?",
+        "Keine Rückmeldung: " + roh(ohneRueck.titel),
+        "War am " + tagLang(ausIso(ohneRueck.datum)) +
+          ". Ob er da war, weiß bisher niemand.",
+        { still: true });
     }
+
+    /* Er selbst hat gesagt, dass er an einem Tag etwas machen möchte.
+       Das ist der einzige Hinweis hier, der nicht aus unserer Planung
+       kommt, sondern von ihm — deshalb steht er oben und nicht in einer
+       Liste. Sobald an dem Tag etwas steht, ist er erledigt und geht von
+       selbst weg. */
+    gemeldet.forEach(function (d) {
+      if (tageDazwischen(new Date(), ausIso(d)) < 0) return;
+      var stehtSchon = termine.filter(function (x) {
+        return x.datum === d && !istAbgesagt(x);
+      }).length;
+      if (stehtSchon) return;
+      var dd = ausIso(d);
+      banner += hinweis("lust|" + d, "O", "Opa hätte Lust auf etwas",
+        tagLang(dd) + ", " + dd.getDate() + ". " + MON_KURZ[dd.getMonth()] +
+          " ist bei ihm noch frei.",
+        { tag: d });
+    });
+
     $("fam-banner").innerHTML = banner;
 
-    zeichneRaster(mo, termine);
+    alle("#fam-banner [data-hinweis]").forEach(function (b) {
+      b.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        weggeklickt.push(b.dataset.hinweis);
+        schreib("weggeklickt", weggeklickt);
+        zeichneFamilie();
+      });
+    });
+    alle("#fam-banner [data-tagblatt]").forEach(function (b) {
+      b.addEventListener("click", function () { tagSheet(b.dataset.tagblatt); });
+    });
 
-    var leereWochen = 0, html = "";
+    zeichneRaster(termine);
+
+    // Wie viele der nächsten Wochen sind noch leer? Das ist die einzige
+    // Zahl, die aus der weggefallenen Wochenliste übrig bleibt — sie steht
+    // als Zeile über dem Titel. Alles andere sagt das Raster besser.
+    var leereWochen = 0;
     for (var w = 0; w < WOCHEN_VORAUS; w++) {
       var start = plusTage(mo, w * 7), ende = plusTage(start, 6);
       var drin = termine.filter(function (e) {
         var d = ausIso(e.datum);
         return d >= start && d <= ende && !istAbgesagt(e);
       });
-      var offen = drin.length === 0;
-      if (offen) leereWochen++;
-
-      var was = offen ? "Noch nichts geplant"
-        : drin.map(function (e) { return roh(e.titel) + " (" + tagKurz(ausIso(e.datum)) + ")"; }).join(" · ");
-      var name = w === 0 ? "Diese Woche" : w === 1 ? "Nächste Woche" : "In " + w + " Wochen";
-
-      // Offene Fragen aus der Woche. Die stehen hier und nirgends sonst.
-      var unterUns = drin.filter(function (e) { return e.intern; })
-                         .map(function (e) { return roh(e.intern); }).join(" · ");
-
-      html += '<button class="woche' + (offen ? " offen" : "") + '" data-w="' + w + '">' +
-        '<div class="marke">' + start.getDate() + ".<br>" + MON_KURZ[start.getMonth()] + "</div>" +
-        '<div class="tx"><b>' + name + "</b><span>" + was + "</span>" +
-        (unterUns ? "<em>Unter uns: " + unterUns + "</em>" : "") + "</div>" +
-        '<span class="pfeil">' + (offen ? "+" : "›") + "</span></button>";
+      if (!drin.length) leereWochen++;
     }
-    $("wochen").innerHTML = html;
-    Array.prototype.forEach.call($("wochen").children, function (el) {
-      el.addEventListener("click", function () { wochenSheet(+el.dataset.w); });
-    });
 
     $("fam-eyebrow").textContent = leereWochen
       ? leereWochen + (leereWochen === 1 ? " Woche" : " Wochen") + " noch leer"
@@ -1887,80 +2421,213 @@ var INHALT = {
     zeichneWerkbank();
   }
 
-  /* Eine Woche füllen. Das ist die Antwort auf "drei Wochen im Voraus".
-     Hier drin passiert alles, was die Familie mit einer Woche machen kann:
-     eintragen, ändern, herausnehmen. Opa sieht dieses Blatt nie. */
-  function wochenSheet(w) {
-    var mo = plusTage(montagDieserWoche(new Date()), w * 7);
-    var ende = plusTage(mo, 6);
-    // Alles, was in der Woche liegt — auch das Abgesagte. Sonst könnte die
-    // Familie eine Absage weder umlegen noch herausnehmen, und sie bliebe
-    // als grauer Punkt in Opas Streifen stehen, ohne dass jemand rankommt.
-    var drin = alleTermine().filter(function (e) {
-      var d = ausIso(e.datum);
-      return d >= mo && d <= ende;
-    });
-    var steht = drin.filter(function (e) { return !istAbgesagt(e); });
+  /* ---------- Tagesblatt ----------------------------------------------
+     Das Blatt, auf dem geplant wird. Oben der Streifen: der angetippte Tag
+     und drei Tage links und rechts — man wechselt den Tag, ohne das Blatt
+     zu verlassen, und der Streifen hört mit Absicht nicht am Sonntag auf.
+     Darunter, was schon steht, und dann drei Vorschläge.
 
-    var kopf = mo.getDate() + ". " + MON_KURZ[mo.getMonth()] + " – " + ende.getDate() + ". " + MON_KURZ[ende.getMonth()];
-    var name = w === 0 ? "Diese Woche" : w === 1 ? "Nächste Woche" : "In " + w + " Wochen";
-    var html = '<div class="kicker">' + kopf + "</div><h3>" + name + "</h3>";
+     Es hat das Wochenblatt abgelöst. Beide haben dieselbe Frage beantwortet
+     ("was mache ich mit diesem Stück Zeit"), nur auf zwei Blättern. Die
+     Woche steht jetzt im Raster darüber, wo sie hingehört.
 
-    html += drin.length
-      ? '<div class="wochen">' + drin.map(function (e, i) {
+     Opa sieht dieses Blatt nie.
+     -------------------------------------------------------------------- */
+  var STREIFEN_RAND = 3;
+
+  function tagSheet(datum) {
+    var tag = ausIso(datum);
+    var heute = mitternacht(new Date());
+    var termine = alleTermine();
+    var drin = termine.filter(function (e) { return e.datum === datum; });
+    var mo = montagDieserWoche(tag);
+    // Seit man Monate zurueckblaettern kann, laesst sich auch ein Tag
+    // oeffnen, der vorbei ist. Dann gibt es nichts vorzuschlagen — man
+    // schaut nach, was war. Planen kann man nur nach vorn.
+    var vergangen = tag < heute;
+    var vor = vergangen ? [] : tagesVorschlaege(datum);
+
+    var streifen = "";
+    for (var i = -STREIFEN_RAND; i <= STREIFEN_RAND; i++) {
+      var t = plusTage(tag, i);
+      var drauf = termine.filter(function (x) { return x.datum === iso(t) && !istAbgesagt(x); });
+      streifen += '<button class="st' + (t < heute ? " vorbei" : "") + '" data-st="' + iso(t) + '" ' +
+        'aria-pressed="' + (i === 0) + '" aria-label="' + langesDatum(t) + '">' +
+        '<span class="wt">' + tagKurz(t) + "</span>" +
+        '<span class="n">' + t.getDate() + "</span>" +
+        '<span class="em">' + (drauf.length ? zeichenVon(drauf[0]) : "") + "</span></button>";
+    }
+
+    var html =
+      '<div class="kicker">' + MONATE[tag.getMonth()] + "</div>" +
+      "<h3>" + tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + "</h3>" +
+      '<div class="streifen" id="tg-streifen">' + streifen + "</div>";
+
+    if (drin.length) {
+      html += '<div class="abschnitt"><h5>Steht schon</h5></div>' +
+        drin.map(function (e, i) {
           var ab = istAbgesagt(e);
-          return '<div class="woche' + (ab ? " ab" : "") + '"><div class="marke">' +
-            tagKurz(ausIso(e.datum)) + "</div>" +
+          return '<div class="geplant' + (ab ? " ab" : "") + '" data-i="' + i + '"' +
+            (istZiehbar(e) && !ab ? ' data-zieh="1"' : "") + ">" +
+            '<span class="em">' + zeichenVon(e) + "</span>" +
             '<button class="tx" data-bearb="' + i + '"><b>' + roh(e.titel) + "</b><span>" +
-            (ab ? "Abgesagt · " + roh(gruende[schluessel(e)] || "ohne Angabe")
-                : roh(e.zeit) + " · " + roh(e.ort)) + "</span>" +
-            (e.intern ? "<em>Unter uns: " + roh(e.intern) + "</em>" : "") + "</button>" +
-            '<button class="weg" data-weg="' + i + '" aria-label="Wieder herausnehmen">×</button></div>';
-        }).join("") + "</div>" +
-        '<p style="margin-top:11px">Antippen, um etwas zu ändern.' +
-        (steht.length < drin.length ? " Ein abgesagter Termin steht wieder, sobald ihr ihn neu legt." : "") +
-        "</p>"
-      : "<p>Noch nichts. Trag etwas ein — es steht dann sofort in Opas Woche.</p>";
+            (ab ? "Abgesagt \u00b7 " + roh(gruende[schluessel(e)] || "ohne Angabe")
+                : roh(zeitLang(e)) + " \u00b7 " + roh(e.ort) +
+                  (rueckwegOffen(e) ? ' \u00b7 <em class="offen">Rückweg offen</em>' : "")) +
+            "</span></button>" +
+            '<button class="weg" data-weg="' + i + '" aria-label="Wieder herausnehmen">\u00d7</button></div>';
+        }).join("");
 
-    // Zuerst das Selbstgemachte. Das ist die Sorte, die in seiner Woche
-    // wirklich funktioniert: es braucht keine Anmeldung, nur einen Menschen.
-    html += '<div class="abschnitt"><h5>Selbst eintragen</h5>' +
-      "<p>Kein Anruf nötig. Nur ihr.</p></div>" +
-      '<div class="vorlagen">' + INHALT.eigenesVorlagen.map(function (v, i) {
-        return '<button data-vor="' + i + '">' + v.titel + "</button>";
-      }).join("") + "</div>" +
-      '<button class="cta leise" id="w-frei">Etwas anderes eintragen</button>';
+      if (drin.filter(function (e) { return istZiehbar(e) && !istAbgesagt(e); }).length) {
+        html += '<p class="zieh-hinweis">Gedrückt halten und auf einen anderen Tag ziehen. ' +
+          "Feste Angebote bleiben, wo sie sind — die finden nur an ihrem Tag statt.</p>";
+      }
+    }
 
-    html += '<div class="abschnitt"><h5>Aus dem Katalog</h5>' +
-      "<p>Feste Angebote vor Ort.</p></div>";
+    if (vergangen) {
+      if (!drin.length) html += "<p>An dem Tag stand nichts.</p>";
+    } else {
+      html += '<div class="abschnitt"><h5>Vorschläge für diesen Tag</h5>' +
+        "<p>Antippen öffnet die Einzelheiten.</p></div>";
 
-    html += INHALT.vorschlaege.map(function (v, i) {
-      var tag = plusTage(mo, v.wochentag - 1);
-      var vorbei = tageDazwischen(new Date(), tag) < 0;
-      var schon = steht.filter(function (e) { return e.id === v.id; }).length > 0;
-      var aus = vorbei || schon;
-      return '<button class="opt ' + v.farbe + '" data-v="' + i + '"' + (aus ? ' disabled style="opacity:.42"' : "") + ">" +
-        '<div class="kicker">' + v.kicker + "</div><h4>" + v.titel + "</h4>" +
-        '<p class="sub">' + TAGE_LANG[v.wochentag - 1] + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] +
-        " · " + v.zeit + " · " + v.ort + "</p>" +
-        '<span class="note">' + (schon ? "Steht schon" : vorbei ? "Tag ist vorbei" : v.hinweis) + "</span></button>";
-    }).join("");
+      html += vor.length
+        ? vor.map(function (v, i) {
+            return '<button class="vor' + (v.sorte === "angebot" ? " fest" : "") + '" data-vor="' + i + '">' +
+              '<span class="em">' + v.emoji + "</span>" +
+              '<span class="tx"><b>' + roh(v.titel) + "</b>" +
+              "<span>" + roh(zeitLang(v)) + " \u00b7 " + roh(v.ort) + "</span>" +
+              (v.hinweis ? "<em>" + roh(v.hinweis) + "</em>" : "") + "</span>" +
+              '<span class="plus">+</span></button>';
+          }).join("")
+        : "<p>Für diesen Tag ist der Vorrat leer. Trag etwas Eigenes ein.</p>";
+
+      html += '<div class="reihe">' +
+        '<button class="cta leise" id="tg-frei">Etwas anderes eintragen</button>' +
+        '<button class="cta leise archiv" id="tg-archiv">Archiv</button>' +
+        "</div>";
+    }
 
     html += '<button class="cta quiet" data-zu>Zurück</button>';
+
     sheetAuf(html);
 
+    /* --- Verschieben ---------------------------------------------------
+       Gedrückt halten, auf einen Tag im Streifen ziehen. Auf dem iPhone
+       ist Ziehen mit dem Finger heikel, deshalb ist es hier die Abkürzung
+       und nicht der einzige Weg: wer loslässt, ohne gezogen zu haben,
+       behält die Ziele stehen und kann eines antippen. Und über die
+       Einzelheiten lässt sich der Tag sowieso ändern.
+       ------------------------------------------------------------------ */
+    var zieht = null, wartet = null, langsam = null, gezogen = false;
+
+    // Ziel darf nur sein, was noch kommt. Etwas in die Vergangenheit zu
+    // schieben ergibt keinen Sinn, also wird es gar nicht erst angeboten.
+    function zielTag(el) {
+      return el.dataset.st !== datum && ausIso(el.dataset.st) >= heute;
+    }
+    function ziele(an) {
+      alle("#tg-streifen .st").forEach(function (b) {
+        b.classList.toggle("ziel", !!an && zielTag(b));
+        if (!an) b.classList.remove("drueber");
+      });
+    }
+    function unter(x, y) {
+      var treffer = null;
+      alle("#tg-streifen .st").forEach(function (b) {
+        var r = b.getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) treffer = b;
+      });
+      return treffer;
+    }
+    // Solange gezogen wird, darf das Blatt nicht mitscrollen.
+    function schluck(ev) { if (zieht) ev.preventDefault(); }
+
+    function verschieben(e, ziel) {
+      ziele(false);
+      if (!e || !ziel || ziel === e.datum) return;
+      var kopie = JSON.parse(JSON.stringify(e));
+      kopie.uid = e.uid || kennung();
+      kopie.datum = ziel;
+      // Ein Beispieltermin wird beim Verschieben zu einem echten Termin.
+      if (!e.uid) { geloescht.push(schluessel(e)); schreib("geloescht", geloescht); }
+      eigene = eigene.filter(function (x) { return x.uid !== kopie.uid; });
+      eigene.push(kopie);
+      schreib("eigene", eigene);
+      var d = ausIso(ziel);
+      entwurf = { titel: "WhatsApp an Opa", text: whatsappText(kopie) };
+      neueMitteilung({ von: "P", titel: "Verschoben: " + kopie.titel,
+        text: "Jetzt " + tagLang(d) + ", " + d.getDate() + ". " + MON_KURZ[d.getMonth()] + "." });
+      zeichneAlles();
+      tagSheet(ziel);
+    }
+
+    alle("#sheet .geplant[data-zieh]").forEach(function (karte) {
+      var start = null;
+      karte.addEventListener("pointerdown", function (ev) {
+        start = { x: ev.clientX, y: ev.clientY };
+        gezogen = false;
+        clearTimeout(langsam);
+        langsam = setTimeout(function () {
+          zieht = karte;
+          karte.classList.add("hebt");
+          ziele(true);
+          document.addEventListener("touchmove", schluck, { passive: false });
+          try { karte.setPointerCapture(ev.pointerId); } catch (e2) {}
+        }, 380);
+      });
+      karte.addEventListener("pointermove", function (ev) {
+        if (!zieht) {
+          // Noch kein Ziehen. Wer scrollen will, soll scrollen dürfen.
+          if (start && Math.abs(ev.clientY - start.y) > 9) clearTimeout(langsam);
+          return;
+        }
+        gezogen = true;
+        var z = unter(ev.clientX, ev.clientY);
+        alle("#tg-streifen .st").forEach(function (b) {
+          b.classList.toggle("drueber", b === z && zielTag(b));
+        });
+      });
+      function los(ev) {
+        clearTimeout(langsam);
+        karte.classList.remove("hebt");
+        document.removeEventListener("touchmove", schluck, { passive: false });
+        if (!zieht) return;
+        zieht = null;
+        var e = drin[+karte.dataset.i];
+        var z = ev && ev.clientX != null ? unter(ev.clientX, ev.clientY) : null;
+        if (z && zielTag(z)) { verschieben(e, z.dataset.st); return; }
+        // Gehalten, aber nicht gezogen: die Ziele bleiben stehen und
+        // warten auf einen Tipp. Das ist der Weg, der immer funktioniert.
+        if (!gezogen) { wartet = e; return; }
+        ziele(false);
+      }
+      karte.addEventListener("pointerup", los);
+      karte.addEventListener("pointercancel", function () {
+        clearTimeout(langsam); zieht = null; wartet = null;
+        karte.classList.remove("hebt"); ziele(false);
+        document.removeEventListener("touchmove", schluck, { passive: false });
+      });
+    });
+
+    alle("#tg-streifen .st").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (wartet) {
+          var w = wartet; wartet = null;
+          if (zielTag(b)) { verschieben(w, b.dataset.st); return; }
+          ziele(false);
+          return;
+        }
+        tagSheet(b.dataset.st);
+      });
+    });
+
     alle("#sheet [data-bearb]").forEach(function (b) {
-      b.addEventListener("click", function () { terminSheet(drin[+b.dataset.bearb], mo, null); });
+      b.addEventListener("click", function () {
+        if (wartet) { wartet = null; ziele(false); return; }
+        terminSheet(drin[+b.dataset.bearb], mo, null, tag);
+      });
     });
 
-    alle("#sheet [data-vor]").forEach(function (b) {
-      b.addEventListener("click", function () { terminSheet(null, mo, INHALT.eigenesVorlagen[+b.dataset.vor]); });
-    });
-    $("w-frei").addEventListener("click", function () { terminSheet(null, mo, null); });
-
-    // Wieder herausnehmen. Wichtig: solange Opa es noch nicht gesehen hat,
-    // ist das ein stilles Loeschen. Hat er es schon gesehen, muss er es
-    // erfahren — dafuer fehlt uns noch der Server.
     alle("#sheet [data-weg]").forEach(function (b) {
       b.addEventListener("click", function () {
         var raus = drin[+b.dataset.weg];
@@ -1968,35 +2635,125 @@ var INHALT = {
         schreib("geloescht", geloescht);
         eigene = eigene.filter(function (x) { return schluessel(x) !== schluessel(raus); });
         schreib("eigene", eigene);
-        // Mit dem Termin geht auch seine Absage. Sonst bliebe ein Grund
-        // zu einem Termin stehen, den es nicht mehr gibt.
+        // Mit dem Termin geht auch seine Absage — sonst bliebe ein Grund
+        // zu etwas stehen, das es nicht mehr gibt.
         abgesagt = abgesagt.filter(function (x) { return x !== schluessel(raus); });
         schreib("abgesagt", abgesagt);
         neueMitteilung({ von: "P", titel: "Wieder herausgenommen: " + raus.titel,
-          text: tagLang(ausIso(raus.datum)) + " ist wieder frei." });
-        sheetZu();
+          text: tagLang(tag) + " ist wieder frei." });
         zeichneAlles();
+        tagSheet(datum);
       });
     });
 
-    alle("#sheet [data-v]").forEach(function (b) {
-      if (b.disabled) return;
+    // Ein Vorschlag füllt das Formular vor. Ausgewählt ist er damit noch
+    // nicht — erst das Speichern legt ihn an. Die Auswahl bleibt beim
+    // Menschen, auch wenn nur noch ein Tipp fehlt.
+    alle("#sheet [data-vor]").forEach(function (b) {
       b.addEventListener("click", function () {
-        var v = INHALT.vorschlaege[+b.dataset.v];
-        var tag = plusTage(mo, v.wochentag - 1);
-        var neu = {
-          uid: kennung(), id: v.id,
-          datum: iso(tag), zeit: v.zeit, gewesenAb: v.gewesenAb,
-          titel: v.titel, kategorie: v.kategorie, ort: v.ort, zusatz: v.zusatz,
-          abholung: v.abholung, danach: v.danach, textVorlage: v.text, intern: ""
-        };
-        eigene.push(neu);
-        schreib("eigene", eigene);
-        entwurf = { titel: "WhatsApp an Opa", text: whatsappText(neu) };
-        neueMitteilung({ von: "P", titel: "Neu geplant: " + v.titel,
-          text: TAGE_LANG[v.wochentag - 1] + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " um " + v.zeit + "." });
-        sheetZu();
-        zeichneAlles();
+        var v = vor[+b.dataset.vor];
+        terminSheet(null, mo, v, tag);
+      });
+    });
+
+    var frei = $("tg-frei");
+    if (frei) frei.addEventListener("click", function () { terminSheet(null, mo, null, tag); });
+    var arch = $("tg-archiv");
+    if (arch) arch.addEventListener("click", function () { archivSheet(datum, mo); });
+  }
+
+  /* ---------- Archiv --------------------------------------------------
+     Alles, was schon einmal im Plan stand, dazu der Katalog und der ganze
+     Vorrat an Kleinigkeiten — einmal nach Titel zusammengefasst.
+
+     Es beantwortet die Frage "das hatten wir doch schon mal, wie hiess das
+     noch". Ohne das gibt es nur die drei Vorschlaege des Tages oder ein
+     leeres Formular, und beim zweiten Mal tippt man alles neu ab.
+     Was er schon hatte, steht oben und mit Datum; der Rest darunter.
+     -------------------------------------------------------------------- */
+  function katalogZu(id) {
+    return INHALT.vorschlaege.filter(function (v) { return v.id === id; })[0] || null;
+  }
+
+  function archivEintraege() {
+    var gesehen = {}, kennungen = {}, raus = [];
+    /* Zweimal dasselbe darf nicht in der Liste stehen — und "dasselbe"
+       heisst beim Angebot die Kennung, nicht der Titel: im Katalog heisst
+       es "Warmbadetag", im Plan "Warmbadetag im Hallenbad". Ueber den
+       Titel verglichen stuenden beide da. Dieselbe Falle wie bei den
+       Tagesvorschlaegen. */
+    function rein(x, wann, id) {
+      var da = gesehen[x.titel];
+      if (da) { if (wann && !da.wann) da.wann = wann; return; }
+      if (id && kennungen[id]) {
+        if (wann && !kennungen[id].wann) kennungen[id].wann = wann;
+        return;
+      }
+      x.wann = wann || "";
+      gesehen[x.titel] = x;
+      if (id) kennungen[id] = x;
+      raus.push(x);
+    }
+
+    // 1. Was schon einmal dastand — das Neueste zuerst, damit die
+    //    Reihenfolge sagt, was zuletzt lief.
+    alleTermine().slice().sort(function (a, b) {
+      return a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0;
+    }).forEach(function (e) {
+      var holt = e.abholung && e.abholung.kuerzel !== "·";
+      rein({
+        titel: e.titel, emoji: zeichenVon(e), kategorie: e.kategorie,
+        ort: e.ort, zusatz: e.zusatz, zeit: e.zeit || "", tageszeit: e.tageszeit || "",
+        // Ein Angebot bleibt ein Angebot: sein Katalogeintrag traegt den
+        // fertigen WhatsApp-Text und den Satz fuer danach.
+        sorte: istAngebot(e) ? "angebot" : (holt ? "eigen" : "kleinigkeit"),
+        quelle: istAngebot(e) ? katalogZu(e.id) : null,
+        abholung: holt ? e.abholung : null,
+        rueckweg: holt ? e.rueckweg : null
+      }, e.datum, istAngebot(e) ? e.id : null);
+    });
+
+    // 2. Der Katalog, auch was noch nie dran war.
+    INHALT.vorschlaege.forEach(function (v) {
+      rein({ titel: v.titel, emoji: zeichenVon(v), kategorie: v.kategorie, ort: v.ort,
+             zusatz: v.zusatz, zeit: v.zeit, tageszeit: "",
+             sorte: "angebot", quelle: v }, "", v.id);
+    });
+
+    // 3. Der Vorrat an Kleinigkeiten.
+    INHALT.kleinigkeiten.forEach(function (k) {
+      rein({ titel: k.titel, emoji: zeichenVon(k), kategorie: k.kategorie, ort: k.ort,
+             zusatz: k.zusatz, zeit: "", tageszeit: k.tageszeit,
+             sorte: "kleinigkeit", quelle: k });
+    });
+
+    return raus;
+  }
+
+  function archivSheet(datum, mo) {
+    var tag = ausIso(datum);
+    var liste = archivEintraege();
+    sheetAuf(
+      '<div class="kicker">' + tagLang(tag) + ", " + tag.getDate() + ". " +
+        MON_KURZ[tag.getMonth()] + "</div>" +
+      "<h3>Archiv</h3>" +
+      "<p>Alles, was schon einmal dastand — und der ganze Vorrat. " +
+        "Antippen legt es auf diesen Tag.</p>" +
+      '<div class="archivliste">' + liste.map(function (a, i) {
+        var d = a.wann ? ausIso(a.wann) : null;
+        var unten = d
+          ? "zuletzt " + d.getDate() + ". " + MON_KURZ[d.getMonth()]
+          : a.ort;
+        return '<button class="arch" data-arch="' + i + '">' +
+          '<span class="em">' + a.emoji + "</span>" +
+          '<span class="tx"><b>' + roh(a.titel) + "</b>" +
+          "<span>" + roh(unten) + "</span></span></button>";
+      }).join("") + "</div>" +
+      '<button class="cta quiet" data-zu>Zurück</button>'
+    );
+    alle("#sheet [data-arch]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        terminSheet(null, mo, liste[+b.dataset.arch], tag);
       });
     });
   }
@@ -2013,27 +2770,71 @@ var INHALT = {
     { k: "erzaehlen", n: "Erzählen" }, { k: "werk", n: "Draußen" }
   ];
 
-  function terminSheet(vorhanden, mo, vorlage) {
+  function terminSheet(vorhanden, mo, vorlage, wunschTag) {
     var neu = !vorhanden;
     var v = vorlage || {};
+
+    /* Kommt der Vorschlag aus dem Katalog, hängt an ihm mehr als ein Titel:
+       seine Kennung, sein fertiger WhatsApp-Text, sein Satz für danach. Das
+       muss mitwandern, sonst stünde in der Nachricht nicht mehr, dass wir
+       ihn anmelden — und genau das ist bei einem Angebot der Punkt. */
+    var q = (v.sorte === "angebot" && v.quelle) ? v.quelle : null;
+
+    /* Im gespeicherten Termin steht "·" für "macht er selbst". Im Formular
+       heißt derselbe Fall "-", weil dort ein Knopf dahintersteht. Ohne die
+       Umrechnung stand beim Ändern eines selbstgegangenen Termins gar kein
+       Knopf gedrückt. */
+    function knopfKuerzel(band, ersatz) {
+      if (!band) return ersatz;
+      return band.kuerzel === "\u00b7" ? "-" : band.kuerzel;
+    }
+
     var s = neu
       ? { uid: kennung(), titel: v.titel || "", kategorie: v.kategorie || "kaffee",
-          versatz: null, zeit: v.zeit || "15:00", ort: v.ort || "",
-          zusatz: v.zusatz || "", wer: "P", werText: "", intern: "" }
+          emoji: v.emoji || "", versatz: null,
+          modus: v.tageszeit ? "tz" : "uhr",
+          zeit: v.zeit || "15:00", tageszeit: v.tageszeit || "mittag",
+          ort: v.ort || "", zusatz: v.zusatz || "",
+          // Eine Kleinigkeit macht er allein — das ist ihr ganzes Wesen.
+          // Da darf nicht als Voreinstellung "Papa holt dich ab" stehen.
+          // Aus dem Archiv kann eine Vorlage kommen, die den Weg schon
+          // kennt, weil sie aus einem echten Termin stammt. Dann zaehlt der.
+          wer: v.sorte === "kleinigkeit" ? "-"
+             : knopfKuerzel(v.abholung || (q && q.abholung), "P"),
+          werText: (v.abholung && v.abholung.text) ||
+                   (q && q.abholung ? q.abholung.text : ""),
+          // Beim Rückweg ist "noch offen" die ehrliche Voreinstellung: bei
+          // etwas Neuem hat darüber noch niemand nachgedacht. Nur wer allein
+          // hingeht, kommt auch allein zurück.
+          zurueck: v.sorte === "kleinigkeit" ? "-"
+             : knopfKuerzel(v.rueckweg || (q && q.rueckweg), "?"),
+          zurText: (v.rueckweg && v.rueckweg.text) ||
+                   (q && q.rueckweg ? q.rueckweg.text : ""),
+          intern: "" }
       : { uid: vorhanden.uid || kennung(), titel: vorhanden.titel,
           kategorie: vorhanden.kategorie,
+          emoji: vorhanden.emoji || "",
           versatz: tageDazwischen(mo, ausIso(vorhanden.datum)),
-          zeit: vorhanden.zeit, ort: vorhanden.ort || "",
+          modus: vorhanden.zeit ? "uhr" : "tz",
+          zeit: vorhanden.zeit || "15:00", tageszeit: vorhanden.tageszeit || "mittag",
+          ort: vorhanden.ort || "",
           zusatz: vorhanden.zusatz || "",
-          wer: vorhanden.abholung ? vorhanden.abholung.kuerzel : "P",
+          wer: knopfKuerzel(vorhanden.abholung, "P"),
           werText: vorhanden.abholung ? vorhanden.abholung.text : "",
+          zurueck: knopfKuerzel(vorhanden.rueckweg, "?"),
+          zurText: vorhanden.rueckweg ? vorhanden.rueckweg.text : "",
           intern: vorhanden.intern || "" };
 
-    // Beim Anlegen auf den ersten Tag, der noch nicht vorbei ist.
+    // Beim Anlegen auf den Tag, von dem aus das Blatt geöffnet wurde —
+    // sonst auf den ersten, der noch nicht vorbei ist.
     if (s.versatz === null) {
       s.versatz = 0;
-      for (var i = 0; i < 7; i++) {
-        if (tageDazwischen(new Date(), plusTage(mo, i)) >= 0) { s.versatz = i; break; }
+      if (wunschTag && tageDazwischen(new Date(), wunschTag) >= 0) {
+        s.versatz = tageDazwischen(mo, wunschTag);
+      } else {
+        for (var i = 0; i < 7; i++) {
+          if (tageDazwischen(new Date(), plusTage(mo, i)) >= 0) { s.versatz = i; break; }
+        }
       }
     }
 
@@ -2046,7 +2847,12 @@ var INHALT = {
     }
     var wer = INHALT.familie.map(function (p) {
       return '<button data-wer="' + p.kuerzel + '" aria-pressed="' + (s.wer === p.kuerzel) + '">' + p.name + "</button>";
-    }).join("") + '<button data-wer="-" aria-pressed="' + (s.wer === "-") + '">Selbst</button>';
+    }).join("") + '<button data-wer="-" aria-pressed="' + (s.wer === "-") + '">Geht selbst</button>';
+    var zurueck = INHALT.familie.map(function (p) {
+      return '<button data-zur="' + p.kuerzel + '" aria-pressed="' + (s.zurueck === p.kuerzel) + '">' + p.name + "</button>";
+    }).join("") +
+      '<button data-zur="-" aria-pressed="' + (s.zurueck === "-") + '">Kommt allein</button>' +
+      '<button data-zur="?" aria-pressed="' + (s.zurueck === "?") + '">Noch offen</button>';
     var farben = KATEGORIEN.map(function (c) {
       return '<button data-farbe="' + c.k + '" aria-pressed="' + (s.kategorie === c.k) +
         '" style="background:var(--c-' + c.k + ')" aria-label="' + c.n + '"></button>';
@@ -2058,23 +2864,48 @@ var INHALT = {
       "<h3>" + (neu ? "Etwas eintragen" : "Ändern") + "</h3>" +
 
       '<div class="abschnitt erst"><h5>Was Opa sieht</h5></div>' +
-      '<div class="feld"><label>Was</label><input id="t-titel" value="' + roh(s.titel) +
-        '" placeholder="Zum Beispiel: Eis essen mit Oma"></div>' +
+      '<div class="feld"><label>Zeichen und was</label><div class="zeile">' +
+        '<input id="t-emoji" class="emj" value="' + roh(s.emoji) + '" maxlength="4" ' +
+          'aria-label="Zeichen" placeholder="' + zeichenVon({ kategorie: s.kategorie }) + '">' +
+        '<input id="t-titel" value="' + roh(s.titel) +
+          '" placeholder="Zum Beispiel: Eis essen mit Oma"></div></div>' +
       '<div class="feld"><label>Tag</label><div class="wahl" id="t-tag">' + tage + "</div></div>" +
-      '<div class="feld"><label>Uhrzeit</label><input type="time" id="t-zeit" value="' + roh(s.zeit) + '"></div>' +
+
+      // Uhrzeit oder Tageszeit. Eine Kleinigkeit braucht keine Minute, und
+      // eine zu verlangen macht aus ihr eine Verabredung, die sie nicht ist.
+      '<div class="feld"><label>Wann</label><div class="wahl" id="t-modus">' +
+        '<button data-modus="uhr" aria-pressed="' + (s.modus === "uhr") + '">Feste Uhrzeit</button>' +
+        '<button data-modus="tz" aria-pressed="' + (s.modus === "tz") + '">Nur Tageszeit</button>' +
+        "</div></div>" +
+      '<div class="feld" id="t-uhrfeld"' + (s.modus === "uhr" ? "" : " hidden") + ">" +
+        '<input type="time" id="t-zeit" value="' + roh(s.zeit) + '"></div>' +
+      '<div class="feld" id="t-tzfeld"' + (s.modus === "tz" ? "" : " hidden") + ">" +
+        '<div class="wahl" id="t-tz">' +
+          '<button data-tz="frueh" aria-pressed="' + (s.tageszeit === "frueh") + '">Vormittags</button>' +
+          '<button data-tz="mittag" aria-pressed="' + (s.tageszeit === "mittag") + '">Nachmittags</button>' +
+          '<button data-tz="abend" aria-pressed="' + (s.tageszeit === "abend") + '">Abends</button>' +
+        "</div></div>" +
       '<div class="feld"><label>Wo</label><input id="t-ort" value="' + roh(s.ort) +
         '" placeholder="Zum Beispiel: Eisdiele am Markt"></div>' +
       '<div class="feld"><label>Ein Satz dazu</label><textarea id="t-zusatz" rows="2" ' +
         'placeholder="Was ihn erwartet. Ruhig kurz.">' + roh(s.zusatz) + "</textarea></div>" +
-      '<div class="feld"><label>Wer holt ihn ab</label><div class="wahl" id="t-wer">' + wer + "</div></div>" +
+      // Zwei Wege, zwei Fragen. Vorher stand hier nur "Wer holt ihn ab" —
+      // gemeint war die Fahrt von zu Hause weg, und wie er wieder heimkommt,
+      // stand nirgends. Für ihn ist das die wichtigere Hälfte.
+      '<div class="feld"><label>Hin — wer holt ihn zu Hause ab</label>' +
+        '<div class="wahl" id="t-wer">' + wer + "</div></div>" +
       '<div class="feld"><label>Und wann</label><input id="t-wertext" value="' + roh(s.werText) +
         '" placeholder="um 14:10 vor der Tür"></div>' +
+      '<div class="feld"><label>Zurück — wer holt ihn dort wieder ab</label>' +
+        '<div class="wahl breit" id="t-zur">' + zurueck + "</div></div>" +
+      '<div class="feld"><label>Und wann</label><input id="t-zurtext" value="' + roh(s.zurText) +
+        '" placeholder="gegen 16:20"></div>' +
       '<div class="feld"><label>Farbe im Buch</label><div class="farben" id="t-farbe">' + farben + "</div></div>" +
 
       '<div class="abschnitt"><h5>Unter uns</h5>' +
         "<p>Sieht nur die Familie. Steht nie in Opas Woche.</p></div>" +
       '<div class="feld"><textarea id="t-intern" rows="2" ' +
-        'placeholder="Noch offen? Wer fährt zurück? Wer ruft dort an?">' + roh(s.intern) + "</textarea></div>" +
+        'placeholder="Wer ruft dort an? Was sollten wir wissen?">' + roh(s.intern) + "</textarea></div>" +
 
       '<button class="cta" id="t-ok"' + (s.titel.trim().length < 2 ? " disabled" : "") + ">Speichern</button>" +
       '<button class="cta quiet" data-zu>Abbrechen</button>' +
@@ -2088,46 +2919,93 @@ var INHALT = {
       el.addEventListener("input", function () { s[feld] = el.value; if (dann) dann(); });
     }
     tippt("t-titel", "titel", function () { $("t-ok").disabled = s.titel.trim().length < 2; });
+    tippt("t-emoji", "emoji");
     tippt("t-zeit", "zeit");
     tippt("t-ort", "ort");
     tippt("t-zusatz", "zusatz");
     tippt("t-wertext", "werText");
+    tippt("t-zurtext", "zurText");
     tippt("t-intern", "intern");
 
-    function gruppe(id, feld, wert) {
+    function gruppe(id, feld, wert, dann) {
       alle("#" + id + " button").forEach(function (b) {
         b.addEventListener("click", function () {
           if (b.disabled) return;
           s[feld] = wert(b);
           alle("#" + id + " button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
           b.setAttribute("aria-pressed", "true");
+          if (dann) dann();
         });
       });
     }
     gruppe("t-tag", "versatz", function (b) { return +b.dataset.tag; });
     gruppe("t-wer", "wer", function (b) { return b.dataset.wer; });
-    gruppe("t-farbe", "kategorie", function (b) { return b.dataset.farbe; });
+    gruppe("t-zur", "zurueck", function (b) { return b.dataset.zur; });
+    gruppe("t-tz", "tageszeit", function (b) { return b.dataset.tz; });
+    gruppe("t-modus", "modus", function (b) { return b.dataset.modus; }, function () {
+      $("t-uhrfeld").hidden = s.modus !== "uhr";
+      $("t-tzfeld").hidden = s.modus !== "tz";
+    });
+    // Das Zeichen folgt der Farbe, solange niemand ein eigenes gesetzt hat.
+    gruppe("t-farbe", "kategorie", function (b) { return b.dataset.farbe; }, function () {
+      $("t-emoji").placeholder = zeichenVon({ kategorie: s.kategorie });
+    });
 
     $("t-ok").addEventListener("click", function () {
       var tag = plusTage(mo, s.versatz);
       var person = INHALT.familie.filter(function (p) { return p.kuerzel === s.wer; })[0];
-      var stunde = Math.min(23, (+String(s.zeit).split(":")[0] || 15) + 3);
+      var personZ = INHALT.familie.filter(function (p) { return p.kuerzel === s.zurueck; })[0];
+      var mitUhr = s.modus === "uhr";
+      var tz = TAGESZEIT[s.tageszeit] || TAGESZEIT.mittag;
+      // Ab wann "Wie war's?" erscheinen darf. Bei einer Uhrzeit drei Stunden
+      // später, bei einer Tageszeit am Ende dieser Tageszeit.
+      var stunde = mitUhr
+        ? Math.min(23, (+String(s.zeit).split(":")[0] || 15) + 3)
+        : tz.bis;
       var obj = {
         // Ein Angebot aus dem Katalog bleibt ein Angebot, auch wenn man die
         // Uhrzeit ändert — sonst stünde im WhatsApp-Text nicht mehr, dass
         // wir ihn anmelden.
-        uid: s.uid, id: (vorhanden && vorhanden.id) || "eig",
-        datum: iso(tag), zeit: s.zeit, gewesenAb: stunde,
+        uid: s.uid, id: (vorhanden && vorhanden.id) || (q ? q.id : "eig"),
+        datum: iso(tag),
+        zeit: mitUhr ? s.zeit : "", tageszeit: mitUhr ? "" : s.tageszeit,
+        gewesenAb: stunde,
         titel: s.titel.trim(), kategorie: s.kategorie,
+        emoji: s.emoji.trim() || zeichenVon({ kategorie: s.kategorie }),
         ort: s.ort.trim() || "bei euch", zusatz: s.zusatz.trim(),
         intern: s.intern.trim(),
+        /* Holt ihn niemand ab, gibt es nichts zu organisieren — dann stand
+           im Band bisher "Wann du magst / am Vormittag", und das wiederholt
+           nur die Zeile darüber. Die Karte fiel damit sichtbar ab gegenüber
+           einer mit Treffpunkt und Uhrzeit, und genau das soll sie nicht:
+           die Kleinigkeit ist gleich viel wert.
+           Also steht dort jetzt der Satz, der sagt, worum es geht. */
         abholung: person
           ? { kuerzel: person.kuerzel, titel: person.satz || (person.name + " holt dich ab"),
               text: s.werText.trim() || "Zeit sagen wir noch" }
-          : { kuerzel: "·", titel: "Du gehst selbst hin",
-              text: s.werText.trim() || "wie besprochen" },
-        danach: { titel: "Warst du. Schön.", text: "" }
+          : (mitUhr
+              ? { kuerzel: "·", titel: "Du gehst selbst hin",
+                  text: s.werText.trim() || s.zusatz.trim() || "wie besprochen" }
+              : { kuerzel: "·", titel: "Wann du magst",
+                  text: s.werText.trim() || s.zusatz.trim() || tz.satz }),
+        // Der Rückweg. Steht er noch offen, bleibt hier null — und genau
+        // das ist die Aussage: in Opas Woche steht dann nichts dazu, und
+        // bei uns im Tagesblatt steht "Rückweg offen", bis es geklärt ist.
+        rueckweg: personZ
+          ? { kuerzel: personZ.kuerzel,
+              titel: personZ.satzZurueck || (personZ.name + " bringt dich zurück"),
+              text: s.zurText.trim() || "Zeit sagen wir noch" }
+          : s.zurueck === "-"
+            ? { kuerzel: "\u00b7", titel: "Du kommst allein zurück",
+                text: s.zurText.trim() || "wie besprochen" }
+            : null,
+        danach: (vorhanden && vorhanden.danach) || (q && q.danach) ||
+                { titel: "Warst du. Schön.", text: "" }
       };
+      // Der fertige Text eines Angebots wandert mit. Bei etwas Eigenem gibt
+      // es keinen — der Text wird dann aus dem Termin selbst gebaut.
+      var vorlagenText = (vorhanden && vorhanden.textVorlage) || (q ? q.text : null);
+      if (vorlagenText) obj.textVorlage = vorlagenText;
       // Ein geänderter Beispieltermin wird dabei zu einem echten Termin.
       if (vorhanden && !vorhanden.uid) {
         geloescht.push(schluessel(vorhanden));
@@ -2148,7 +3026,7 @@ var INHALT = {
       entwurf = { titel: "WhatsApp an Opa", text: whatsappText(obj) };
       neueMitteilung({ von: person ? person.kuerzel : "P",
         titel: (warAbgesagt ? "Neu gelegt: " : neu ? "Neu geplant: " : "Geändert: ") + obj.titel,
-        text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " um " + obj.zeit + "." });
+        text: tagLang(tag) + ", " + tag.getDate() + ". " + MON_KURZ[tag.getMonth()] + " " + zeitSatz(obj) + "." });
       sheetZu();
       zeichneAlles();
     });
@@ -2327,6 +3205,7 @@ var INHALT = {
   document.addEventListener("visibilitychange", function () {
     if (document.hidden || !ROLLE) return;
     blick = null;              // Wieder aufgemacht heisst: wieder bei heute.
+    blickMonat = null;         // Auch das Raster steht dann wieder im laufenden Monat.
     zeichneAlles();
   });
 })();

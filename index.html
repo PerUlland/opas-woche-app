@@ -230,8 +230,12 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
    Und er traegt keinen Text mehr. "Zurueck zum Naechsten" widerspricht sich,
    wenn man es aus dem Zusammenhang reisst — zurueck und nach vorn in einem
    Satz. Ein Pfeil sagt dasselbe und behauptet keine Richtung in der Zeit. */
-.reihe{display:flex;gap:10px;margin-top:14px}
-.reihe .cta{flex:1;min-width:0;margin-top:0}
+/* Aktionsreihe: der Pfeil zurueck und der Knopf nebeneinander.
+   Heisst mit Absicht nicht .reihe — die Werkbank hat schon eine. Zwei
+   gleichnamige Klassen auf verschiedenen Elementen haben uns den
+   abgesagten Tag zerlegt, das reicht einmal. */
+.aktionsreihe{display:flex;gap:10px;margin-top:14px}
+.aktionsreihe .cta{flex:1;min-width:0;margin-top:0}
 .zurueck{
   flex:0 0 auto;width:54px;height:54px;border-radius:18px;
   background:var(--sunk);color:var(--ink);
@@ -1837,7 +1841,7 @@ var INHALT = {
 
     if (!pfeil && !knopf) return;
 
-    ziel.innerHTML = '<div class="reihe">' +
+    ziel.innerHTML = '<div class="aktionsreihe">' +
       (pfeil ? '<button class="zurueck" id="zur-naechstes" ' +
                  'aria-label="Zurück zu dem, was als Nächstes ansteht">\u2039</button>' : "") +
       knopf + "</div>";
@@ -2687,7 +2691,7 @@ var INHALT = {
           }).join("")
         : "<p>Für diesen Tag ist der Vorrat leer. Trag etwas Eigenes ein.</p>";
 
-      html += '<div class="reihe">' +
+      html += '<div class="aktionsreihe">' +
         '<button class="cta leise" id="tg-frei">Etwas anderes eintragen</button>' +
         '<button class="cta leise archiv" id="tg-archiv">Archiv</button>' +
         "</div>";

@@ -1428,10 +1428,18 @@ var INHALT = {
      genug. Auf einer Uhrzeit zu bestehen macht aus ihr eine Verabredung,
      die sie nicht ist, und dann steht bei ihm "14:10 Papa holt dich ab"
      für etwas, das er längst allein kann. */
+  /* "ab" ist der Anfang der Tageszeit, "bis" ihr Ende.
+     Ohne Uhrzeit muss die App trotzdem irgendwann sagen können, dass es
+     jetzt so weit ist. Die Werte sind an ihrem Tag ausgerichtet:
+       9 Uhr  — davor wird gefrühstückt
+       14 Uhr — nach dem Mittagessen (12–13) und der Ruhe danach
+       18 Uhr — wenn der Tag zur Ruhe kommt
+     Geraten ist daran nichts weiter als die Grenze selbst; wer es besser
+     weiß, ändert die vier Zahlen hier und nirgends sonst. */
   var TAGESZEIT = {
-    frueh:  { kurz: "vormittags",  satz: "am Vormittag",  lang: "Am Vormittag",  bis: 13 },
-    mittag: { kurz: "nachmittags", satz: "am Nachmittag", lang: "Am Nachmittag", bis: 18 },
-    abend:  { kurz: "abends",      satz: "am Abend",      lang: "Am Abend",      bis: 22 }
+    frueh:  { kurz: "vormittags",  satz: "am Vormittag",  lang: "Am Vormittag",  ab: "09:00", bis: 13 },
+    mittag: { kurz: "nachmittags", satz: "am Nachmittag", lang: "Am Nachmittag", ab: "14:00", bis: 18 },
+    abend:  { kurz: "abends",      satz: "am Abend",      lang: "Am Abend",      ab: "18:00", bis: 22 }
   };
   function tzVon(e) { return TAGESZEIT[e && e.tageszeit] || TAGESZEIT.mittag; }
   function zeitKurz(e) { return e.zeit ? e.zeit : tzVon(e).kurz; }
@@ -1452,6 +1460,25 @@ var INHALT = {
     return !!(e.abholung && e.abholung.kuerzel !== "\u00b7" && !e.rueckweg);
   }
   function istZiehbar(e) { return !istAngebot(e); }
+
+  /* Hat es angefangen?
+     Ab dem Beginn ist nicht mehr die Absage dran, sondern das Foto — das
+     entsteht im besten Fall vor Ort und nicht abends aus dem Gedächtnis.
+     Deshalb wechselt der Knopf mit dem ersten Moment des Termins, nicht
+     erst, wenn er vorbei ist.
+
+     Das ist bewusst ein anderer Zeitpunkt als schonVorbei(). Die Karte
+     bleibt der Termin, solange er läuft — "Heute gewesen" über jemandem,
+     der noch im Wasser steht, wäre schlicht falsch. Nur der Knopf darunter
+     ist schon so weit. */
+  function laeuftSchon(e) {
+    var jetzt = new Date();
+    var diff = tageDazwischen(jetzt, ausIso(e.datum));
+    if (diff < 0) return true;
+    if (diff > 0) return false;
+    var uhr = ("0" + jetzt.getHours()).slice(-2) + ":" + ("0" + jetzt.getMinutes()).slice(-2);
+    return uhr >= (e.zeit || tzVon(e).ab);
+  }
 
   function schonVorbei(e) {
     var jetzt = new Date();
@@ -1804,7 +1831,8 @@ var INHALT = {
     if (weg && gewesen) knopf = "";
     else if (gewesen && istErledigt(e)) knopf = "";
     else if (weg)    knopf = '<button class="cta" id="doch">Doch, ich gehe hin</button>';
-    else if (gewesen) knopf = '<button class="cta" id="wie-wars">Wie war\'s?</button>';
+    // Sobald es angefangen hat, ist die Frage nach dem Foto dran.
+    else if (gewesen || laeuftSchon(e)) knopf = '<button class="cta" id="wie-wars">Wie war\'s?</button>';
     else              knopf = '<button class="cta leise" id="passt-nicht">Passt mir doch nicht</button>';
 
     if (!pfeil && !knopf) return;

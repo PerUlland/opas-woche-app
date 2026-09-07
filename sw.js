@@ -5,7 +5,7 @@
 // lokal auf dem Geraet; das Netz wird nur benutzt, um nachzusehen,
 // ob es etwas Neueres gibt.
 
-const VERSION = "v11";
+const VERSION = "v12";
 const CACHE = "opas-woche-" + VERSION;
 
 const SHELL = [
@@ -56,7 +56,19 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Alles andere (Icons, Schrift): erst lokal, sonst laden und behalten.
+  // Firebase redet staendig mit seinen Servern, und ein Teil davon sind
+  // GET-Anfragen. Die duerfen nie aus dem Speicher beantwortet werden --
+  // sonst sieht Opa alte Termine oder die Anmeldung haengt fest. Gespeichert
+  // wird nur, was zur App selbst gehoert: unsere eigenen Dateien und das
+  // Firebase-Programm von jsDelivr.
+  const url = new URL(req.url);
+  const darfGespeichertWerden =
+    url.origin === self.location.origin ||
+    url.origin === "https://cdn.jsdelivr.net";
+
+  if (!darfGespeichertWerden) return;
+
+  // Alles andere (Icons, Schrift, Firebase-Programm): erst lokal, sonst laden und behalten.
   e.respondWith(
     caches.match(req).then((hit) => {
       if (hit) return hit;

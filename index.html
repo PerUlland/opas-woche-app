@@ -468,7 +468,52 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   .sheet,.scrim,.pane.zeigen{animation:none}
   .tap:active,.cta:active,.wd:active,.fil:active,.opt:active,.woche:active{transform:none}
 }
+
+/* ---------- Anmelde-Schirm: liegt über allem, bis klar ist, wer da ist ---------- */
+.gate{
+  position:absolute;inset:0;z-index:60;background:var(--page);
+  display:flex;align-items:center;justify-content:center;
+  padding:32px 26px calc(32px + env(safe-area-inset-bottom));
+}
+.gate-in{width:100%;max-width:332px;text-align:center}
+.gate-mark{
+  width:64px;height:64px;border-radius:22px;margin:0 auto 20px;
+  background:linear-gradient(150deg,#3E6E7E,#8FB6BF);color:#fff;
+  display:grid;place-items:center;font-size:26px;font-weight:800;
+}
+.gate-in h1{margin:0 0 12px;font-size:29px;font-weight:800;letter-spacing:-.04em;line-height:1.05}
+.gate-in p{margin:0 0 13px;font-size:15.5px;line-height:1.5;color:var(--dim);font-weight:500}
+.gate-in p b{color:var(--ink);font-weight:700}
+.gate-feld{
+  width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;
+  font-family:inherit;font-size:16.5px;font-weight:600;color:var(--ink);
+  background:var(--page);margin-bottom:6px;-webkit-appearance:none;text-align:center;
+}
+.gate-feld:focus{outline:none;border-color:var(--accent)}
+.gate .cta{margin-top:10px}
+.gate-fehler{color:var(--accent);font-weight:600}
+.gate-klein{margin-top:16px!important;font-size:13px;color:var(--faint)}
 </style>
+
+<!-- Firebase. Die drei Bausteine, die die App braucht: Start, Anmeldung,
+     Datenbank. Von jsDelivr, damit es auch als Artefakt-Vorschau lädt. -->
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js"></script>
+<script>
+/* Das ist KEIN Passwort und KEIN Geheimnis — diese Werte stehen in jeder
+   Firebase-Web-App im Quelltext. Sie sagen nur, welches Projekt gemeint ist.
+   Der Schutz kommt aus firestore.rules, nicht daraus, dass man das versteckt. */
+window.OW_FIREBASE = {
+  apiKey: "AIzaSyDsmJP4W83oegZK3PcRdD4v14nuyRuUB6Q",
+  authDomain: "opa-app-8c1c7.firebaseapp.com",
+  projectId: "opa-app-8c1c7",
+  storageBucket: "opa-app-8c1c7.firebasestorage.app",
+  messagingSenderId: "255896194919",
+  appId: "1:255896194919:web:6a3ccb8f15e6dc2f7329c2"
+};
+window.OW_FAMILIE = "ulland";   // familien/{fam} — dieser eine Zweig
+</script>
 <style>
   :root{color-scheme:light}
   html{background:#FFFFFF}
@@ -798,17 +843,163 @@ var INHALT = {
 
   var BEWERTUNG = ["War nicht so", "Ging so", "Schön", "Sehr schön", "Richtig schön"];
 
-  /* Wer sitzt vor dem Gerät?
-     Opa sieht nur Woche und Buch. Familie sieht alles drei.
-     Einmal beim Einrichten über die Adresse gesetzt (?rolle=opa),
-     danach merkt das Gerät es sich. Zurück mit ?rolle=familie. */
-  var ROLLE = (function () {
+  /* Wer sitzt vor dem Gerät? ------------------------------------------
+     Früher entschied das die Adresszeile (?rolle=opa) — ein reiner
+     Anzeigeschalter. Jetzt kommt es vom Server: einmal pro Gerät per
+     E-Mail-Link anmelden, danach sagt das Mitglieder-Dokument, welche
+     Rolle dieses Gerät hat.
+       "admin"  – die Familie:  Woche, Buch, Familie
+       "user"   – Opas Gerät:   Woche, Buch
+       null     – angemeldet, aber noch nicht freigeschaltet
+
+     Ohne Firebase (Datei doppelt angeklickt, lokal entwickelt, Vorschau
+     ohne echte Anmeldung) fällt alles auf den alten ?rolle=-Schalter
+     zurück, damit die Arbeit am Prototyp weitergeht.
+     ------------------------------------------------------------------ */
+  var FAM   = window.OW_FAMILIE || "ulland";
+  var KONTO = null;   // { uid, email } oder null
+  var ROLLE = null;   // "admin" | "user" | null
+  var auth  = null, db = null;
+
+  function firebaseDa() {
+    return !!(window.firebase && window.OW_FIREBASE && window.OW_FIREBASE.apiKey &&
+              firebase.auth && firebase.firestore);
+  }
+
+  /* Nur wenn Firebase fehlt: Rolle aus der Adresse / vom Gerät.
+     Alte Werte ("opa", "familie") werden mit übersetzt. */
+  function entwicklerRolle() {
+    var t = "";
     try {
-      var t = (location.search.match(/[?&]rolle=(opa|familie)/) || [])[1];
-      if (t) { localStorage.setItem("ow.rolle", t); return t; }
-      return localStorage.getItem("ow.rolle") || "familie";
-    } catch (e) { return "familie"; }
-  })();
+      t = (location.search.match(/[?&]rolle=(opa|user|familie|admin)/) || [])[1] || "";
+      if (t) localStorage.setItem("ow.rolle", t);
+      else t = localStorage.getItem("ow.rolle") || "";
+    } catch (e) {}
+    return (t === "opa" || t === "user") ? "user" : "admin";
+  }
+
+  /* ---------- Der Schirm über der App ---------- */
+  var schirm = null;
+  function schirmEl() {
+    if (!schirm) {
+      schirm = document.createElement("div");
+      schirm.className = "gate";
+      document.querySelector(".app").appendChild(schirm);
+    }
+    schirm.hidden = false;
+    return schirm;
+  }
+  function schirmZu() { if (schirm) schirm.hidden = true; }
+
+  function ladeSchirm(text) {
+    schirmEl().innerHTML =
+      '<div class="gate-in"><div class="gate-mark">O</div>' +
+      "<h1>Opas Woche</h1><p>" + roh(text || "Einen Moment …") + "</p></div>";
+  }
+
+  function anmeldeSchirm(modus, fehler) {
+    var el = schirmEl();
+    if (modus === "gesendet") {
+      el.innerHTML =
+        '<div class="gate-in"><div class="gate-mark">O</div>' +
+        "<h1>Schau in dein Postfach</h1>" +
+        "<p>Wir haben dir eine Mail von <b>Opas Woche</b> geschickt. Tippe auf den Link darin — dann ist dieses Gerät angemeldet.</p>" +
+        '<button class="cta quiet" id="gate-neu">Andere Adresse</button></div>';
+      $("gate-neu").addEventListener("click", function () { anmeldeSchirm("form"); });
+      return;
+    }
+    el.innerHTML =
+      '<div class="gate-in"><div class="gate-mark">O</div>' +
+      "<h1>Opas Woche</h1>" +
+      "<p>Melde dich einmal an. Danach bleibt dieses Gerät angemeldet — kein Passwort, keine weitere Anmeldung.</p>" +
+      '<input class="gate-feld" id="gate-mail" type="email" inputmode="email" autocomplete="email" placeholder="deine@adresse.de">' +
+      (fehler ? '<p class="gate-fehler">' + roh(fehler) + "</p>" : "") +
+      '<button class="cta" id="gate-los">Link schicken</button>' +
+      '<p class="gate-klein">Richtet ihr das für Opa ein? Nehmt hier <b>seine</b> Adresse.</p></div>';
+    var feld = $("gate-mail");
+    try { feld.value = localStorage.getItem("ow.anmeldeMail") || ""; } catch (e) {}
+    $("gate-los").addEventListener("click", function () { linkSchicken(feld.value); });
+    feld.addEventListener("keydown", function (e) { if (e.key === "Enter") linkSchicken(feld.value); });
+  }
+
+  function linkSchicken(mail) {
+    mail = String(mail || "").trim();
+    if (!/.+@.+\..+/.test(mail)) { anmeldeSchirm("form", "Das sieht nicht wie eine Adresse aus."); return; }
+    try { localStorage.setItem("ow.anmeldeMail", mail); } catch (e) {}
+    ladeSchirm("Wird verschickt …");
+    auth.sendSignInLinkToEmail(mail, {
+      url: location.origin + location.pathname,
+      handleCodeInApp: true
+    }).then(function () {
+      anmeldeSchirm("gesendet");
+    }).catch(function (err) {
+      anmeldeSchirm("form", "Das hat nicht geklappt (" + ((err && err.code) || "Fehler") + "). Stimmt die Adresse?");
+    });
+  }
+
+  function wartenSchirm(hinweis) {
+    var el = schirmEl();
+    el.innerHTML =
+      '<div class="gate-in"><div class="gate-mark">O</div>' +
+      "<h1>Fast da</h1>" +
+      "<p>Du bist angemeldet als <b>" + roh(KONTO && KONTO.email) + "</b>.</p>" +
+      "<p>Jetzt trägt dich jemand aus der Familie ein. Bis dahin bleibt hier alles leer — angemeldet zu sein heißt noch nicht dazuzugehören.</p>" +
+      (hinweis ? '<p class="gate-fehler">' + roh(hinweis) + "</p>" : "") +
+      '<button class="cta" id="gate-nach">Nachsehen</button>' +
+      '<button class="cta quiet" id="gate-ab">Abmelden</button></div>';
+    $("gate-nach").addEventListener("click", function () { location.reload(); });
+    $("gate-ab").addEventListener("click", function () {
+      auth.signOut().then(function () { location.reload(); });
+    });
+  }
+
+  function abmelden() {
+    if (!auth) return;
+    auth.signOut().then(function () { location.reload(); });
+  }
+
+  /* ---------- Firebase in Gang setzen ---------- */
+  function firebaseStart() {
+    firebase.initializeApp(window.OW_FIREBASE);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    db.enablePersistence({ synchronizeTabs: true }).catch(function () {});
+
+    ladeSchirm();
+
+    // Kommt jemand über den Link aus der Mail zurück?
+    if (auth.isSignInWithEmailLink(location.href)) {
+      var mail = "";
+      try { mail = localStorage.getItem("ow.anmeldeMail") || ""; } catch (e) {}
+      if (!mail) mail = window.prompt("Zur Bestätigung noch einmal deine E-Mail-Adresse:") || "";
+      auth.signInWithEmailLink(mail, location.href).then(function () {
+        try { localStorage.removeItem("ow.anmeldeMail"); } catch (e) {}
+        history.replaceState(null, "", location.pathname);
+      }).catch(function () {
+        history.replaceState(null, "", location.pathname);
+        anmeldeSchirm("form", "Der Link hat nicht funktioniert. Bitte noch einmal.");
+      });
+    }
+
+    auth.onAuthStateChanged(function (user) {
+      if (!user) { KONTO = null; ROLLE = null; anmeldeSchirm("form"); return; }
+      KONTO = { uid: user.uid, email: user.email || "" };
+      ladeSchirm();
+      db.collection("familien").doc(FAM).collection("mitglieder").doc(user.uid).get()
+        .then(function (snap) {
+          if (!snap.exists) { ROLLE = null; wartenSchirm(); return; }
+          var d = snap.data() || {};
+          ROLLE = d.rolle === "admin" ? "admin" : "user";
+          if (d.anrede) INHALT.anrede = d.anrede;
+          schirmZu();
+          starten();
+        })
+        .catch(function () {
+          ROLLE = null;
+          wartenSchirm("Gerade keine Verbindung. Sobald du wieder online bist, hier auf „Nachsehen“ tippen.");
+        });
+    });
+  }
 
   /* ---------- Plan aufbauen ---------- */
   function aussaat() {
@@ -1927,20 +2118,26 @@ var INHALT = {
       { k: "abgesagt", n: "Als hätt er abgesagt" },
       { k: "leer",     n: "Als wär nichts geplant" }
     ];
+    var angemeldet = !!(auth && KONTO);
     $("werkbank").innerHTML = zustaende.map(function (z) {
       return '<button class="wb" data-z="' + z.k + '" aria-pressed="' + (werkbank === z.k) + '">' + z.n + "</button>";
     }).join("") +
-      '<button class="wb" data-rolle="1">Als Opas Gerät ansehen</button>' +
+      (angemeldet
+        ? '<button class="wb" data-ab="1">Abmelden</button>'
+        : '<button class="wb" data-rolle="1">Als Opas Gerät ansehen</button>') +
       '<button class="wb" data-reset="1">Alles zurücksetzen</button>' +
       '<p style="margin:9px 0 0;font-size:11.5px;color:var(--faint);font-weight:500;line-height:1.4">' +
-      "Dieses Gerät ist gerade: <b>" + (ROLLE === "opa" ? "Opas Gerät" : "Familie") + "</b>. " +
-      "Zurück kommst du, indem du <b>?rolle=familie</b> hinten an die Adresse hängst.</p>";
+      (angemeldet
+        ? "Angemeldet als <b>" + roh(KONTO.email) + "</b> · Rolle <b>" + roh(ROLLE || "—") + "</b>."
+        : "Kein Server. Dieses Gerät ist gerade: <b>" + (ROLLE === "user" ? "Opas Gerät" : "Familie") +
+          "</b> — umschalten mit <b>?rolle=user</b> bzw. <b>?rolle=admin</b> in der Adresse.") + "</p>";
 
     Array.prototype.forEach.call($("werkbank").querySelectorAll("button"), function (b) {
       b.addEventListener("click", function () {
+        if (b.dataset.ab) { abmelden(); return; }
         if (b.dataset.rolle) {
-          try { localStorage.setItem("ow.rolle", "opa"); } catch (e) {}
-          location.search = "?rolle=opa";
+          try { localStorage.setItem("ow.rolle", "user"); } catch (e) {}
+          location.search = "?rolle=user";
           return;
         }
         if (b.dataset.reset) {
@@ -2042,23 +2239,37 @@ var INHALT = {
 
   // Opas Gerät kennt Familie nicht. Zwei Reiter statt drei — für ihn
   // ist das nicht weniger, sondern weniger im Weg.
-  if (ROLLE === "opa") {
+  function rolleAnwenden() {
+    var opa = ROLLE === "user";
     var famTab = document.querySelector('.tab[data-p="p-fam"]');
-    if (famTab) famTab.hidden = true;
-    $("p-fam").hidden = true;
-    document.querySelector('.tab[data-p="p-week"]').setAttribute("aria-selected", "true");
-    $("p-week").hidden = false;
-    $("p-book").hidden = true;
-    document.querySelector('.tab[data-p="p-book"]').setAttribute("aria-selected", "false");
+    if (famTab) { famTab.hidden = opa; famTab.setAttribute("aria-selected", "false"); }
+    if (opa) {
+      $("p-fam").hidden = true;
+      $("p-book").hidden = true;
+      document.querySelector('.tab[data-p="p-book"]').setAttribute("aria-selected", "false");
+      document.querySelector('.tab[data-p="p-week"]').setAttribute("aria-selected", "true");
+      $("p-week").hidden = false;
+    }
   }
 
-  gesichter();
-  zeichneBuch();
-  zeichneAlles();
+  // Ab hier läuft die App wirklich los — erst, wenn feststeht, wer da ist.
+  function starten() {
+    rolleAnwenden();
+    gesichter();
+    zeichneBuch();
+    zeichneAlles();
+  }
+
+  if (firebaseDa()) {
+    firebaseStart();
+  } else {
+    ROLLE = entwicklerRolle();
+    starten();
+  }
 
   // Wenn die App im Hintergrund lag und wieder geöffnet wird: Datum nachziehen.
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) return;
+    if (document.hidden || !ROLLE) return;
     blick = null;              // Wieder aufgemacht heisst: wieder bei heute.
     zeichneAlles();
   });
